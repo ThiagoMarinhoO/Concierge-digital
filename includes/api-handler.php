@@ -3,6 +3,7 @@
 // Função principal para processar o formulário e enviar os dados para a OpenAI
 function concierge_process_form()
 {
+
     // Verificar o nonce para garantir segurança
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'concierge_nonce')) {
         wp_send_json_error(['message' => 'Falha na verificação de segurança.']);
@@ -16,7 +17,7 @@ function concierge_process_form()
     }
 
     // Coletar e sanitizar os dados enviados pelo formulário
-    $jsonl_data = isset($_POST['jsonl_data']) ? sanitize_textarea_field(wp_unslash($_POST['jsonl_data'])) : '';
+    $jsonl_data = isset($_POST['jsonl_data']) ? isset($_POST['jsonl_data']) : '';
 
     if (empty($jsonl_data)) {
         wp_send_json_error(['message' => 'Nenhum dado JSONL foi enviado.']);
@@ -24,7 +25,7 @@ function concierge_process_form()
 
     // Registrar os dados processados após sanitização
     error_log('Dados após sanitização:');
-    error_log(print_r($form_data, true));
+    error_log($jsonl_data);
 
     // Validar campos obrigatórios
     $missing_fields = [];
