@@ -5,17 +5,118 @@ class Chatbot
 
     private $endpoint;
 
+    private $wpdb;
+
+    private $table;
+
+    private $user_id;
+
     public function __construct()
     {
+        global $wpdb;
+        $this->wpdb = $wpdb;
+        $this->table = $this->wpdb->prefix . 'chatbot';
         $this->api_key = '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';
         $this->endpoint = 'https://api.openai.com/v1/chat/completions';
+        $this->user_id = get_current_user_id();
     }
 
-    public function enviarMensagem(string $mensagem): string
+    public function createTable()
     {
-        $conciergeData = $_SESSION['chatbotOptions'] ?? null;
+        $charset_collate = $this->wpdb->get_charset_collate();
+        // $users_table = $this->wpdb->prefix . 'users';
 
-        if (empty($conciergeData) || !is_array($conciergeData)) {
+        $sql = "CREATE TABLE {$this->table} (
+        id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        chatbot_name TEXT NOT NULL,
+        chatbot_options TEXT NOT NULL,
+        user_id BIGINT UNSIGNED NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+
+    public function createChatbot($chatbot_name, $chatbot_options)
+    {
+        $result = $this->wpdb->insert(
+            $this->table,
+            [
+                'chatbot_name' => $chatbot_name,
+                'chatbot_options' => json_encode($chatbot_options),
+                'user_id' => $this->user_id,
+            ],
+            [
+                '%s',
+                '%s',
+                '%d',
+            ]
+        );
+
+        return $result !== false;
+    }
+
+    public function getAllChatbots()
+    {
+        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE user_id = %d", $this->user_id);
+        return $this->wpdb->get_results($sql);
+    }
+
+    public function getChatbotById($id)
+    {
+        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
+
+        $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
+
+        if ($chatbot) {
+            // Decodificar as opções do chatbot
+            $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
+        }
+
+        return $chatbot;
+    }
+
+
+    public function getChatbotByName($chatbot_name)
+    {
+        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE chatbot_name = %d", $chatbot_name);
+
+        return $this->wpdb->get_results($sql);
+    }
+
+    public function userHasChatbot($user_id)
+    {
+        // Verifica se a tabela existe
+        $table_exists = $this->wpdb->get_var(
+            $this->wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $this->table
+            )
+        );
+
+        if (!$table_exists) {
+            // Retorna falso se a tabela não existir
+            return false;
+        }
+
+        // Consulta se há chatbots para o usuário
+        $sql = $this->wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->table} WHERE user_id = %d",
+            $user_id
+        );
+        $count = $this->wpdb->get_var($sql);
+
+        return $count > 0;
+    }
+
+    public function enviarMensagem(string $mensagem, $chatbot_id)
+    {
+        $chatbot = new Chatbot();
+
+        $currentChatbot = $chatbot->getChatbotById($chatbot_id);
+
+        if (empty($currentChatbot)) {
             error_log('Erro: Dados do concierge ausentes ou inválidos.');
             return json_encode([
                 'error' => true,
@@ -23,34 +124,28 @@ class Chatbot
             ]);
         }
 
-        // Loga os dados do concierge para debug
-        // error_log('---- Concierge Data ----');
-        // error_log(json_encode($conciergeData));
+        $chatbot_trainning = array();
 
-        // Popula as variáveis com verificações e valores padrão
-        $conciergeName = !empty($conciergeData['concierge_name']) ? $conciergeData['concierge_name'] : null;
-        $conciergeObjective = !empty($conciergeData['concierge_objective']) ? $conciergeData['concierge_objective'] : null;
-        $conciergeTone = !empty($conciergeData['concierge_tone']) ? $conciergeData['concierge_tone'] : null;
-        $conciergeApproach = !empty($conciergeData['concierge_approach']) ? $conciergeData['concierge_approach'] : null;
-        $formalLevel = !empty($conciergeData['formal_level']) ? $conciergeData['formal_level'] : null;
-        $conciergeAudience = !empty($conciergeData['concierge_audience']) ? $conciergeData['concierge_audience'] : null;
-        $conciergeKnowledgeLevel = !empty($conciergeData['concierge_knowledge_level']) ? $conciergeData['concierge_knowledge_level'] : null;
-        $conciergeCustomTerms = !empty($conciergeData['concierge_custom_terms']) ? $conciergeData['concierge_custom_terms'] : null;
+        foreach ($currentChatbot['chatbot_options'] as $option) {
+            $training_phrase = $option['training_phrase'];
+            $resposta = $option['resposta'];
+
+            $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
+        }
+
+        $chatbot_trainning[] = $currentChatbot['chatbot_name'];
+
+        // Loga os dados do concierge para debug
+        error_log('---- chatbot_trainning ----');
+        error_log(print_r($chatbot_trainning, true));
+
+        $training_context = implode("\n", $chatbot_trainning);
 
         $data = [
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => "
-                    Seu nome é {$conciergeName}.
-                    Seu objetivo / função é {$conciergeObjective}.
-                    Seu tom deve ser {$conciergeTone}.
-                    Sua abordagem deve ser {$conciergeApproach}.
-                    Sua formalidade deve ser {$formalLevel}.
-                    Você não pode usar as seguintes palavras: {$conciergeCustomTerms}.
-                    Sua audiência são {$conciergeAudience}.
-                    Seu nível de conhecimento deve ser {$conciergeKnowledgeLevel}.
-                "
+                    'content' => $training_context
                 ],
                 [
                     'role' => 'user',
@@ -86,7 +181,7 @@ class Chatbot
         $resultMessage = $arrResult["choices"][0]["message"]["content"];
 
         error_log('------ mensagem do sistema -------');
-        error_log($resultMessage);
+        error_log(print_r($resultMessage, true));
 
         return $resultMessage;
     }
