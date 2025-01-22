@@ -128,6 +128,13 @@
     <button type="submit" name="add_question">Adicionar Pergunta</button>
 </form>
 
+<h2>Adicionar Categoria</h2>
+<form method="post">';
+    <label for="category_title">Título da Categoria:</label><br>
+    <input type="text" id="category_title" name="category_title" required><br>
+    <button type="submit" name="add_category">Adicionar Categoria</button>
+</form>
+
 <!-- Tabela de Perguntas Existentes -->
 <h2>Perguntas Existentes</h2>
 <table>
