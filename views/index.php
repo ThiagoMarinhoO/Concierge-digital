@@ -23,6 +23,14 @@ if ($user_has_chatbot) : ?>
 
 			<!-- Container do chat -->
 			<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer" data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
+				<div class="flex w-full mt-2 space-x-3 max-w-xs">
+					<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+					<div>
+						<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+							<p class="text-sm">Olá! Como posso ajudar?</p>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<!-- Input para mensagem -->
@@ -35,23 +43,33 @@ if ($user_has_chatbot) : ?>
 				</button>
 			</div>
 		</div>
+		
+		<div class="flex justify-center gap-10">
+			<form action="" method="POST" id="deleteChatbotForm">
+				<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar Chatbot</button>
+			</form>
+			<form action="" method="" id="">
+				<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
+			</form>
+		</div>
 	</div>
 
 	<script>
+		window.addEventListener('DOMContentLoaded', function() {
+			const inputField = document.querySelector('.mensagem');
+			const sendButton = document.querySelector('#enviarMensagem');
+			
 
-window.addEventListener('DOMContentLoaded', function() {
-    const inputField = document.querySelector('.mensagem');
-    const sendButton = document.querySelector('#enviarMensagem');
-	const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+			// Evento de clique no botão
+			sendButton.addEventListener('click', function(event) {
+				event.preventDefault();
 
-    // Evento de clique no botão
-    sendButton.addEventListener('click', function(event) {
-        event.preventDefault();
-		
-		let currHour = new Date();
-    
-                const userMsgTemplate = `
-                        <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end message">
+				const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+
+				let currHour = new Date();
+
+				const userMsgTemplate = `
+                        <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
                             <div>
                                 <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
                                     <p class="text-sm">${document.querySelector(".mensagem").value}</p>
@@ -60,33 +78,34 @@ window.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
                         </div>`
-    
-                let chatBox = document.querySelector(".chatContainer");
-    
-                chatBox.innerHTML += userMsgTemplate;
+
+				let chatBox = document.querySelector(".chatContainer");
+
+				chatBox.innerHTML += userMsgTemplate;
 				chatBox.scrollTop = chatBox.scrollHeight;
-				    
-                const formData = new FormData();
-                formData.append('action', 'concierge_chat');
-                formData.append('assistantId', assistantId );
-                formData.append('mensagem', document.querySelector(".mensagem").value);
-    
-                document.querySelector(".mensagem").value = "";
-                document.querySelector("#enviarMensagem").disabled = true;
-                document.querySelector("#enviarMensagem").classList.add('opacity-90');
-    
-                fetch(conciergeAjax.ajax_url, {
-                        method: 'POST',
-                        body: formData
-                    }).then(response => response.json())
-                    .then(data => {
-    
-                        let currHour = new Date();
-    
-                        data.responseMessage = data.responseMessage.replace("\n", "<br>");
-    
-                        let aiMsgTemplate = `
-                            <div class="flex w-full mt-2 space-x-3 max-w-xs">
+
+				const formData = new FormData();
+				formData.append('action', 'concierge_chat');
+				formData.append('assistantId', assistantId);
+				formData.append('mensagem', document.querySelector(".mensagem").value);
+
+				document.querySelector(".mensagem").value = "";
+				document.querySelector("#enviarMensagem").disabled = true;
+				document.querySelector("#enviarMensagem").classList.add('opacity-90');
+				document.querySelector("#enviarMensagem svg").classList.add('animate-spin');
+
+				fetch(conciergeAjax.ajax_url, {
+						method: 'POST',
+						body: formData
+					}).then(response => response.json())
+					.then(data => {
+
+						let currHour = new Date();
+
+						data.responseMessage = data.responseMessage.replace("\n", "<br>");
+
+						let aiMsgTemplate = `
+                            <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
                                 <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
                                 <div>
                                     <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
@@ -96,33 +115,73 @@ window.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                             `
-    
-                        chatBox.innerHTML += aiMsgTemplate;
-						chatBox.scrollTop = chatBox.scrollHeight;    
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    }).finally(() => {
-                        // document.querySelector(".sendMessage").classList.remove('is-loading');
-                        document.querySelector("#enviarMensagem").classList.remove('opacity-90');
-                        document.querySelector("#enviarMensagem").disabled = false;
-                    });
 
-    });
+						chatBox.innerHTML += aiMsgTemplate;
+						chatBox.scrollTop = chatBox.scrollHeight;
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+					}).finally(() => {
+						// document.querySelector(".sendMessage").classList.remove('is-loading');
+						document.querySelector("#enviarMensagem svg").classList.remove('animate-spin');
+						document.querySelector("#enviarMensagem").classList.remove('opacity-90');
+						document.querySelector("#enviarMensagem").disabled = false;
+					});
 
-    // Enviar mensagem ao pressionar Enter
-    inputField.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            sendButton.click();
-        }
-    });
-});
+			});
 
+			// Enviar mensagem ao pressionar Enter
+			inputField.addEventListener('keydown', function(event) {
+				if (event.key === 'Enter') {
+					event.preventDefault();
+					sendButton.click();
+				}
+			});
+
+			// Seleciona o select e o container do chat
+			const chatbotSelector = document.getElementById('chatbot-selector');
+			const chatContainer = document.querySelector('.chatContainer');
+
+			// Adiciona um evento de mudança ao select
+			chatbotSelector.addEventListener('change', function() {
+				const selectedChatbotId = chatbotSelector.value; // Obtém o ID selecionado
+				chatContainer.setAttribute('data-chatbot-id', selectedChatbotId); // Atualiza o atributo data-chatbot-id
+			});
+
+			document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
+				event.preventDefault();
+
+				const form = document.getElementById('deleteChatbotForm');
+				const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+
+				const formData = new FormData(form);
+				formData.append('action', 'delete_chatbot');
+				formData.append('chatbot_id', chatbotId);
+
+				if ( confirm('Tem certeza que deseja resetar o chatbot?') ) {
+					fetch(conciergeAjax.ajax_url, {
+							method: 'POST',
+							body: formData
+						}).then(response => response.json())
+						.then(data => {
+							console.log(data);
+							document.querySelector('body').insertAdjacentHTML('beforeend', `
+								<div class="fixed top-2 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+									<span class="font-medium">Sucesso!</span> Chatbot Deletado com sucesso!
+								</div>
+							`);
+						})
+						.finally(() => {
+							window.location.reload();
+						})
+						.catch((error) => {
+							console.error('Error:', error);
+						});
+				}
+			})
+		});
 	</script>
 <?php else: ?>
-
-
 	<?php
 	$questionsManager = new Question();
 	$questions = $questionsManager->getAllQuestions();
@@ -147,25 +206,36 @@ window.addEventListener('DOMContentLoaded', function() {
 			<?php if (!empty($questions)): ?>
 				<?php foreach ($questions as $index => $question): ?>
 					<div class="question-block">
-						<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo $question['training_phrase']; ?>">
+						<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 							<?php echo esc_html($question['title']); ?>
 						</label>
 						<?php
 						$options = json_decode($question['options'], true);
+						$field_type = $question['field_type']; // Verifica o tipo de campo
 						?>
-						<?php if (!empty($options) && is_array($options)): ?>
-							<select class="py-2 px=2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+							<!-- Campo do tipo seleção -->
+							<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 								<?php foreach ($options as $option): ?>
 									<option value="<?php echo esc_attr($option); ?>">
 										<?php echo esc_html($option); ?>
 									</option>
 								<?php endforeach; ?>
 							</select>
+						<?php elseif ($field_type === 'file'): ?>
+							<!-- Campo do tipo arquivo -->
+							<input
+								type="file"
+								id="question-<?php echo esc_attr($index); ?>"
+								name="question_<?php echo esc_attr($question['id']); ?>"
+								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 						<?php else: ?>
+							<!-- Campo do tipo texto (padrão) -->
 							<input
 								type="text"
 								id="question-<?php echo esc_attr($index); ?>"
 								name="question_<?php echo esc_attr($question['id']); ?>"
+								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 								placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php endif; ?>
 					</div>
@@ -175,6 +245,7 @@ window.addEventListener('DOMContentLoaded', function() {
 			<?php else: ?>
 				<p>Nenhuma pergunta cadastrada no momento.</p>
 			<?php endif; ?>
+
 
 			<div id="concierge-test-result"></div>
 		</form>
@@ -195,6 +266,8 @@ window.addEventListener('DOMContentLoaded', function() {
 
 			form.addEventListener("submit", (event) => {
 				event.preventDefault();
+
+				const chatbotName = form.elements['chatbot_name'].value.trim();
 
 				const chatbotOptions = [];
 
@@ -219,6 +292,7 @@ window.addEventListener('DOMContentLoaded', function() {
 				// Configura o FormData para envio
 				const formData = new FormData(form);
 				formData.append('action', 'create_chatbot');
+				formData.append('chatbot_name', chatbotName);
 				formData.append('chatbot_options', JSON.stringify(chatbotOptions));
 
 				resultDiv.innerHTML = "Enviando...";
@@ -247,6 +321,3 @@ window.addEventListener('DOMContentLoaded', function() {
 	</script>
 
 <?php endif; ?>
-
-
-<!-- USUÁRIO PRECISA DE UM PAINEL PARA CADASTRAR CHATBOTS OU APRESENTAR OS EXISTENTES -->
