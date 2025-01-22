@@ -16,7 +16,7 @@ class Chatbot
         global $wpdb;
         $this->wpdb = $wpdb;
         $this->table = $this->wpdb->prefix . 'chatbot';
-        $this->api_key = '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';
+        $this->api_key = '';
         $this->endpoint = 'https://api.openai.com/v1/chat/completions';
         $this->user_id = get_current_user_id();
     }
