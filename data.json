@@ -1,0 +1,31 @@
+{
+    "cpu": [
+        {
+            "brand": "AMD",
+            "model": "AMD Ryzen 5 5600X",
+            "price": "USD 158"
+        },
+        {
+            "brand": "AMD",
+            "model": "AMD Ryzen 9 5950X",
+            "price": "USD 799"
+        },
+        {
+            "brand": "Intel",
+            "model": "Core i5-12600K",
+            "price": "USD 179"
+        }
+    ],
+    "memory": [
+        {
+            "brand": "Corsair",
+            "model": "VENGEANCE DDR5 1x32GB",
+            "price": "USD 159"
+        },
+        {
+            "brand": "G.SKILL",
+            "model": "Trident Z5 RGB Series DDR5 1x16GB",
+            "price": "USD 104"
+        }
+    ]
+}
