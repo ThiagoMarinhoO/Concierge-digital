@@ -16,27 +16,30 @@ class Question
         $charset_collate = $this->wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE {$this->table} (
-        id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        title TEXT NOT NULL,
-        options TEXT DEFAULT NULL,
-        training_phrase TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) $charset_collate;";
+    id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title TEXT NOT NULL,
+    options TEXT DEFAULT NULL,
+    training_phrase TEXT NOT NULL,
+    field_type VARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
 
-    public function addQuestion(string $title, string $training_phrase, array $options, array $categories): int
+    public function addQuestion(string $title, string $training_phrase, array $options, array $categories, string $field_type): int
     {
         $this->wpdb->insert(
             $this->table,
             [
                 'title' => $title,
                 'options' => json_encode($options),
-                'training_phrase' => $training_phrase
+                'training_phrase' => $training_phrase,
+                'field_type' => $field_type
             ],
             [
+                '%s',
                 '%s',
                 '%s',
                 '%s'
@@ -64,6 +67,7 @@ class Question
 
         return $question_id;
     }
+
 
     public function getAllQuestions(): array
     {

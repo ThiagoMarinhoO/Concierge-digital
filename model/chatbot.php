@@ -77,6 +77,12 @@ class Chatbot
         return $chatbot;
     }
 
+    public  function deleteChatbot($id)
+    {
+        $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
+
+        return $this->wpdb->query($sql);
+    }
 
     public function getChatbotByName($chatbot_name)
     {
@@ -117,7 +123,7 @@ class Chatbot
         $currentChatbot = $chatbot->getChatbotById($chatbot_id);
 
         if (empty($currentChatbot)) {
-            error_log('Erro: Dados do concierge ausentes ou inválidos.');
+            // error_log('Erro: Dados do concierge ausentes ou inválidos.');
             return json_encode([
                 'error' => true,
                 'message' => 'Dados do concierge ausentes ou inválidos. Não foi possível gerar a mensagem.'
@@ -130,16 +136,37 @@ class Chatbot
             $training_phrase = $option['training_phrase'];
             $resposta = $option['resposta'];
 
-            $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
+            if (!empty($option['file_url'])) {
+                $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $option['file_url']);
+                if (file_exists($file_path)) {
+                    $file_content = file_get_contents($file_path);
+
+                    if (!empty($file_content)) {
+                        // Converte o conteúdo para UTF-8 e remove caracteres inválidos
+                        $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
+                        $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content); // Remove caracteres não imprimíveis
+                    }
+
+                    $sanitized_file_content = substr($file_content, 0, 5000);
+
+                    // Adicionar o conteúdo do arquivo ao treinamento
+                    $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
+                } else {
+                    // error_log("Erro: Arquivo não encontrado em $file_path.");
+                }
+            } else {
+                $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
+            }
         }
 
-        $chatbot_trainning[] = $currentChatbot['chatbot_name'];
+        $chatbot_trainning[] = 'seu nome é ' . $currentChatbot['chatbot_name'];
 
         // Loga os dados do concierge para debug
-        error_log('---- chatbot_trainning ----');
-        error_log(print_r($chatbot_trainning, true));
+        // error_log('---- chatbot_trainning ----');
+        // error_log(print_r($chatbot_trainning, true));
 
         $training_context = implode("\n", $chatbot_trainning);
+
 
         $data = [
             'messages' => [
@@ -159,6 +186,28 @@ class Chatbot
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->api_key,
         ];
+
+        function sanitize_for_json($input) {
+            if (is_array($input)) {
+                return array_map('sanitize_for_json', $input);
+            } elseif (is_string($input)) {
+                // Converte para UTF-8 e remove caracteres inválidos
+                return mb_convert_encoding($input, 'UTF-8', 'UTF-8');
+            }
+            return $input;
+        }
+        
+        // Sanitizar o array $data antes de codificar
+        $data = sanitize_for_json($data);
+
+        $json_data = json_encode($data, JSON_PRETTY_PRINT);
+
+        // if (json_last_error() !== JSON_ERROR_NONE) {
+        //     error_log('Erro ao codificar JSON: ' . json_last_error_msg());
+        //     throw new Exception('Erro ao preparar o JSON para a API.');
+        // }
+
+        // error_log('JSON Enviado: ' . $json_data);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->endpoint);
@@ -180,8 +229,8 @@ class Chatbot
         $arrResult = json_decode($response, true);
         $resultMessage = $arrResult["choices"][0]["message"]["content"];
 
-        error_log('------ mensagem do sistema -------');
-        error_log(print_r($resultMessage, true));
+        // error_log('------ mensagem do sistema -------');
+        // error_log(print_r($arrResult, true));
 
         return $resultMessage;
     }

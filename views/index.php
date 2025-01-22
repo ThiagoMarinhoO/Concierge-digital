@@ -1,54 +1,187 @@
-<div x-data="{modalIsOpen: false}" class="hidden">
-	<button @click="modalIsOpen = true" type="button" class="fixed top-8 right-8 cursor-pointer whitespace-nowrap rounded-md bg-black px-4 py-2 text-center text-sm font-medium tracking-wide text-neutral-100 transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:opacity-100 active:outline-offset-0 dark:bg-white dark:text-black dark:focus-visible:outline-white">Open Modal</button>
-	<div x-cloak x-show="modalIsOpen" x-transition.opacity.duration.200ms x-trap.inert.noscroll="modalIsOpen" @keydown.esc.window="modalIsOpen = false" @click.self="modalIsOpen = false" class="fixed inset-0 z-30 flex items-end justify-center bg-black/20 p-4 pb-8 backdrop-blur-md sm:items-center lg:p-8" role="dialog" aria-modal="true" aria-labelledby="defaultModalTitle">
-		<!-- Modal Dialog -->
-		<div x-show="modalIsOpen" x-transition:enter="transition ease-out duration-200 delay-100 motion-reduce:transition-opacity" x-transition:enter-start="opacity-0 scale-50" x-transition:enter-end="opacity-100 scale-100" class="flex max-w-lg flex-col gap-4 overflow-hidden rounded-md border border-neutral-300 bg-white text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
-			<!-- Dialog Header -->
-			<div class="flex items-center justify-between border-b border-neutral-300 bg-neutral-50/60 p-4 dark:border-neutral-700 dark:bg-neutral-950/20">
-				<h3 id="defaultModalTitle" class="font-semibold tracking-wide text-neutral-900 dark:text-white">Chatbot Opções</h3>
-				<button @click="modalIsOpen = false" aria-label="close modal">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="1.4" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+<?php
+$chatbot = new Chatbot();
+$user_id = get_current_user_id();
+
+$user_has_chatbot = $chatbot->userHasChatbot($user_id);
+$chatbots = $chatbot->getAllChatbots();
+
+if ($user_has_chatbot) : ?>
+	<div class="flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-10">
+		<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
+
+			<!-- Select para selecionar o chatbot -->
+			<div class="p-4 bg-gray-200">
+				<label for="chatbot-selector" class="block text-sm font-medium text-gray-700">Selecione o Chatbot:</label>
+				<select id="chatbot-selector" class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+					<?php foreach ($chatbots as $bot): ?>
+						<option value="<?php echo esc_attr($bot->id); ?>">
+							<?php echo esc_html($bot->chatbot_name); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+
+			<!-- Container do chat -->
+			<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer" data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
+				<div class="flex w-full mt-2 space-x-3 max-w-xs">
+					<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+					<div>
+						<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+							<p class="text-sm">Olá! Como posso ajudar?</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Input para mensagem -->
+			<div class="bg-gray-300 p-4 relative">
+				<input class="flex items-center h-10 w-full rounded px-3 text-sm mensagem" type="text" placeholder="Escreva sua mensagem">
+				<button class="bg-blue-600 text-white flex items-center justify-center p-2 rounded absolute top-4 right-4" id="enviarMensagem">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
 					</svg>
 				</button>
 			</div>
-			<!-- Dialog Body -->
-			<div class="px-4 py-8">
-				<?php
-				if (isset($_SESSION['chatbotOptions'])) {
-					echo '<pre>';
-					print_r($_SESSION['chatbotOptions']);
-					echo '</pre>';
-				}
-				?>
-			</div>
-			<div class="flex flex-col-reverse justify-between gap-2 border-t border-neutral-300 bg-neutral-50/60 p-4 dark:border-neutral-700 dark:bg-neutral-950/20 sm:flex-row sm:items-center md:justify-end">
-				<button type="button" class="clearChatbot cursor-pointer whitespace-nowrap rounded-md bg-black px-4 py-2 text-center text-sm font-medium tracking-wide text-neutral-100 transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:opacity-100 active:outline-offset-0 dark:bg-white dark:text-black dark:focus-visible:outline-white">Limpar chatbot options</button>
-			</div>
+		</div>
+		
+		<div class="flex justify-center gap-10">
+			<form action="" method="POST" id="deleteChatbotForm">
+				<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar Chatbot</button>
+			</form>
+			<form action="" method="" id="">
+				<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
+			</form>
 		</div>
 	</div>
-</div>
 
-<script>
-	document.addEventListener('DOMContentLoaded', () => {
-		document.querySelector('.clearChatbot').addEventListener('click', () => {
+	<script>
+		window.addEventListener('DOMContentLoaded', function() {
+			const inputField = document.querySelector('.mensagem');
+			const sendButton = document.querySelector('#enviarMensagem');
+			
 
-			var formData = new FormData();
-			formData.append('action', 'clear_session');
+			// Evento de clique no botão
+			sendButton.addEventListener('click', function(event) {
+				event.preventDefault();
 
+				const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
 
-			fetch(conciergeAjax.ajax_url, {
-				method: 'POST',
-				body: formData
-			}).then((data) => {
-				window.location.reload();
+				let currHour = new Date();
+
+				const userMsgTemplate = `
+                        <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
+                            <div>
+                                <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
+                                    <p class="text-sm">${document.querySelector(".mensagem").value}</p>
+                                </div>
+                                <span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
+                            </div>
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+                        </div>`
+
+				let chatBox = document.querySelector(".chatContainer");
+
+				chatBox.innerHTML += userMsgTemplate;
+				chatBox.scrollTop = chatBox.scrollHeight;
+
+				const formData = new FormData();
+				formData.append('action', 'concierge_chat');
+				formData.append('assistantId', assistantId);
+				formData.append('mensagem', document.querySelector(".mensagem").value);
+
+				document.querySelector(".mensagem").value = "";
+				document.querySelector("#enviarMensagem").disabled = true;
+				document.querySelector("#enviarMensagem").classList.add('opacity-90');
+				document.querySelector("#enviarMensagem svg").classList.add('animate-spin');
+
+				fetch(conciergeAjax.ajax_url, {
+						method: 'POST',
+						body: formData
+					}).then(response => response.json())
+					.then(data => {
+
+						let currHour = new Date();
+
+						data.responseMessage = data.responseMessage.replace("\n", "<br>");
+
+						let aiMsgTemplate = `
+                            <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+                                <div>
+                                    <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+                                        <p class="text-sm">${data.responseMessage}</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
+                                </div>
+                            </div>
+                            `
+
+						chatBox.innerHTML += aiMsgTemplate;
+						chatBox.scrollTop = chatBox.scrollHeight;
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+					}).finally(() => {
+						// document.querySelector(".sendMessage").classList.remove('is-loading');
+						document.querySelector("#enviarMensagem svg").classList.remove('animate-spin');
+						document.querySelector("#enviarMensagem").classList.remove('opacity-90');
+						document.querySelector("#enviarMensagem").disabled = false;
+					});
+
+			});
+
+			// Enviar mensagem ao pressionar Enter
+			inputField.addEventListener('keydown', function(event) {
+				if (event.key === 'Enter') {
+					event.preventDefault();
+					sendButton.click();
+				}
+			});
+
+			// Seleciona o select e o container do chat
+			const chatbotSelector = document.getElementById('chatbot-selector');
+			const chatContainer = document.querySelector('.chatContainer');
+
+			// Adiciona um evento de mudança ao select
+			chatbotSelector.addEventListener('change', function() {
+				const selectedChatbotId = chatbotSelector.value; // Obtém o ID selecionado
+				chatContainer.setAttribute('data-chatbot-id', selectedChatbotId); // Atualiza o atributo data-chatbot-id
+			});
+
+			document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
+				event.preventDefault();
+
+				const form = document.getElementById('deleteChatbotForm');
+				const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+
+				const formData = new FormData(form);
+				formData.append('action', 'delete_chatbot');
+				formData.append('chatbot_id', chatbotId);
+
+				if ( confirm('Tem certeza que deseja resetar o chatbot?') ) {
+					fetch(conciergeAjax.ajax_url, {
+							method: 'POST',
+							body: formData
+						}).then(response => response.json())
+						.then(data => {
+							console.log(data);
+							document.querySelector('body').insertAdjacentHTML('beforeend', `
+								<div class="fixed top-2 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+									<span class="font-medium">Sucesso!</span> Chatbot Deletado com sucesso!
+								</div>
+							`);
+						})
+						.finally(() => {
+							window.location.reload();
+						})
+						.catch((error) => {
+							console.error('Error:', error);
+						});
+				}
 			})
-		})
-	})
-</script>
-
-
-
+		});
+	</script>
+<?php else: ?>
 	<?php
 	$questionsManager = new Question();
 	$questions = $questionsManager->getAllQuestions();
@@ -73,25 +206,36 @@
 			<?php if (!empty($questions)): ?>
 				<?php foreach ($questions as $index => $question): ?>
 					<div class="question-block">
-						<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo $question['training_phrase']; ?>">
+						<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 							<?php echo esc_html($question['title']); ?>
 						</label>
 						<?php
 						$options = json_decode($question['options'], true);
+						$field_type = $question['field_type']; // Verifica o tipo de campo
 						?>
-						<?php if (!empty($options) && is_array($options)): ?>
-							<select class="py-2 px=2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+							<!-- Campo do tipo seleção -->
+							<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 								<?php foreach ($options as $option): ?>
 									<option value="<?php echo esc_attr($option); ?>">
 										<?php echo esc_html($option); ?>
 									</option>
 								<?php endforeach; ?>
 							</select>
+						<?php elseif ($field_type === 'file'): ?>
+							<!-- Campo do tipo arquivo -->
+							<input
+								type="file"
+								id="question-<?php echo esc_attr($index); ?>"
+								name="question_<?php echo esc_attr($question['id']); ?>"
+								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 						<?php else: ?>
+							<!-- Campo do tipo texto (padrão) -->
 							<input
 								type="text"
 								id="question-<?php echo esc_attr($index); ?>"
 								name="question_<?php echo esc_attr($question['id']); ?>"
+								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 								placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php endif; ?>
 					</div>
@@ -101,6 +245,7 @@
 			<?php else: ?>
 				<p>Nenhuma pergunta cadastrada no momento.</p>
 			<?php endif; ?>
+
 
 			<div id="concierge-test-result"></div>
 		</form>
@@ -121,6 +266,8 @@
 
 			form.addEventListener("submit", (event) => {
 				event.preventDefault();
+
+				const chatbotName = form.elements['chatbot_name'].value.trim();
 
 				const chatbotOptions = [];
 
@@ -145,6 +292,7 @@
 				// Configura o FormData para envio
 				const formData = new FormData(form);
 				formData.append('action', 'create_chatbot');
+				formData.append('chatbot_name', chatbotName);
 				formData.append('chatbot_options', JSON.stringify(chatbotOptions));
 
 				resultDiv.innerHTML = "Enviando...";
@@ -172,6 +320,4 @@
 		});
 	</script>
 
-
-
-<!-- USUÁRIO PRECISA DE UM PAINEL PARA CADASTRAR CHATBOTS OU APRESENTAR OS EXISTENTES -->
+<?php endif; ?>
