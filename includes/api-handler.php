@@ -80,22 +80,28 @@ add_action('wp_ajax_nopriv_concierge_process_form', 'concierge_process_form');
 // Função para chamada à API da OpenAI usando cURL
 function concierge_call_openai_api($data, $api_key)
 {
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $api_key,
-    ]);
+    $url = 'https://api.openai.com/v1/chat/completions';
 
-    $response = curl_exec($ch);
-    $error = curl_error($ch);
-    curl_close($ch);
+    $options = [
+        'http' => [
+            'method'  => 'POST',
+            'header'  => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $api_key,
+            ],
+            'content' => json_encode($data),
+            'ignore_errors' => true, // Captura erros na resposta
+        ]
+    ];
 
-    if ($error) {
-        return ['error' => true, 'message' => $error];
+    $context = stream_context_create($options);
+
+    $response = file_get_contents($url, false, $context);
+
+    if ($response === false) {
+        return ['error' => true, 'message' => 'Erro ao realizar a solicitação.'];
     }
 
+    // Decodificar e retornar a resposta JSON
     return json_decode($response, true);
 }
