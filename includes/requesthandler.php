@@ -13,22 +13,19 @@ function concierge_chat()
 
     $chatbot = new Chatbot();
 
-    $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId , $user_id);
+    $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId, $user_id);
     // error_log('---- Resposta do sistema -----');
     // error_log(print_r($resMensagem, true));
 
-
-    $jsonResponse = json_encode(array("responseMessage" => $resMensagem));
+    wp_send_json(array("responseMessage" => $resMensagem));
     
-    echo $jsonResponse;
-
-    exit;
 }
 
 add_action('wp_ajax_create_chatbot', 'create_chatbot');
 add_action('wp_ajax_nopriv_create_chatbot', 'create_chatbot');
 
-function create_chatbot() {
+function create_chatbot()
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chatbot_options = $_POST['chatbot_options'] ?? '';
         $chatbot_name = $_POST['chatbot_name'] ?? '';
@@ -40,7 +37,7 @@ function create_chatbot() {
                 if (isset($_FILES[$option['field_name']]) && $_FILES[$option['field_name']]['error'] === UPLOAD_ERR_OK) {
                     $file = $_FILES[$option['field_name']];
 
-                    $allowed_types = ['text/csv', 'text/plain' , 'application/pdf'];
+                    $allowed_types = ['text/csv', 'text/plain', 'application/pdf'];
                     $max_size = 5 * 1024 * 1024;
 
                     if (!in_array($file['type'], $allowed_types)) {
@@ -82,7 +79,8 @@ function create_chatbot() {
 add_action('wp_ajax_delete_chatbot', 'delete_chatbot');
 add_action('wp_ajax_nopriv_delete_chatbot', 'delete_chatbot');
 
-function delete_chatbot() {
+function delete_chatbot()
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chatbot_id = $_POST['chatbot_id'] ?? '';
 
