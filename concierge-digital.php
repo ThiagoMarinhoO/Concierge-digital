@@ -3,8 +3,8 @@
 /**
  * Plugin Name: Concierge Digital Chatbot
  * Description: Plugin para criar e testar chatbots no front-end usando a API OpenAI.
- * Version: 1.3
- * Author: Seu Nome
+ * Version: 2.0
+ * Author: DevHouse
  */
 
 if (!defined('ABSPATH')) {
@@ -20,6 +20,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/api-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/helper-functions.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/requesthandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/formhandler.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/webhook.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/generate-token.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
@@ -36,6 +38,7 @@ function concierge_enqueue_assets()
     // Enqueue o estilo e script customizados do plugin
     wp_enqueue_style('concierge-style', CONCIERGE_DIGITAL_URL . 'assets/style.css');
     wp_enqueue_script('concierge-script', CONCIERGE_DIGITAL_URL . 'assets/script.js', ['jquery'], null, true);
+    // wp_enqueue_script('chatbot-script', CONCIERGE_DIGITAL_URL . 'assets/chatbot.js', ['jquery'], null, true);
 
     // Passar a URL do AJAX e o nonce para o JavaScript
     wp_localize_script('concierge-script', 'conciergeAjax', [

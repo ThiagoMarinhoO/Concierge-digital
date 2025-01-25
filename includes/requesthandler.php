@@ -6,13 +6,14 @@ function concierge_chat()
 {
     $userMensagem = isset($_POST['mensagem']) ? $_POST['mensagem'] : null;
     $chatbotId = isset($_POST['assistantId']) ? $_POST['assistantId'] : null;
+    $user_id = get_current_user_id();
 
     // error_log('---- assistantId ---');
     // error_log($chatbotId);
 
     $chatbot = new Chatbot();
 
-    $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId);
+    $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId , $user_id);
 
     // error_log('---- Resposta do sistema -----');
     // error_log(print_r($resMensagem, true));
