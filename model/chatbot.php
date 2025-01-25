@@ -1,4 +1,6 @@
 <?php
+
+use Smalot\PdfParser\Parser;
 class Chatbot
 {
     protected $api_key;
@@ -63,7 +65,7 @@ class Chatbot
         return $this->wpdb->get_results($sql);
     }
 
-    public function getChatbotById($id , $user_id)
+    public function getChatbotById($id, $user_id)
     {
         $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE id = $id AND user_id = $user_id", $id, $this->user_id);
 
@@ -77,7 +79,7 @@ class Chatbot
         return $chatbot;
     }
 
-    public  function deleteChatbot($id)
+    public function deleteChatbot($id)
     {
         $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
 
@@ -116,93 +118,100 @@ class Chatbot
         return $count > 0;
     }
 
-    public function enviarMensagem(string $mensagem, $chatbot_id , $user_id)
-{
-    $chatbot = new Chatbot();
+    public function enviarMensagem(string $mensagem, $chatbot_id, $user_id)
+    {
+        $chatbot = new Chatbot();
+        $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
-    $currentChatbot = $chatbot->getChatbotById($chatbot_id , $user_id);
+        if (empty($currentChatbot)) {
+            return json_encode([
+                'error' => true,
+                'message' => 'Dados do concierge ausentes ou inválidos. Não foi possível gerar a mensagem.'
+            ]);
+        }
 
-    if (empty($currentChatbot)) {
+        $chatbot_trainning = array();
+
+        foreach ($currentChatbot['chatbot_options'] as $option) {
+            $training_phrase = $option['training_phrase'];
+            $resposta = $option['resposta'];
+
+            if (!empty($option['file_url'])) {
+                $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $option['file_url']);
+
+                if (file_exists($file_path)) {
+                    $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
+
+                    if ($file_extension == 'pdf') {
+                        $parser = new Parser();
+                        $pdf = $parser->parseFile($file_path);
+                        $file_content = $pdf->getText();
+                    } else {
+                        $file_content = file_get_contents($file_path);
+                    }
+
+                    if (!empty($file_content)) {
+                        $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
+                        $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
+                    }
+
+                    $sanitized_file_content = substr($file_content, 0, 5000);
+                    $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
+                }
+            } else {
+                $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
+            }
+        }
+
+        $chatbot_trainning[] = 'seu nome é ' . $currentChatbot['chatbot_name'];
+
+        $training_context = implode("\n", $chatbot_trainning);
+
+        $data = [
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => $training_context
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $mensagem
+                ],
+            ],
+            'model' => 'gpt-4o'
+        ];
+
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $this->api_key,
+        ];
+
+        $options = [
+            'http' => [
+                'method' => 'POST',
+                'header' => implode("\r\n", $headers),
+                'content' => json_encode($data),
+                'ignore_errors' => true,
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $response = file_get_contents($this->endpoint, false, $context);
+
+        if ($response === false) {
+            throw new Exception('Erro ao realizar a solicitação.');
+        }
+
+        $arrResult = json_decode($response, true);
+
+        if (isset($arrResult['choices'][0]['message']['content'])) {
+            return $arrResult['choices'][0]['message']['content'];
+        }
+
         return json_encode([
             'error' => true,
-            'message' => 'Dados do concierge ausentes ou inválidos. Não foi possível gerar a mensagem.'
+            'message' => 'Erro ao processar a resposta da API.'
         ]);
     }
-
-    $chatbot_trainning = array();
-
-    foreach ($currentChatbot['chatbot_options'] as $option) {
-        $training_phrase = $option['training_phrase'];
-        $resposta = $option['resposta'];
-
-        if (!empty($option['file_url'])) {
-            $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $option['file_url']);
-            if (file_exists($file_path)) {
-                $file_content = file_get_contents($file_path);
-
-                if (!empty($file_content)) {
-                    $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
-                    $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
-                }
-
-                $sanitized_file_content = substr($file_content, 0, 5000);
-                $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
-            }
-        } else {
-            $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
-        }
-    }
-
-    $chatbot_trainning[] = 'seu nome é ' . $currentChatbot['chatbot_name'];
-
-    $training_context = implode("\n", $chatbot_trainning);
-
-    $data = [
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => $training_context
-            ],
-            [
-                'role' => 'user',
-                'content' => $mensagem
-            ],
-        ],
-        'model' => 'gpt-4o'
-    ];
-
-    $headers = [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $this->api_key,
-    ];
-
-    $options = [
-        'http' => [
-            'method'  => 'POST',
-            'header'  => implode("\r\n", $headers),
-            'content' => json_encode($data),
-            'ignore_errors' => true, // Captura respostas de erro da API
-        ]
-    ];
-
-    $context = stream_context_create($options);
-
-    $response = file_get_contents($this->endpoint, false, $context);
-
-    if ($response === false) {
-        throw new Exception('Erro ao realizar a solicitação.');
-    }
-
-    $arrResult = json_decode($response, true);
-
-    if (isset($arrResult['choices'][0]['message']['content'])) {
-        return $arrResult['choices'][0]['message']['content'];
-    }
-
-    return json_encode([
-        'error' => true,
-        'message' => 'Erro ao processar a resposta da API.'
-    ]);
-}
 
 }

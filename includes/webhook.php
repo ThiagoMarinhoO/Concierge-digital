@@ -6,8 +6,10 @@ function gerar_script_chatbot()
     if (!is_user_logged_in()) {
         wp_send_json_error('Usuário não autenticado', 403);
     }
-    $chatbot_id = isset($_GET['chatbotID']) ?? 0;
+    $chatbot_id = isset($_GET['chatbotID']) ? $_GET['chatbotID'] : 0;
     $user_id = get_current_user_id();
+
+    log_to_file($chatbot_id);
 
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
     if (!$token) {

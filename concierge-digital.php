@@ -22,9 +22,14 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/requesthandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/formhandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/webhook.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/generate-token.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
+
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
 
 // Carregar scripts e estilos
 function concierge_enqueue_assets()
@@ -125,121 +130,6 @@ add_action('admin_menu', function () {
         50                               // Posição no menu
     );
 });
-
-// function render_question_manager_page()
-// {
-//     $questionManager = new Question();
-//     $categoryManager = new QuestionCategory();
-
-//     // Adicionar uma pergunta
-//     // if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
-//     //     $title = sanitize_text_field($_POST['question_title']);
-//     //     $options = !empty($_POST['question_options']) ? explode(',', sanitize_text_field($_POST['question_options'])) : [];
-//     //     $training_phrase = sanitize_text_field($_POST['training_phrase']);
-//     //     $categories = !empty($_POST['question_categories']) ? array_map('intval', $_POST['question_categories']) : [];
-//     //     $field_type = sanitize_text_field($_POST['field_type']) ?? 'text';
-
-//     //     $questionManager->addQuestion($title, $training_phrase, $options, $categories);
-
-//     //     echo "<div class='updated'><p>Pergunta adicionada com sucesso!</p></div>";
-        
-//     // }
-
-//     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
-//         $title = sanitize_text_field($_POST['question_title']);
-//         $field_type = sanitize_text_field($_POST['field_type']); // Captura o tipo de campo do input radio
-//         $options = [];
-    
-//         // Caso o tipo seja "selection", capturar as opções
-//         if ($field_type === 'selection') {
-//             $options_input = sanitize_text_field($_POST['selection_options_input']);
-//             $options = !empty($options_input) ? explode(',', $options_input) : [];
-//         }
-    
-//         $training_phrase = sanitize_text_field($_POST['training_phrase']);
-//         $categories = !empty($_POST['question_categories']) ? array_map('intval', $_POST['question_categories']) : [];
-    
-//         $questionManager->addQuestion($title, $training_phrase, $options, $categories, $field_type);
-    
-//         echo "<div class='updated'><p>Pergunta adicionada com sucesso!</p></div>";
-//     }
-
-//     // Adicionar uma categoria
-//     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
-//         $categoryTitle = sanitize_text_field($_POST['category_title']);
-//         $categoryManager->addCategory($categoryTitle);
-
-//         echo "<div class='updated'><p>Categoria adicionada com sucesso!</p></div>";
-//     }
-
-//     // Obter dados
-//     $questions = $questionManager->getAllQuestions();
-//     $categories = $categoryManager->getAllCategories();
-
-//     echo '<h1>Gerenciador de Perguntas</h1>';
-
-//     // Formulário para adicionar perguntas
-//     echo '<h2>Adicionar Pergunta</h2>';
-//     echo '<form method="post">';
-//     echo '<label for="question_title">Título:</label><br>';
-//     echo '<input type="text" id="question_title" name="question_title" required><br>';
-
-//     echo '<label>Tipo de Campo:</label><br>';
-//     echo '<input type="radio" id="option_file" name="field_type" value="file" onclick="document.getElementById(\'selection_options\').style.display=\'none\'" required>';
-//     echo '<label for="option_file">Arquivo</label><br>';
-//     echo '<input type="radio" id="option_text" name="field_type" value="text" onclick="document.getElementById(\'selection_options\').style.display=\'none\'" required>';
-//     echo '<label for="option_text">Texto</label><br>';
-//     echo '<input type="radio" id="option_selection" name="field_type" value="selection" onclick="document.getElementById(\'selection_options\').style.display=\'block\'" required>';
-//     echo '<label for="option_selection">Seleção</label><br>';
-
-//     echo '<div id="selection_options" style="display:none;">';
-//     echo '<label for="selection_options_input">Opções (separadas por vírgulas):</label><br>';
-//     echo '<input type="text" id="selection_options_input" name="selection_options_input"><br>';
-//     echo '</div>';
-
-//     echo '<label for="training_phrase">Frase de Treinamento:</label><br>';
-//     echo '<input type="text" id="training_phrase" name="training_phrase" required><br>';
-//     echo '<label for="question_categories">Categorias:</label><br>';
-//     echo '<select id="question_categories" name="question_categories[]" multiple>';
-//     foreach ($categories as $category) {
-//         echo '<option value="' . esc_attr($category['id']) . '">' . esc_html($category['title']) . '</option>';
-//     }
-//     echo '</select><br>';
-//     echo '<button type="submit" name="add_question">Adicionar Pergunta</button>';
-//     echo '</form>';
-
-//     // Formulário para adicionar categorias
-//     echo '<h2>Adicionar Categoria</h2>';
-//     echo '<form method="post">';
-//     echo '<label for="category_title">Título da Categoria:</label><br>';
-//     echo '<input type="text" id="category_title" name="category_title" required><br>';
-//     echo '<button type="submit" name="add_category">Adicionar Categoria</button>';
-//     echo '</form>';
-
-//     // Lista de perguntas
-//     echo '<h2>Perguntas Existentes</h2>';
-//     echo '<ul>';
-//     foreach ($questions as $question) {
-//         echo '<li>' . esc_html($question['title']) . ' <span class="" data-question-id="' . $question['id'] . '">Excluir</span></li>';
-//     }
-//     echo '</ul>';
-
-//     // Script para alternar visibilidade do campo de opções
-//     echo "
-//     <script>
-//         document.getElementById('toggle_options').addEventListener('click', function() {
-//             var optionsContainer = document.getElementById('options_container');
-//             if (optionsContainer.style.display === 'none' || optionsContainer.style.display === '') {
-//                 optionsContainer.style.display = 'block';
-//                 this.textContent = 'Esconder Opções';
-//             } else {
-//                 optionsContainer.style.display = 'none';
-//                 this.textContent = 'Mostrar Opções';
-//             }
-//         });
-
-//     </script>";
-// }
 
 function render_question_manager_page()
 {
