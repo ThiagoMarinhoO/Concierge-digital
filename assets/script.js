@@ -76,6 +76,7 @@
 jQuery(document).ready(function ($) {
         $('#gerar-link').on('click', function () {
             var chatbotID = $('#chatbot-selector').val()
+            console.log(chatbotID)
             $.ajax({
                 url: conciergeAjax.ajax_url,
                 method: 'GET',

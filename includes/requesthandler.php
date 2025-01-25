@@ -14,13 +14,14 @@ function concierge_chat()
     $chatbot = new Chatbot();
 
     $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId , $user_id);
-
     // error_log('---- Resposta do sistema -----');
     // error_log(print_r($resMensagem, true));
 
 
     $jsonResponse = json_encode(array("responseMessage" => $resMensagem));
+    
     echo $jsonResponse;
+
     exit;
 }
 
@@ -39,7 +40,7 @@ function create_chatbot() {
                 if (isset($_FILES[$option['field_name']]) && $_FILES[$option['field_name']]['error'] === UPLOAD_ERR_OK) {
                     $file = $_FILES[$option['field_name']];
 
-                    $allowed_types = ['text/csv', 'text/plain'];
+                    $allowed_types = ['text/csv', 'text/plain' , 'application/pdf'];
                     $max_size = 5 * 1024 * 1024;
 
                     if (!in_array($file['type'], $allowed_types)) {
