@@ -93,8 +93,6 @@ function delete_chatbot() {
     }
 }
 
-
-
 add_action('wp_ajax_delete_question', 'delete_question');
 add_action('wp_ajax_nopriv_delete_question', 'delete_question');
 
@@ -107,3 +105,19 @@ function delete_question()
 
     wp_send_json_success(['message' => "pergunta deletada com sucesso"]);
 }
+
+add_action('wp_ajax_get_questions_by_category', 'get_questions_by_category');
+add_action('wp_ajax_nopriv_get_questions_by_category', 'get_questions_by_category');
+
+function get_questions_by_category()
+{
+    $category_title = isset($_POST['category_title']) ? $_POST['category_title'] : null;
+    
+    $question = new Question();
+    $questions = $question->getQuestionsByCategory($category_title);
+
+    error_log(print_r($questions, true));
+
+    wp_send_json_success($questions);
+}
+?>

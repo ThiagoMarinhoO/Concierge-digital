@@ -68,11 +68,28 @@ class Question
         return $question_id;
     }
 
-
     public function getAllQuestions(): array
     {
-        return $this->wpdb->get_results("SELECT * FROM {$this->table}", ARRAY_A);
+        $relation_table = $this->getRelationTable();
+        $category_table = $this->wpdb->prefix . 'question_categories';
+
+        $sql = "
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.created_at,
+               GROUP_CONCAT(c.title) AS categories
+        FROM {$this->table} q
+        LEFT JOIN {$relation_table} r ON q.id = r.question_id
+        LEFT JOIN {$category_table} c ON r.category_id = c.id
+        GROUP BY q.id
+    ";
+
+        return $this->wpdb->get_results($sql, ARRAY_A);
     }
+
+
+    // public function getAllQuestions(): array
+    // {
+    //     return $this->wpdb->get_results("SELECT * FROM {$this->table}", ARRAY_A);
+    // }
 
     public function deleteQuestion($id)
     {
@@ -84,5 +101,21 @@ class Question
     private function getRelationTable(): string
     {
         return $this->wpdb->prefix . 'question_category_relationships';
+    }
+
+    public function getQuestionsByCategory(string $category_title): array
+    {
+        $relation_table = $this->getRelationTable();
+        $category_table = $this->wpdb->prefix . 'question_categories';
+
+        $sql = "
+        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type
+        FROM {$this->table} q
+        INNER JOIN {$relation_table} r ON q.id = r.question_id
+        INNER JOIN {$category_table} c ON r.category_id = c.id
+        WHERE c.title = %s
+    ";
+
+        return $this->wpdb->get_results($this->wpdb->prepare($sql, $category_title), ARRAY_A);
     }
 }
