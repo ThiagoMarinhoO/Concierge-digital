@@ -1,4 +1,6 @@
 <?php
+
+use Smalot\PdfParser\Parser;
 class Chatbot
 {
     protected $api_key;
@@ -74,9 +76,9 @@ class Chatbot
         return $this->wpdb->get_results($sql);
     }
 
-    public function getChatbotById($id)
+    public function getChatbotById($id, $user_id)
     {
-        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
+        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE id = $id AND user_id = $user_id", $id, $this->user_id);
 
         $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
 
@@ -88,7 +90,7 @@ class Chatbot
         return $chatbot;
     }
 
-    public  function deleteChatbot($id)
+    public function deleteChatbot($id)
     {
         $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
 
@@ -127,14 +129,12 @@ class Chatbot
         return $count > 0;
     }
 
-    public function enviarMensagem(string $mensagem, $chatbot_id)
+    public function enviarMensagem(string $mensagem, $chatbot_id, $user_id)
     {
         $chatbot = new Chatbot();
-
-        $currentChatbot = $chatbot->getChatbotById($chatbot_id);
+        $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
         if (empty($currentChatbot)) {
-            // error_log('Erro: Dados do concierge ausentes ou inválidos.');
             return json_encode([
                 'error' => true,
                 'message' => 'Dados do concierge ausentes ou inválidos. Não foi possível gerar a mensagem.'
@@ -149,21 +149,25 @@ class Chatbot
 
             if (!empty($option['file_url'])) {
                 $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $option['file_url']);
+
                 if (file_exists($file_path)) {
-                    $file_content = file_get_contents($file_path);
+                    $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
+
+                    if ($file_extension == 'pdf') {
+                        $parser = new Parser();
+                        $pdf = $parser->parseFile($file_path);
+                        $file_content = $pdf->getText();
+                    } else {
+                        $file_content = file_get_contents($file_path);
+                    }
 
                     if (!empty($file_content)) {
-                        // Converte o conteúdo para UTF-8 e remove caracteres inválidos
                         $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
-                        $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content); // Remove caracteres não imprimíveis
+                        $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
                     }
 
                     $sanitized_file_content = substr($file_content, 0, 5000);
-
-                    // Adicionar o conteúdo do arquivo ao treinamento
                     $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
-                } else {
-                    // error_log("Erro: Arquivo não encontrado em $file_path.");
                 }
             } else {
                 $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
@@ -171,10 +175,6 @@ class Chatbot
         }
 
         $chatbot_trainning[] = 'seu nome é ' . $currentChatbot['chatbot_name'];
-
-        // Loga os dados do concierge para debug
-        // error_log('---- chatbot_trainning ----');
-        // error_log(print_r($chatbot_trainning, true));
 
         $training_context = implode("\n", $chatbot_trainning);
 
@@ -197,51 +197,32 @@ class Chatbot
             'Authorization: Bearer ' . $this->api_key,
         ];
 
-        function sanitize_for_json($input) {
-            if (is_array($input)) {
-                return array_map('sanitize_for_json', $input);
-            } elseif (is_string($input)) {
-                // Converte para UTF-8 e remove caracteres inválidos
-                return mb_convert_encoding($input, 'UTF-8', 'UTF-8');
-            }
-            return $input;
+        $options = [
+            'http' => [
+                'method' => 'POST',
+                'header' => implode("\r\n", $headers),
+                'content' => json_encode($data),
+                'ignore_errors' => true,
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $response = file_get_contents($this->endpoint, false, $context);
+
+        if ($response === false) {
+            throw new Exception('Erro ao realizar a solicitação.');
         }
-        
-        // Sanitizar o array $data antes de codificar
-        $data = sanitize_for_json($data);
-
-        $json_data = json_encode($data, JSON_PRETTY_PRINT);
-
-        // if (json_last_error() !== JSON_ERROR_NONE) {
-        //     error_log('Erro ao codificar JSON: ' . json_last_error_msg());
-        //     throw new Exception('Erro ao preparar o JSON para a API.');
-        // }
-
-        // error_log('JSON Enviado: ' . $json_data);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->endpoint);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-
-        // Check for errors in the API response
-        if (curl_errno($ch)) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new Exception('Error sending the message: ' . $error);
-        }
-
-        curl_close($ch);
 
         $arrResult = json_decode($response, true);
-        $resultMessage = $arrResult["choices"][0]["message"]["content"];
 
-        // error_log('------ mensagem do sistema -------');
-        // error_log(print_r($arrResult, true));
+        if (isset($arrResult['choices'][0]['message']['content'])) {
+            return $arrResult['choices'][0]['message']['content'];
+        }
 
-        return $resultMessage;
+        return json_encode([
+            'error' => true,
+            'message' => 'Erro ao processar a resposta da API.'
+        ]);
     }
+
 }

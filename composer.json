@@ -1,0 +1,12 @@
+{
+    "name": "devhouse/chatbot-openai",
+    "authors": [
+        {
+            "name": "Marcos Macedo",
+            "email": "marcosmacedo.fogao@gmail.com"
+        }
+    ],
+    "require": {
+        "smalot/pdfparser": "^2.11"
+    }
+}
