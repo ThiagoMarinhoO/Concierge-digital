@@ -1,6 +1,6 @@
 <?php
 
-function log_to_file($message) {
+function plugin_log($message) {
     $log_file = plugin_dir_path(__FILE__) . 'log/log.txt';
 
     $log_message = date('Y-m-d H:i:s') . ' - ' . $message . "\n";

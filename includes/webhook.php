@@ -14,7 +14,6 @@ function gerar_script_chatbot()
 
     $chatbot_image = isset($currentChatbot['chatbot_image']) ? (string)$currentChatbot['chatbot_image'] : '';
 
-
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
     if (!$token) {
         $token = generate_chatbot_api_token($user_id);
