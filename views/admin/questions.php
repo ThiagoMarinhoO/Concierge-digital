@@ -135,6 +135,32 @@
     <button type="submit" name="add_category">Adicionar Categoria</button>
 </form>
 
+<!-- Tabela de Categorias Existentes -->
+<h2>Categorias Existentes</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>N° de perguntas</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php 
+        $question = new Question();
+        
+        foreach ($categories as $category) : ?>
+            <tr>
+                <td><?php echo esc_html($category['title']); ?></td>
+                <td><?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?></td>
+                <td class="actions">
+                    <a href="javascript:void(0);" onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
 <!-- Tabela de Perguntas Existentes -->
 <h2>Perguntas Existentes</h2>
 <table>
@@ -186,6 +212,31 @@
             .catch(error => {
                 console.error('Erro:', error);
                 alert('Erro ao excluir a pergunta.');
+            });
+        }
+    }
+
+    function deleteCategory(categoryId) {
+        if (confirm('Tem certeza que deseja excluir esta categoria?')) {
+            fetch(conciergeAjax.ajax_url, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'delete_category',
+                    category_id: categoryId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    confirm('Categoria excluída com sucesso.');
+                    location.reload();
+                } else {
+                    alert('Erro ao excluir a categoria.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao excluir a categoria.');
             });
         }
     }

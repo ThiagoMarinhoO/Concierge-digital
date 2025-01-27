@@ -2,14 +2,15 @@ window.addEventListener('DOMContentLoaded', function () {
     const inputField = document.querySelector('.mensagem');
     const sendButton = document.querySelector('#enviarMensagem');
 
-    sendButton.addEventListener('click', function (event) {
-        event.preventDefault();
+    if (sendButton) {
+        sendButton.addEventListener('click', function (event) {
+            event.preventDefault();
 
-        const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+            const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
 
-        let currHour = new Date();
+            let currHour = new Date();
 
-        const userMsgTemplate = `
+            const userMsgTemplate = `
                             <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
                                 <div>
                                     <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
@@ -22,32 +23,32 @@ window.addEventListener('DOMContentLoaded', function () {
                                 </div>
                             </div>`
 
-        let chatBox = document.querySelector(".chatContainer");
+            let chatBox = document.querySelector(".chatContainer");
 
-        chatBox.innerHTML += userMsgTemplate;
-        chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.innerHTML += userMsgTemplate;
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-        const formData = new FormData();
-        formData.append('action', 'concierge_chat');
-        formData.append('assistantId', assistantId);
-        formData.append('mensagem', document.querySelector(".mensagem").value);
+            const formData = new FormData();
+            formData.append('action', 'concierge_chat');
+            formData.append('assistantId', assistantId);
+            formData.append('mensagem', document.querySelector(".mensagem").value);
 
-        document.querySelector(".mensagem").value = "";
-        document.querySelector("#enviarMensagem").disabled = true;
-        document.querySelector("#enviarMensagem").classList.add('opacity-90');
-        document.querySelector("#enviarMensagem svg").classList.add('animate-spin');
+            document.querySelector(".mensagem").value = "";
+            document.querySelector("#enviarMensagem").disabled = true;
+            document.querySelector("#enviarMensagem").classList.add('opacity-90');
+            document.querySelector("#enviarMensagem svg").classList.add('animate-spin');
 
-        fetch(conciergeAjax.ajax_url, {
-            method: 'POST',
-            body: formData
-        }).then(response => response.json())
-            .then(data => {
-                let currHour = new Date();
+            fetch(conciergeAjax.ajax_url, {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+                .then(data => {
+                    let currHour = new Date();
 
-                let responseData = JSON.parse(data.data);
-                console.log(responseData);
+                    let responseData = JSON.parse(data.data);
+                    console.log(responseData);
 
-                let aiMsgTemplate = `
+                    let aiMsgTemplate = `
                                 <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
                 <img src="${responseData.image}" class="size-10 rounded-full" alt="">
@@ -61,34 +62,38 @@ window.addEventListener('DOMContentLoaded', function () {
         </div>
                                 `
 
-                chatBox.innerHTML += aiMsgTemplate;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            }).finally(() => {
-                // document.querySelector(".sendMessage").classList.remove('is-loading');
-                document.querySelector("#enviarMensagem svg").classList.remove('animate-spin');
-                document.querySelector("#enviarMensagem").classList.remove('opacity-90');
-                document.querySelector("#enviarMensagem").disabled = false;
-            });
+                    chatBox.innerHTML += aiMsgTemplate;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                }).finally(() => {
+                    // document.querySelector(".sendMessage").classList.remove('is-loading');
+                    document.querySelector("#enviarMensagem svg").classList.remove('animate-spin');
+                    document.querySelector("#enviarMensagem").classList.remove('opacity-90');
+                    document.querySelector("#enviarMensagem").disabled = false;
+                });
 
-    });
-
+        });
+    }
+    if (inputField) {
     inputField.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             sendButton.click();
         }
     });
+}
 
     const chatbotSelector = document.getElementById('chatbot-selector');
     const chatContainer = document.querySelector('.chatContainer');
 
-    chatbotSelector.addEventListener('change', function () {
-        const selectedChatbotId = chatbotSelector.value;
-        chatContainer.setAttribute('data-chatbot-id', selectedChatbotId);
-    });
+    if(chatbotSelector) {
+        chatbotSelector.addEventListener('change', function () {
+            const selectedChatbotId = chatbotSelector.value;
+            chatContainer.setAttribute('data-chatbot-id', selectedChatbotId);
+        });
+    }
 
     document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
         event.preventDefault();
@@ -114,6 +119,7 @@ window.addEventListener('DOMContentLoaded', function () {
                                 `);
                 })
                 .finally(() => {
+                    localStorage.removeItem('chatbotRespostas');
                     window.location.reload();
                 })
                 .catch((error) => {
@@ -123,28 +129,51 @@ window.addEventListener('DOMContentLoaded', function () {
     })
 });
 jQuery(document).ready(function ($) {
-    $('#gerar-link').on('click', function () {
-        var chatbotID = $('#chatbot-selector').val()
-        console.log(chatbotID)
-        $.ajax({
-            url: conciergeAjax.ajax_url,
-            method: 'GET',
-            data: {
-                action: 'gerar_script_chatbot',
-                chatbotID: chatbotID
-            },
-            success: function (response) {
-                if (response.success) {
-                    const script = response.data.script;
-                    $('#chatbot-link').html('<pre>' + $('<div>').text(script).html() + '</pre>').show();
-                } else {
-                    alert('Erro ao gerar o script: ' + response.data);
+    // Verifica se o script já está no localStorage
+    const storedScript = localStorage.getItem('chatbot_script');
+
+    if (storedScript) {
+        // Exibe o script armazenado e esconde o botão
+        $('#targetText').text(storedScript);
+        $('#clipboardSection').removeClass('hidden').show();
+        $('#gerar-link').hide();
+    } else {
+        // Adiciona evento ao botão para gerar script
+        $('#gerar-link').on('click', function () {
+            var chatbotID = $('#chatbot-selector').val();
+            console.log(chatbotID);
+
+            $.ajax({
+                url: conciergeAjax.ajax_url,
+                method: 'GET',
+                data: {
+                    action: 'gerar_script_chatbot',
+                    chatbotID: chatbotID,
+                },
+                success: function (response) {
+                    if (response.success) {
+                        const script = response.data.script;
+                        console.log(script);
+
+                        // Salva o script no localStorage
+                        localStorage.setItem('chatbot_script', script);
+
+                        // Exibe o script no <pre>
+                        $('.clipboardScript pre').text(script);
+                        $('.clipboardScript').removeClass('hidden').show();
+
+                        // Esconde o botão de gerar script
+                        $('#gerar-link').hide();
+                    } else {
+                        alert('Erro ao gerar o script: ' + response.data);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Erro na requisição AJAX:', error);
+                    alert('Erro ao gerar o script. Tente novamente.');
                 }
-            },
-            error: function (xhr, status, error) {
-                console.error('Erro na requisição AJAX:', error);
-                alert('Erro ao gerar o script. Tente novamente.');
-            }
+            });
         });
-    });
+    }
 });
+

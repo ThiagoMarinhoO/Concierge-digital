@@ -9,6 +9,11 @@ function gerar_script_chatbot()
     $chatbot_id = isset($_GET['chatbotID']) ? $_GET['chatbotID'] : 0;
     $user_id = get_current_user_id();
 
+    $chatbot = new Chatbot();
+    $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
+
+    $chatbot_image = $currentChatbot['chatbot_image'];
+
     log_to_file($chatbot_id);
 
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
@@ -29,6 +34,7 @@ function gerar_script_chatbot()
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
                     localStorage.setItem('chatbot_user_id', ".$user_id.");
                     localStorage.setItem('chatbot_id' , ".$chatbot_id.");
+                    localStorage.setItem('chatbot_image' , ".$chatbot_image.");
                     var script = document.createElement('script');
                     script.async = false;
                     script.defer = true;

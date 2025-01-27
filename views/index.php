@@ -336,6 +336,27 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Download</p>
+		<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
+		<div id="clipboardSection" class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+			<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
+			<pre id="targetText" class="w-full whitespace-normal"></pre>
+			<button
+				id="copyButton"
+				class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
+				title="Copy"
+				aria-label="Copy">
+				<span id="copyStatus" class="">Copiar</span>
+				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true">
+					<path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
+				</svg>
+				<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 fill-green-500 hidden">
+					<path fill-rule="evenodd" d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z" clip-rule="evenodd" />
+					<path fill-rule="evenodd" d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z" clip-rule="evenodd" />
+				</svg>
+			</button>
+		</div>
+
+
 	</div>
 </div>
 
@@ -852,24 +873,69 @@ foreach ($comportamentoQuestions as $question) {
 							body: formData,
 						})
 						.then((response) => response.json())
-						.then((data) => {
-							resultDiv.innerHTML = `
-                    <strong>Resposta do Servidor:</strong> ${JSON.stringify(data.data)}
-                `;
-						})
+						.then((data) => {})
 						.finally(() => {
 							unlockNextTab();
 							window.location.reload();
 						})
 						.catch((error) => {
 							console.error("Erro:", error);
-							resultDiv.innerHTML = `
-                    <strong>Erro:</strong> Não foi possível processar a solicitação.
-                `;
 						});
 				}
 			});
 
 		}
+		const downloadTabButton = document.querySelector('button[data-tab="Download"]');
+
+		function checkAllTabsUnlocked() {
+			let allUnlocked = true;
+			buttons.forEach((button, index) => {
+				if (index < buttons.length - 1 && button.dataset.locked === "true") {
+					allUnlocked = false;
+				}
+			});
+			return allUnlocked;
+		}
+
+		if (checkAllTabsUnlocked()) {
+			downloadTabButton.dataset.locked = "false";
+			downloadTabButton.classList.remove("opacity-50", "cursor-not-allowed");
+		}
+
+			const clipboardSection = document.getElementById("clipboardSection");
+			const targetText = document.getElementById("targetText");
+			const copyButton = document.getElementById("copyButton");
+			const copyStatus = document.getElementById("copyStatus");
+			const copyIcon = document.getElementById("copyIcon");
+			const successIcon = document.getElementById("successIcon");
+
+			// Função para copiar o texto para o clipboard
+			function copyToClipboard() {
+				const textToCopy = targetText.textContent;
+
+				navigator.clipboard
+					.writeText(textToCopy)
+					.then(() => {
+						// Atualiza o status visual para "copiado"
+						copyStatus.textContent = "Copied!";
+						copyIcon.classList.add("hidden");
+						successIcon.classList.remove("hidden");
+
+						// Reseta o estado visual após 2 segundos
+						setTimeout(() => {
+							copyStatus.textContent = "Copy";
+							copyIcon.classList.remove("hidden");
+							successIcon.classList.add("hidden");
+						}, 2000);
+					})
+					.catch((err) => {
+						console.error("Erro ao copiar para o clipboard: ", err);
+					});
+			}
+
+			// Adiciona o evento de clique no botão de copiar
+			copyButton.addEventListener("click", copyToClipboard);
+
+
 	});
 </script>

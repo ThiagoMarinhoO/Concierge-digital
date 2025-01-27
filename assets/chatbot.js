@@ -82,7 +82,10 @@
     botAvatar.style.justifyContent = 'center';
     botAvatar.style.color = 'white';
     botAvatar.style.fontSize = '14px';
-    botAvatar.textContent = '🤖';
+    var botAvatarImg = document.createElement('img');
+    botAvatarImg.src = localStorage.getItem('chatbot_image');
+    botAvatarImg.alt = '';
+    botAvatar.appendChild(botAvatarImg);
 
     var botMessage = document.createElement('div');
     botMessage.textContent = 'Olá! Como posso te ajudar?';

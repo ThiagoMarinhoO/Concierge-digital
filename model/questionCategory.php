@@ -38,6 +38,11 @@ class QuestionCategory
     {
         return $this->wpdb->get_results("SELECT * FROM {$this->table}", ARRAY_A);
     }
+
+    public function deleteCategory(int $id): void
+    {
+        $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
+    }
 }
 
 class QuestionCategoryRelationships

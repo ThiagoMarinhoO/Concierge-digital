@@ -106,6 +106,19 @@ function delete_question()
     wp_send_json_success(['message' => "pergunta deletada com sucesso"]);
 }
 
+add_action('wp_ajax_delete_category', 'delete_category');
+add_action('wp_ajax_nopriv_delete_category', 'delete_category');
+
+function delete_category()
+{
+    $category_id = isset($_POST['category_id']) ? $_POST['category_id'] : null;
+
+    $category = new QuestionCategory();
+    $category->deleteCategory($category_id);
+
+    wp_send_json_success(['message' => "pergunta deletada com sucesso"]);
+}
+
 add_action('wp_ajax_get_questions_by_category', 'get_questions_by_category');
 add_action('wp_ajax_nopriv_get_questions_by_category', 'get_questions_by_category');
 
