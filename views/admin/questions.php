@@ -112,7 +112,7 @@
     <label for="option_selection">Seleção</label><br>
 
     <div id="selection_options" style="display:none;">
-        <label for="selection_options_input">Opções (separadas por vírgulas):</label><br>
+        <label for="selection_options_input">Opções (separadas por vírgulas sem espaços):</label><br>
         <input type="text" id="selection_options_input" name="selection_options_input"><br>
     </div>
 
