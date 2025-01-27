@@ -53,24 +53,6 @@ class Chatbot
         dbDelta($sql);
     }
 
-    // public function createChatbot($chatbot_name, $chatbot_options)
-    // {
-    //     $result = $this->wpdb->insert(
-    //         $this->table,
-    //         [
-    //             'chatbot_name' => $chatbot_name,
-    //             'chatbot_options' => json_encode($chatbot_options),
-    //             'user_id' => $this->user_id,
-    //         ],
-    //         [
-    //             '%s',
-    //             '%s',
-    //             '%d',
-    //         ]
-    //     );
-
-    //     return $result !== false;
-    // }
     public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null)
     {
         $data = [
@@ -92,6 +74,44 @@ class Chatbot
         }
 
         $result = $this->wpdb->insert($this->table, $data, $formats);
+
+        return $result !== false;
+    }
+
+    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null)
+    {
+        $data = [];
+        $formats = [];
+
+        if ($chatbot_name !== null) {
+            $data['chatbot_name'] = $chatbot_name;
+            $formats[] = '%s'; // chatbot_name
+        }
+
+        if ($chatbot_options !== null) {
+            $current_options = $this->wpdb->get_var($this->wpdb->prepare("SELECT chatbot_options FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id));
+            $current_options = json_decode($current_options, true);
+            $new_options = array_merge($current_options, $chatbot_options);
+            $data['chatbot_options'] = json_encode($new_options);
+            $formats[] = '%s'; // chatbot_options
+        }
+
+        if ($chatbot_image !== null) {
+            $data['chatbot_image'] = $chatbot_image;
+            $formats[] = '%s'; // chatbot_image
+        }
+
+        if (empty($data)) {
+            return false; // No data to update
+        }
+
+        $result = $this->wpdb->update(
+            $this->table,
+            $data,
+            ['id' => $id, 'user_id' => $this->user_id],
+            $formats,
+            ['%d', '%d']
+        );
 
         return $result !== false;
     }

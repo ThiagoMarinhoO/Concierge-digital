@@ -85,8 +85,11 @@
     var botAvatarImg = document.createElement('img');
     botAvatarImg.src = localStorage.getItem('chatbot_image');
     botAvatarImg.alt = '';
+    botAvatarImg.style.width = '30px';
+    botAvatarImg.style.height = '30px';
+    botAvatarImg.style.borderRadius = '999px';
     botAvatar.appendChild(botAvatarImg);
-
+    
     var botMessage = document.createElement('div');
     botMessage.textContent = 'Olá! Como posso te ajudar?';
     botMessage.style.marginLeft = '10px';
@@ -193,7 +196,7 @@
 
         input.value = '';
 
-        fetch('https://heygen.devhouse.com.br/wp-json/chatbot/v1/send_message', {
+        fetch('https://projetocharlie.humans.land/wp-json/chatbot/v1/send_message', {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -227,7 +230,9 @@
                     botResponse.appendChild(botResponseAvatar);
                     botResponse.appendChild(botBubble);
                     chatMessages.appendChild(botResponse);
+                    
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
                 } else {
                     console.error('Erro: ', data.message);
                 }

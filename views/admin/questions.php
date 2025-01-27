@@ -2,7 +2,6 @@
 
 <!-- Estilos adicionados dentro da tag <style> -->
 <style>
-
     .toplevel_page_question-manager h1,
     h2 {
         color: #2c3e50;
@@ -146,9 +145,9 @@
         </tr>
     </thead>
     <tbody>
-        <?php 
+        <?php
         $question = new Question();
-        
+
         foreach ($categories as $category) : ?>
             <tr>
                 <td><?php echo esc_html($category['title']); ?></td>
@@ -177,7 +176,7 @@
                 <td><?php echo esc_html($question['title']); ?></td>
                 <td><?php echo esc_html($question['categories']); ?></td>
                 <td class="actions">
-                        <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
+                    <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -187,57 +186,63 @@
 <!-- Script para Excluir Pergunta -->
 <script>
     var conciergeAjax = <?php echo json_encode(array('ajax_url' => admin_url('admin-ajax.php'))); ?>;
-    
+
     function deleteQuestion(questionId) {
         if (confirm('Tem certeza que deseja excluir esta pergunta?')) {
             fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                action: 'delete_question',
-                question_id: questionId
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'delete_question',
+                        question_id: questionId
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    confirm('Pergunta excluída com sucesso.');
-                    location.reload();
-                } else {
-                alert('Erro ao excluir a pergunta.');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao excluir a pergunta.');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: `Pergunta excluída com sucesso!`,
+                            icon: "success"
+                        });
+                        location.reload();
+                    } else {
+                        alert('Erro ao excluir a pergunta.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao excluir a pergunta.');
+                });
         }
     }
 
     function deleteCategory(categoryId) {
         if (confirm('Tem certeza que deseja excluir esta categoria?')) {
             fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                body: new URLSearchParams({
-                    action: 'delete_category',
-                    category_id: categoryId
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        action: 'delete_category',
+                        category_id: categoryId
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    confirm('Categoria excluída com sucesso.');
-                    location.reload();
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: `Categoria excluída com sucesso!`,
+                            icon: "success"
+                        });
+                        location.reload();
+                    } else {
+                        alert('Erro ao excluir a categoria.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
                     alert('Erro ao excluir a categoria.');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao excluir a categoria.');
-            });
+                });
         }
     }
 </script>
