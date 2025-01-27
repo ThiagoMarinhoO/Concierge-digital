@@ -17,7 +17,9 @@ window.addEventListener('DOMContentLoaded', function () {
                                     </div>
                                     <span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
                                 </div>
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+                                <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
+                                    <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+                                </div>
                             </div>`
 
         let chatBox = document.querySelector(".chatContainer");
@@ -42,23 +44,21 @@ window.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 let currHour = new Date();
 
-                data.responseMessage = data.responseMessage.replace(/\\u[\dA-F]{4}/gi,
-                    function (match) {
-                        return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
-                    });
-
-                data.responseMessage = data.responseMessage.replace("\n", "<br>");
+                let responseData = JSON.parse(data.data);
+                console.log(responseData);
 
                 let aiMsgTemplate = `
                                 <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
-                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
-                                    <div>
-                                        <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-                                            <p class="text-sm">${data.responseMessage}</p>
-                                        </div>
-                                        <span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
-                                    </div>
-                                </div>
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+                <img src="${responseData.image}" class="size-10 rounded-full" alt="">
+            </div>
+            <div>
+                <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+                    <p class="text-sm">${responseData.message}</p>
+                </div>
+                <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+            </div>
+        </div>
                                 `
 
                 chatBox.innerHTML += aiMsgTemplate;
@@ -123,28 +123,28 @@ window.addEventListener('DOMContentLoaded', function () {
     })
 });
 jQuery(document).ready(function ($) {
-        $('#gerar-link').on('click', function () {
-            var chatbotID = $('#chatbot-selector').val()
-            console.log(chatbotID)
-            $.ajax({
-                url: conciergeAjax.ajax_url,
-                method: 'GET',
-                data: {
-                    action: 'gerar_script_chatbot',
-                    chatbotID: chatbotID
-                },
-                success: function (response) {
-                    if (response.success) {
-                        const script = response.data.script;
-                        $('#chatbot-link').html('<pre>' + $('<div>').text(script).html() + '</pre>').show();
-                    } else {
-                        alert('Erro ao gerar o script: ' + response.data);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('Erro na requisição AJAX:', error);
-                    alert('Erro ao gerar o script. Tente novamente.');
+    $('#gerar-link').on('click', function () {
+        var chatbotID = $('#chatbot-selector').val()
+        console.log(chatbotID)
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'GET',
+            data: {
+                action: 'gerar_script_chatbot',
+                chatbotID: chatbotID
+            },
+            success: function (response) {
+                if (response.success) {
+                    const script = response.data.script;
+                    $('#chatbot-link').html('<pre>' + $('<div>').text(script).html() + '</pre>').show();
+                } else {
+                    alert('Erro ao gerar o script: ' + response.data);
                 }
-            });
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+                alert('Erro ao gerar o script. Tente novamente.');
+            }
         });
     });
+});

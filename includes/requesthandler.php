@@ -8,16 +8,16 @@ function concierge_chat()
     $chatbotId = isset($_POST['assistantId']) ? $_POST['assistantId'] : null;
     $user_id = get_current_user_id();
 
-    // error_log('---- assistantId ---');
-    // error_log($chatbotId);
+    error_log('---- assistantId ---');
+    error_log($chatbotId);
 
     $chatbot = new Chatbot();
 
-    $resMensagem = $chatbot->enviarMensagem($userMensagem, $chatbotId, $user_id);
-    // error_log('---- Resposta do sistema -----');
-    // error_log(print_r($resMensagem, true));
+    $result = $chatbot->enviarMensagem($userMensagem, $chatbotId, $user_id);
+    error_log('---- Resposta do sistema -----');
+    error_log(print_r($result, true));
 
-    wp_send_json(array("responseMessage" => $resMensagem));
+    wp_send_json_success($result);
     
 }
 
