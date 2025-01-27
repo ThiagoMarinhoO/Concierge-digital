@@ -77,18 +77,18 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
     if (inputField) {
-    inputField.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            sendButton.click();
-        }
-    });
-}
+        inputField.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendButton.click();
+            }
+        });
+    }
 
     const chatbotSelector = document.getElementById('chatbot-selector');
     const chatContainer = document.querySelector('.chatContainer');
 
-    if(chatbotSelector) {
+    if (chatbotSelector) {
         chatbotSelector.addEventListener('change', function () {
             const selectedChatbotId = chatbotSelector.value;
             chatContainer.setAttribute('data-chatbot-id', selectedChatbotId);
@@ -105,27 +105,31 @@ window.addEventListener('DOMContentLoaded', function () {
         formData.append('action', 'delete_chatbot');
         formData.append('chatbot_id', chatbotId);
 
-        if (confirm('Tem certeza que deseja resetar o chatbot?')) {
-            fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                body: formData
-            }).then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    document.querySelector('body').insertAdjacentHTML('beforeend', `
-                                    <div class="fixed top-2 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-                                        <span class="font-medium">Sucesso!</span> Chatbot Deletado com sucesso!
-                                    </div>
-                                `);
-                })
-                .finally(() => {
-                    localStorage.removeItem('chatbotRespostas');
-                    window.location.reload();
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Tem certeza de que quer resetar o chatbot?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, resetar!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(conciergeAjax.ajax_url, {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json())
+                    .then(data => {
+                    })
+                    .finally(() => {
+                        localStorage.removeItem('chatbotRespostas');
+                        window.location.reload();
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
     })
 });
 jQuery(document).ready(function ($) {
@@ -153,7 +157,7 @@ jQuery(document).ready(function ($) {
                 success: function (response) {
                     if (response.success) {
                         const script = response.data.script;
-                        console.log(script);
+                        // console.log(script);
 
                         // Salva o script no localStorage
                         localStorage.setItem('chatbot_script', script);
@@ -176,4 +180,3 @@ jQuery(document).ready(function ($) {
         });
     }
 });
-

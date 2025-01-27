@@ -44,6 +44,7 @@ function concierge_enqueue_assets()
     wp_enqueue_style('concierge-style', CONCIERGE_DIGITAL_URL . 'assets/style.css');
     wp_enqueue_script('concierge-script', CONCIERGE_DIGITAL_URL . 'assets/script.js', ['jquery'], null, true);
     // wp_enqueue_script('chatbot-script', CONCIERGE_DIGITAL_URL . 'assets/chatbot.js', ['jquery'], null, true);
+    wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', [], '11', true);
 
     // Passar a URL do AJAX e o nonce para o JavaScript
     wp_localize_script('concierge-script', 'conciergeAjax', [

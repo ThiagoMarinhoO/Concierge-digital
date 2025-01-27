@@ -2,15 +2,18 @@
 
 $question = new Question();
 
-$configQuestions = $question->getQuestionsByCategory('Configurações');
+$configQuestions = $question->getQuestionsByCategory('configuração');
 $comportamentoQuestions = $question->getQuestionsByCategory('Comportamento');
 $perguntasQuestions = $question->getQuestionsByCategory('Perguntas');
+$baseDeConhecimentoQuestions = $question->getQuestionsByCategory('Base de Conhecimento');
+$aparenciaQuestions = $question->getQuestionsByCategory('Aparência');
+$integracoesQuestions = $question->getQuestionsByCategory('Integrações');
 
 $comportamentoPromptQuestions = [];
 $comportamentoOtherQuestions = [];
 
 foreach ($comportamentoQuestions as $question) {
-	if ($question['title'] === 'Escreva aqui seu prompt:') {
+	if ($question['title'] === 'Personalize ainda mais seu assistente virtual:') {
 		$comportamentoPromptQuestions[] = $question;
 	} else {
 		$comportamentoOtherQuestions[] = $question;
@@ -45,7 +48,7 @@ foreach ($comportamentoQuestions as $question) {
 	</button>
 </div>
 
-<div id="tabs-content-container" class="">
+<div id="tabs-content-container" class="min-h-[560px]">
 	<div id="Configurações-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Configurações</p>
@@ -204,6 +207,46 @@ foreach ($comportamentoQuestions as $question) {
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Base de conhecimento</p>
 		<button class="saveknowledgeButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
+		<?php if (!empty($baseDeConhecimentoQuestions)): ?>
+			<?php foreach ($baseDeConhecimentoQuestions as $index => $question): ?>
+				<div class="question-block">
+					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+						<?php echo esc_html($question['title']); ?>
+					</label>
+					<?php
+					$options = json_decode($question['options'], true);
+					$field_type = $question['field_type']; // Verifica o tipo de campo
+					?>
+					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+						<!-- Campo do tipo seleção -->
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+							<?php foreach ($options as $option): ?>
+								<option value="<?php echo esc_attr($option); ?>">
+									<?php echo esc_html($option); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					<?php elseif ($field_type === 'file'): ?>
+						<!-- Campo do tipo arquivo -->
+						<input
+							type="file"
+							id="question-<?php echo esc_attr($index); ?>"
+							name="question_<?php echo esc_attr($question['id']); ?>"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+					<?php else: ?>
+						<!-- Campo do tipo texto (padrão) -->
+						<input
+							type="text"
+							id="question-<?php echo esc_attr($index); ?>"
+							name="question_<?php echo esc_attr($question['id']); ?>"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+					<?php endif; ?>
+				</div>
+			<?php endforeach; ?>
+		<?php else: ?>
+			<p>Nenhuma pergunta cadastrada no momento.</p>
+		<?php endif; ?>
 	</div>
 	<div id="Perguntas-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
@@ -255,6 +298,46 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Integrações-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Integrações</p>
+		<?php if (!empty($integracoesQuestions)): ?>
+			<?php foreach ($integracoesQuestions as $index => $question): ?>
+				<div class="question-block">
+					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+						<?php echo esc_html($question['title']); ?>
+					</label>
+					<?php
+					$options = json_decode($question['options'], true);
+					$field_type = $question['field_type']; // Verifica o tipo de campo
+					?>
+					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+						<!-- Campo do tipo seleção -->
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+							<?php foreach ($options as $option): ?>
+								<option value="<?php echo esc_attr($option); ?>">
+									<?php echo esc_html($option); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					<?php elseif ($field_type === 'file'): ?>
+						<!-- Campo do tipo arquivo -->
+						<input
+							type="file"
+							id="question-<?php echo esc_attr($index); ?>"
+							name="question_<?php echo esc_attr($question['id']); ?>"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+					<?php else: ?>
+						<!-- Campo do tipo texto (padrão) -->
+						<input
+							type="text"
+							id="question-<?php echo esc_attr($index); ?>"
+							name="question_<?php echo esc_attr($question['id']); ?>"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+					<?php endif; ?>
+				</div>
+			<?php endforeach; ?>
+		<?php else: ?>
+			<p>Nenhuma pergunta cadastrada no momento.</p>
+		<?php endif; ?>
 		<button class="saveIntegracaoButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 	</div>
 	<div id="Aparência-content" class="tab-content hidden absolute inset-0 bg-white p-4">
@@ -263,7 +346,7 @@ foreach ($comportamentoQuestions as $question) {
 		<div class="input-container mb-4">
 			<div class="question-block">
 				<label for="appearance_image" class="block font-medium text-gray-700 mb-2">
-					Carregar Imagem
+					Adicione a foto do seu assistente virtual:
 				</label>
 				<input type="file" name="appearance_image" id="appearance_image" class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" accept="image/*">
 			</div>
@@ -280,7 +363,7 @@ foreach ($comportamentoQuestions as $question) {
 		$chatbots = $chatbot->getAllChatbots();
 
 		if ($user_has_chatbot) : ?>
-			<div class="flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-10">
+			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
 				<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
 
 					<!-- Select para selecionar o chatbot -->
@@ -324,9 +407,9 @@ foreach ($comportamentoQuestions as $question) {
 					<form action="" method="POST" id="deleteChatbotForm">
 						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar Chatbot</button>
 					</form>
-					<form action="" method="" id="">
+					<!-- <form action="" method="" id="">
 						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
-					</form>
+					</form> -->
 				</div>
 			</div>
 		<?php else: ?>
@@ -343,7 +426,7 @@ foreach ($comportamentoQuestions as $question) {
 			<button
 				id="copyButton"
 				class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
-				title="Copy"
+				title="Copiar"
 				aria-label="Copy">
 				<span id="copyStatus" class="">Copiar</span>
 				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true">
@@ -470,8 +553,14 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			// Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// Desbloquear a próxima aba
 			unlockNextTab();
@@ -524,9 +613,16 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
+			//jogar no banco
+
 			// // Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// // Desbloquear a próxima aba
 			unlockNextTab();
@@ -571,8 +667,13 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			// // Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// Desbloquear a próxima aba
 			unlockNextTab();
@@ -617,8 +718,14 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			// Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// Desbloquear a próxima aba
 			unlockNextTab();
@@ -663,8 +770,13 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			// // Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// Desbloquear a próxima aba
 			unlockNextTab();
@@ -709,8 +821,13 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			// // Feedback ao usuário
-			alert(`Respostas salvas para a categoria: ${categoryName}`);
-			console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			// alert(`Respostas salvas para a categoria: ${categoryName}`);
+			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			Swal.fire({
+				title: `Respostas salvas`,
+				text: `Respostas salvas para a categoria: ${categoryName}`,
+				icon: "success"
+			});
 
 			// Desbloquear a próxima aba
 			unlockNextTab();
@@ -867,8 +984,17 @@ foreach ($comportamentoQuestions as $question) {
 					formData.append("chatbot_image", appearanceImageInput.files[0]);
 				}
 
-				if (confirm("Tem certeza que deseja gerar o chatbot?")) {
-					fetch(conciergeAjax.ajax_url, {
+				Swal.fire({
+					title: 'Tem certeza?',
+					text: "Você deseja gerar o chatbot?",
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Sim, gerar!'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						fetch(conciergeAjax.ajax_url, {
 							method: "POST",
 							body: formData,
 						})
@@ -881,7 +1007,7 @@ foreach ($comportamentoQuestions as $question) {
 						.catch((error) => {
 							console.error("Erro:", error);
 						});
-				}
+					}});
 			});
 
 		}
@@ -902,39 +1028,39 @@ foreach ($comportamentoQuestions as $question) {
 			downloadTabButton.classList.remove("opacity-50", "cursor-not-allowed");
 		}
 
-			const clipboardSection = document.getElementById("clipboardSection");
-			const targetText = document.getElementById("targetText");
-			const copyButton = document.getElementById("copyButton");
-			const copyStatus = document.getElementById("copyStatus");
-			const copyIcon = document.getElementById("copyIcon");
-			const successIcon = document.getElementById("successIcon");
+		const clipboardSection = document.getElementById("clipboardSection");
+		const targetText = document.getElementById("targetText");
+		const copyButton = document.getElementById("copyButton");
+		const copyStatus = document.getElementById("copyStatus");
+		const copyIcon = document.getElementById("copyIcon");
+		const successIcon = document.getElementById("successIcon");
 
-			// Função para copiar o texto para o clipboard
-			function copyToClipboard() {
-				const textToCopy = targetText.textContent;
+		// Função para copiar o texto para o clipboard
+		function copyToClipboard() {
+			const textToCopy = targetText.textContent;
 
-				navigator.clipboard
-					.writeText(textToCopy)
-					.then(() => {
-						// Atualiza o status visual para "copiado"
-						copyStatus.textContent = "Copied!";
-						copyIcon.classList.add("hidden");
-						successIcon.classList.remove("hidden");
+			navigator.clipboard
+				.writeText(textToCopy)
+				.then(() => {
+					// Atualiza o status visual para "copiado"
+					copyStatus.textContent = "Copiado!";
+					copyIcon.classList.add("hidden");
+					successIcon.classList.remove("hidden");
 
-						// Reseta o estado visual após 2 segundos
-						setTimeout(() => {
-							copyStatus.textContent = "Copy";
-							copyIcon.classList.remove("hidden");
-							successIcon.classList.add("hidden");
-						}, 2000);
-					})
-					.catch((err) => {
-						console.error("Erro ao copiar para o clipboard: ", err);
-					});
-			}
+					// Reseta o estado visual após 2 segundos
+					setTimeout(() => {
+						copyStatus.textContent = "Copiar";
+						copyIcon.classList.remove("hidden");
+						successIcon.classList.add("hidden");
+					}, 2000);
+				})
+				.catch((err) => {
+					console.error("Erro ao copiar para o clipboard: ", err);
+				});
+		}
 
-			// Adiciona o evento de clique no botão de copiar
-			copyButton.addEventListener("click", copyToClipboard);
+		// Adiciona o evento de clique no botão de copiar
+		copyButton.addEventListener("click", copyToClipboard);
 
 
 	});

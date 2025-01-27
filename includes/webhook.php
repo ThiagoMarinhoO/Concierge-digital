@@ -12,9 +12,8 @@ function gerar_script_chatbot()
     $chatbot = new Chatbot();
     $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
-    $chatbot_image = $currentChatbot['chatbot_image'];
+    $chatbot_image = isset($currentChatbot['chatbot_image']) ? (string)$currentChatbot['chatbot_image'] : '';
 
-    log_to_file($chatbot_id);
 
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
     if (!$token) {
@@ -34,7 +33,7 @@ function gerar_script_chatbot()
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
                     localStorage.setItem('chatbot_user_id', ".$user_id.");
                     localStorage.setItem('chatbot_id' , ".$chatbot_id.");
-                    localStorage.setItem('chatbot_image' , ".$chatbot_image.");
+                    localStorage.setItem('chatbot_image' , '".$chatbot_image."');
                     var script = document.createElement('script');
                     script.async = false;
                     script.defer = true;
@@ -124,10 +123,12 @@ function handle_chatbot_message(WP_REST_Request $request)
     $chatbot = new Chatbot();
     $response = $chatbot->enviarMensagem($message, $chatbot_id , $user_id);
 
+    $response = json_decode($response, true);
+    
     return new WP_REST_Response(
         array(
             'status' => 'success',
-            'response' => $response,
+            'response' => $response['message'],
         ),
         200
     );

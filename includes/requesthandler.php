@@ -30,6 +30,35 @@ function create_chatbot()
         $chatbot_options = $_POST['chatbot_options'] ?? '';
         $chatbot_name = $_POST['chatbot_name'] ?? '';
 
+        if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['chatbot_image'];
+
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 2 * 1024 * 1024;
+
+            if (!in_array($file['type'], $allowed_types)) {
+                wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
+                return;
+            }
+
+            if ($file['size'] > $max_size) {
+                wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
+                return;
+            }
+
+            $upload_dir = wp_upload_dir();
+            $target_path = $upload_dir['path'] . '/' . basename($file['name']);
+
+            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
+            } else {
+                wp_send_json_error(['message' => 'Falha ao salvar o arquivo.']);
+                return;
+            }
+        } else {
+            $chatbot_image = null;
+        }
+
         if ($chatbot_options) {
             $chatbot_options = json_decode(stripslashes($chatbot_options), true);
 
@@ -65,10 +94,98 @@ function create_chatbot()
 
             // error_log(print_r($chatbot_options, true));
         }
-
-        // travado aqii
+        
         $chatbot = new Chatbot();
-        $chatbot->createChatbot($chatbot_name, $chatbot_options);
+        $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image);
+
+        wp_send_json_success(['chatbotName' => $chatbot_name]);
+    } else {
+        wp_send_json_error(['message' => 'Método inválido']);
+    }
+}
+
+add_action('wp_ajax_update_chatbot', 'update_chatbot');
+add_action('wp_ajax_nopriv_update_chatbot', 'update_chatbot');
+
+function update_chatbot()
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        $chatbot_id = $_POST['chatbot_id'] ?? '';
+
+        $chatbot_options = $_POST['chatbot_options'] ?? '';
+        $chatbot_name = $_POST['chatbot_name'] ?? '';
+        $chatbot_image = $_POST['chatbot_image'] ?? '';
+
+        if($chatbot_image) {
+            if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['chatbot_image'];
+    
+                $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                $max_size = 2 * 1024 * 1024;
+    
+                if (!in_array($file['type'], $allowed_types)) {
+                    wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
+                    return;
+                }
+    
+                if ($file['size'] > $max_size) {
+                    wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
+                    return;
+                }
+    
+                $upload_dir = wp_upload_dir();
+                $target_path = $upload_dir['path'] . '/' . basename($file['name']);
+    
+                if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                    $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
+                } else {
+                    wp_send_json_error(['message' => 'Falha ao salvar o arquivo.']);
+                    return;
+                }
+            } else {
+                $chatbot_image = null;
+            }
+        }
+
+        if ($chatbot_options) {
+            $chatbot_options = json_decode(stripslashes($chatbot_options), true);
+
+            foreach ($chatbot_options as &$option) {
+                if (isset($_FILES[$option['field_name']]) && $_FILES[$option['field_name']]['error'] === UPLOAD_ERR_OK) {
+                    $file = $_FILES[$option['field_name']];
+
+                    $allowed_types = ['text/csv', 'text/plain', 'application/pdf'];
+                    $max_size = 5 * 1024 * 1024;
+
+                    if (!in_array($file['type'], $allowed_types)) {
+                        wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
+                        return;
+                    }
+
+                    if ($file['size'] > $max_size) {
+                        wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
+                        return;
+                    }
+
+                    // Mover o arquivo para o diretório de uploads
+                    $upload_dir = wp_upload_dir();
+                    $target_path = $upload_dir['path'] . '/' . basename($file['name']);
+
+                    if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                        $option['file_url'] = $upload_dir['url'] . '/' . basename($file['name']);
+                    } else {
+                        wp_send_json_error(['message' => 'Falha ao salvar o arquivo.']);
+                        return;
+                    }
+                }
+            }
+
+            // error_log(print_r($chatbot_options, true));
+        }
+        
+        $chatbot = new Chatbot();
+        $chatbot->updateChatbot($chatbot_name, $chatbot_options, $chatbot_image);
 
         wp_send_json_success(['chatbotName' => $chatbot_name]);
     } else {
