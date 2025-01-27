@@ -1,5 +1,5 @@
 /* Estilo principal do formulário do Concierge Digital */
-#concierge-container {
+/* #concierge-container {
     margin: 20px auto;
     max-width: 600px;
     font-family: Arial, sans-serif;
@@ -63,7 +63,7 @@
     color: #333;
     max-height: 300px;
     overflow-y: auto;
-}
+} */
 
 @keyframes fadeIn {
     from {

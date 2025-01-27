@@ -23,6 +23,17 @@ class Chatbot
         $this->user_id = get_current_user_id();
     }
 
+    // public function getCurrentUserId()
+    // {
+    //     if (is_user_logged_in()) {
+    //         return get_current_user_id();
+    //     } else {
+    //         return null;
+    //     }
+
+
+    // }
+
     public function createTable()
     {
         $charset_collate = $this->wpdb->get_charset_collate();

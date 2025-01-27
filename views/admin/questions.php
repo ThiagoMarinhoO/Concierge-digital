@@ -112,7 +112,7 @@
     <label for="option_selection">Seleção</label><br>
 
     <div id="selection_options" style="display:none;">
-        <label for="selection_options_input">Opções (separadas por vírgulas):</label><br>
+        <label for="selection_options_input">Opções (separadas por vírgulas sem espaços):</label><br>
         <input type="text" id="selection_options_input" name="selection_options_input"><br>
     </div>
 
@@ -129,7 +129,7 @@
 </form>
 
 <h2>Adicionar Categoria</h2>
-<form method="post">';
+<form method="post">
     <label for="category_title">Título da Categoria:</label><br>
     <input type="text" id="category_title" name="category_title" required><br>
     <button type="submit" name="add_category">Adicionar Categoria</button>
@@ -141,6 +141,7 @@
     <thead>
         <tr>
             <th>Título</th>
+            <th>Categoria</th>
             <th>Ações</th>
         </tr>
     </thead>
@@ -148,6 +149,7 @@
         <?php foreach ($questions as $question): ?>
             <tr>
                 <td><?php echo esc_html($question['title']); ?></td>
+                <td><?php echo esc_html($question['categories']); ?></td>
                 <td class="actions">
                         <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
                 </td>
