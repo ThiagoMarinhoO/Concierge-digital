@@ -93,40 +93,6 @@ foreach ($comportamentoQuestions as $question) {
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
 					<?php endif; ?>
-					<?php 
-$chatbot = new Chatbot();
-$user_id = get_current_user_id();
-
-$user_has_chatbot = $chatbot->userHasChatbot($user_id);
-$chatbots = $chatbot->getAllChatbots();
-
-if ($user_has_chatbot): ?>
-	<div class="flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-10">
-		<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
-
-			<!-- Select para selecionar o chatbot -->
-			<div class="p-4 bg-gray-200">
-				<label for="chatbot-selector" class="block text-sm font-medium text-gray-700">Selecione o Chatbot:</label>
-				<select id="chatbot-selector"
-					class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-					<?php foreach ($chatbots as $bot): ?>
-						<option value="<?php echo esc_attr($bot->id); ?>">
-							<?php echo esc_html($bot->chatbot_name); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-			</div>
-
-			<!-- Container do chat -->
-			<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
-				data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
-				<div class="flex w-full mt-2 space-x-3 max-w-xs">
-					<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
-					<div>
-						<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-							<p class="text-sm">Olá! Como posso ajudar?</p>
-						</div>
-					</div>
 				</div>
 			<?php endforeach; ?>
 		<?php else: ?>
@@ -294,6 +260,14 @@ if ($user_has_chatbot): ?>
 	<div id="Aparência-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Aparência</p>
+		<div class="input-container mb-4">
+			<div class="question-block">
+				<label for="appearance_image" class="block font-medium text-gray-700 mb-2">
+					Carregar Imagem
+				</label>
+				<input type="file" name="appearance_image" id="appearance_image" class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" accept="image/*">
+			</div>
+		</div>
 		<button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 	</div>
 	<div id="Teste-content" class="tab-content hidden absolute inset-0 bg-white p-4">
@@ -324,7 +298,9 @@ if ($user_has_chatbot): ?>
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer" data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
 						<div class="flex w-full mt-2 space-x-3 max-w-xs">
-							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+								<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
+							</div>
 							<div>
 								<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
 									<p class="text-sm">Olá! Como posso ajudar?</p>
@@ -353,134 +329,6 @@ if ($user_has_chatbot): ?>
 					</form>
 				</div>
 			</div>
-
-			<script>
-				window.addEventListener('DOMContentLoaded', function() {
-					const inputField = document.querySelector('.mensagem');
-					const sendButton = document.querySelector('#enviarMensagem');
-
-
-					// Evento de clique no botão
-					sendButton.addEventListener('click', function(event) {
-						event.preventDefault();
-
-						const assistantId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
-
-						let currHour = new Date();
-
-						const userMsgTemplate = `
-					<div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
-						<div>
-							<div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
-								<p class="text-sm">${document.querySelector(".mensagem").value}</p>
-							</div>
-							<span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
-						</div>
-						<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
-					</div>`
-
-						let chatBox = document.querySelector(".chatContainer");
-
-						chatBox.innerHTML += userMsgTemplate;
-						chatBox.scrollTop = chatBox.scrollHeight;
-
-						const formData = new FormData();
-						formData.append('action', 'concierge_chat');
-						formData.append('assistantId', assistantId);
-						formData.append('mensagem', document.querySelector(".mensagem").value);
-
-						document.querySelector(".mensagem").value = "";
-						document.querySelector("#enviarMensagem").disabled = true;
-						document.querySelector("#enviarMensagem").classList.add('opacity-90');
-						document.querySelector("#enviarMensagem svg").classList.add('animate-spin');
-
-						fetch(conciergeAjax.ajax_url, {
-								method: 'POST',
-								body: formData
-							}).then(response => response.json())
-							.then(data => {
-
-								let currHour = new Date();
-
-								data.responseMessage = data.responseMessage.replace("\n", "<br>");
-
-								let aiMsgTemplate = `
-						<div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
-							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
-							<div>
-								<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-									<p class="text-sm">${data.responseMessage}</p>
-								</div>
-								<span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
-							</div>
-						</div>
-						`
-
-								chatBox.innerHTML += aiMsgTemplate;
-								chatBox.scrollTop = chatBox.scrollHeight;
-							})
-							.catch((error) => {
-								console.error('Error:', error);
-							}).finally(() => {
-								// document.querySelector(".sendMessage").classList.remove('is-loading');
-								document.querySelector("#enviarMensagem svg").classList.remove('animate-spin');
-								document.querySelector("#enviarMensagem").classList.remove('opacity-90');
-								document.querySelector("#enviarMensagem").disabled = false;
-							});
-
-					});
-
-					// Enviar mensagem ao pressionar Enter
-					inputField.addEventListener('keydown', function(event) {
-						if (event.key === 'Enter') {
-							event.preventDefault();
-							sendButton.click();
-						}
-					});
-
-					// Seleciona o select e o container do chat
-					const chatbotSelector = document.getElementById('chatbot-selector');
-					const chatContainer = document.querySelector('.chatContainer');
-
-					// Adiciona um evento de mudança ao select
-					chatbotSelector.addEventListener('change', function() {
-						const selectedChatbotId = chatbotSelector.value; // Obtém o ID selecionado
-						chatContainer.setAttribute('data-chatbot-id', selectedChatbotId); // Atualiza o atributo data-chatbot-id
-					});
-
-					document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
-						event.preventDefault();
-
-						const form = document.getElementById('deleteChatbotForm');
-						const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
-
-						const formData = new FormData(form);
-						formData.append('action', 'delete_chatbot');
-						formData.append('chatbot_id', chatbotId);
-
-						if (confirm('Tem certeza que deseja resetar o chatbot?')) {
-							fetch(conciergeAjax.ajax_url, {
-									method: 'POST',
-									body: formData
-								}).then(response => response.json())
-								.then(data => {
-									console.log(data);
-									document.querySelector('body').insertAdjacentHTML('beforeend', `
-							<div class="fixed top-2 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-								<span class="font-medium">Sucesso!</span> Chatbot Deletado com sucesso!
-							</div>
-						`);
-								})
-								.finally(() => {
-									window.location.reload();
-								})
-								.catch((error) => {
-									console.error('Error:', error);
-								});
-						}
-					})
-				});
-			</script>
 		<?php else: ?>
 			<button class="generateChatbot px-4 py-2.5 bg-green-400">Gerar chatbot</button>
 		<?php endif; ?>
@@ -488,6 +336,27 @@ if ($user_has_chatbot): ?>
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Download</p>
+		<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
+		<div id="clipboardSection" class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+			<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
+			<pre id="targetText" class="w-full whitespace-normal"></pre>
+			<button
+				id="copyButton"
+				class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
+				title="Copy"
+				aria-label="Copy">
+				<span id="copyStatus" class="">Copiar</span>
+				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true">
+					<path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
+				</svg>
+				<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 fill-green-500 hidden">
+					<path fill-rule="evenodd" d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z" clip-rule="evenodd" />
+					<path fill-rule="evenodd" d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z" clip-rule="evenodd" />
+				</svg>
+			</button>
+		</div>
+
+
 	</div>
 </div>
 
@@ -858,39 +727,6 @@ if ($user_has_chatbot): ?>
 					alert("Complete a aba atual antes de prosseguir.");
 					return;
 				}
-			<!-- Input para mensagem -->
-			<div class="bg-gray-300 p-4 relative">
-				<input class="flex items-center h-10 w-full rounded px-3 text-sm mensagem" type="text"
-					placeholder="Escreva sua mensagem">
-				<button class="bg-blue-600 text-white flex items-center justify-center p-2 rounded absolute top-4 right-4"
-					id="enviarMensagem">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-						stroke="currentColor" class="size-6">
-						<path stroke-linecap="round" stroke-linejoin="round"
-							d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-					</svg>
-				</button>
-			</div>
-		</div>
-
-		<div class="flex justify-center gap-10">
-			<form action="" method="POST" id="deleteChatbotForm">
-				<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-					Chatbot</button>
-			</form>
-			<button type="button" id="gerar-link" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar
-				link</button>
-		</div>
-
-		<div class="flex justify-center">
-			<div id="chatbot-link" style="display:none; margin-top:10px; color:green;"></div>
-		</div>
-	</div>
-<?php else: ?>
-	<?php
-	$questionsManager = new Question();
-	$questions = $questionsManager->getAllQuestions();
-	?>
 
 				// Define o botão ativo
 				buttons.forEach(btn => btn.classList.remove("border-gray-800"));
@@ -904,48 +740,7 @@ if ($user_has_chatbot): ?>
 				showTabContent(tabName);
 			});
 		});
-			<div class="question-block">
-				<label for="chatbot_name">
-					Qual o nome do Chatbot
-				</label>
-				<input type="text" id="" name="chatbot_name" placeholder="Qual o nome do chatbot ?" required>
-			</div>
 
-			<?php if (!empty($questions)): ?>
-				<?php foreach ($questions as $index => $question): ?>
-					<div class="question-block">
-						<label for="question-<?php echo esc_attr($index); ?>"
-							data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-							<?php echo esc_html($question['title']); ?>
-						</label>
-						<?php
-						$options = json_decode($question['options'], true);
-						$field_type = $question['field_type']; // Verifica o tipo de campo
-						?>
-						<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-							<!-- Campo do tipo seleção -->
-							<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-								id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
-								<?php foreach ($options as $option): ?>
-									<option value="<?php echo esc_attr($option); ?>">
-										<?php echo esc_html($option); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-						<?php elseif ($field_type === 'file'): ?>
-							<!-- Campo do tipo arquivo -->
-							<input type="file" id="question-<?php echo esc_attr($index); ?>"
-								name="question_<?php echo esc_attr($question['id']); ?>"
-								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-						<?php else: ?>
-							<!-- Campo do tipo texto (padrão) -->
-							<input type="text" id="question-<?php echo esc_attr($index); ?>"
-								name="question_<?php echo esc_attr($question['id']); ?>"
-								class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-								placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
-						<?php endif; ?>
-					</div>
-				<?php endforeach; ?>
 		contentDivs.forEach(contentDiv => {
 			const backButton = contentDiv.querySelector(".back-btn");
 			if (backButton) {
@@ -1016,7 +811,7 @@ if ($user_has_chatbot): ?>
 				// if (validateCurrentTab(false)) {
 				saveStyles();
 				// } else {
-				// 	alert("Preencha todos os campos antes de salvar.");
+				// alert("Preencha todos os campos antes de salvar.");
 				// };
 			});
 		}
@@ -1057,61 +852,90 @@ if ($user_has_chatbot): ?>
 			generateChatbotButton.addEventListener("click", (event) => {
 				event.preventDefault();
 
-				// const chatbotName = form.elements['chatbot_name'].value.trim();
-
 				const localChatbotOptions = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-
 				const chatbotOptions = Object.values(localChatbotOptions).reduce((acc, val) => acc.concat(val), []);
+				const chatbotName = localChatbotOptions["Configurações"][0]?.resposta;
 
-				const chatbotName = localChatbotOptions["Configurações"][0].resposta;
+				const appearanceImageInput = document.querySelector("#appearance_image");
+				const formData = new FormData();
 
-				// Remove a pergunta que contém a resposta igual a variável chatbotName
-				const filteredChatbotOptions = chatbotOptions.filter(option => option.resposta !== chatbotName);
+				formData.append("action", "create_chatbot");
+				formData.append("chatbot_name", chatbotName);
+				formData.append("chatbot_options", JSON.stringify(chatbotOptions));
 
+				if (appearanceImageInput && appearanceImageInput.files.length > 0) {
+					formData.append("chatbot_image", appearanceImageInput.files[0]);
+				}
 
-				if (confirm('Tem certeza que deseja gerar o chatbot?')) {
+				if (confirm("Tem certeza que deseja gerar o chatbot?")) {
 					fetch(conciergeAjax.ajax_url, {
 							method: "POST",
-							body: new URLSearchParams({
-								action: "create_chatbot",
-								chatbot_name: chatbotName,
-								chatbot_options: JSON.stringify(chatbotOptions),
-							}),
+							body: formData,
 						})
 						.then((response) => response.json())
-						.then((data) => {
-							resultDiv.innerHTML = `
-						<strong>Resposta do Servidor:</strong> ${JSON.stringify(data.data)}
-					`;
-						}).finally(() => {
+						.then((data) => {})
+						.finally(() => {
+							unlockNextTab();
 							window.location.reload();
 						})
 						.catch((error) => {
 							console.error("Erro:", error);
-							resultDiv.innerHTML = `
-						<strong>Erro:</strong> Não foi possível processar a solicitação.
-					`;
-				// Envia os dados usando fetch
-				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						resultDiv.innerHTML = `
-								<strong>Resposta do Servidor:</strong> ${JSON.stringify(data.data)}
-							`;
-					}).finally(() => {
-						window.location.reload();
-					})
-					.catch((error) => {
-						console.error("Erro:", error);
-						resultDiv.innerHTML = `
-								<strong>Erro:</strong> Não foi possível processar a solicitação.
-							`;
-					});
+						});
 				}
 			});
+
 		}
+		const downloadTabButton = document.querySelector('button[data-tab="Download"]');
+
+		function checkAllTabsUnlocked() {
+			let allUnlocked = true;
+			buttons.forEach((button, index) => {
+				if (index < buttons.length - 1 && button.dataset.locked === "true") {
+					allUnlocked = false;
+				}
+			});
+			return allUnlocked;
+		}
+
+		if (checkAllTabsUnlocked()) {
+			downloadTabButton.dataset.locked = "false";
+			downloadTabButton.classList.remove("opacity-50", "cursor-not-allowed");
+		}
+
+			const clipboardSection = document.getElementById("clipboardSection");
+			const targetText = document.getElementById("targetText");
+			const copyButton = document.getElementById("copyButton");
+			const copyStatus = document.getElementById("copyStatus");
+			const copyIcon = document.getElementById("copyIcon");
+			const successIcon = document.getElementById("successIcon");
+
+			// Função para copiar o texto para o clipboard
+			function copyToClipboard() {
+				const textToCopy = targetText.textContent;
+
+				navigator.clipboard
+					.writeText(textToCopy)
+					.then(() => {
+						// Atualiza o status visual para "copiado"
+						copyStatus.textContent = "Copied!";
+						copyIcon.classList.add("hidden");
+						successIcon.classList.remove("hidden");
+
+						// Reseta o estado visual após 2 segundos
+						setTimeout(() => {
+							copyStatus.textContent = "Copy";
+							copyIcon.classList.remove("hidden");
+							successIcon.classList.add("hidden");
+						}, 2000);
+					})
+					.catch((err) => {
+						console.error("Erro ao copiar para o clipboard: ", err);
+					});
+			}
+
+			// Adiciona o evento de clique no botão de copiar
+			copyButton.addEventListener("click", copyToClipboard);
+
+
 	});
 </script>

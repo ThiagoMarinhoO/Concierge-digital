@@ -1,6 +1,7 @@
 <?php
 
 use Smalot\PdfParser\Parser;
+
 class Chatbot
 {
     protected $api_key;
@@ -43,6 +44,7 @@ class Chatbot
         id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         chatbot_name TEXT NOT NULL,
         chatbot_options TEXT NOT NULL,
+        chatbot_image TEXT,
         user_id BIGINT UNSIGNED NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     ) $charset_collate;";
@@ -51,21 +53,45 @@ class Chatbot
         dbDelta($sql);
     }
 
-    public function createChatbot($chatbot_name, $chatbot_options)
+    // public function createChatbot($chatbot_name, $chatbot_options)
+    // {
+    //     $result = $this->wpdb->insert(
+    //         $this->table,
+    //         [
+    //             'chatbot_name' => $chatbot_name,
+    //             'chatbot_options' => json_encode($chatbot_options),
+    //             'user_id' => $this->user_id,
+    //         ],
+    //         [
+    //             '%s',
+    //             '%s',
+    //             '%d',
+    //         ]
+    //     );
+
+    //     return $result !== false;
+    // }
+    public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null)
     {
-        $result = $this->wpdb->insert(
-            $this->table,
-            [
-                'chatbot_name' => $chatbot_name,
-                'chatbot_options' => json_encode($chatbot_options),
-                'user_id' => $this->user_id,
-            ],
-            [
-                '%s',
-                '%s',
-                '%d',
-            ]
-        );
+        $data = [
+            'chatbot_name' => $chatbot_name,
+            'chatbot_options' => json_encode($chatbot_options),
+            'user_id' => $this->user_id,
+        ];
+
+        $formats = [
+            '%s', // chatbot_name
+            '%s', // chatbot_options
+            '%d', // user_id
+        ];
+
+        // Adiciona o campo da imagem se existir
+        if ($chatbot_image !== null) {
+            $data['chatbot_image'] = $chatbot_image;
+            $formats[] = '%s'; // chatbot_image
+        }
+
+        $result = $this->wpdb->insert($this->table, $data, $formats);
 
         return $result !== false;
     }
@@ -216,7 +242,16 @@ class Chatbot
         $arrResult = json_decode($response, true);
 
         if (isset($arrResult['choices'][0]['message']['content'])) {
-            return $arrResult['choices'][0]['message']['content'];
+            $resultMessage = $arrResult['choices'][0]['message']['content'];
+
+            $chatbot_image = $currentChatbot['chatbot_image'];
+
+            $result = [
+                'message' => $resultMessage,
+                'image' => $chatbot_image,
+            ];
+
+            return json_encode($result);
         }
 
         return json_encode([
@@ -224,5 +259,4 @@ class Chatbot
             'message' => 'Erro ao processar a resposta da API.'
         ]);
     }
-
 }
