@@ -156,7 +156,15 @@ function update_chatbot()
                 if (isset($_FILES[$option['field_name']]) && $_FILES[$option['field_name']]['error'] === UPLOAD_ERR_OK) {
                     $file = $_FILES[$option['field_name']];
 
-                    $allowed_types = ['text/csv', 'text/plain', 'application/pdf'];
+                    $allowed_types = [
+                        'text/csv',
+                        'text/plain',
+                        'application/pdf',
+                        'audio/mpeg',
+                        'audio/wav',
+                        'audio/ogg'
+                    ];
+                    
                     $max_size = 5 * 1024 * 1024;
 
                     if (!in_array($file['type'], $allowed_types)) {

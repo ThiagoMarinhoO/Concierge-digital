@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Concierge Digital Chatbot
  * Description: Plugin para criar e testar chatbots no front-end usando a API OpenAI.
- * Version: 2.0
+ * Version: 2.0.1
  * Author: DevHouse
  */
 
@@ -27,6 +27,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';

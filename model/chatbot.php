@@ -59,7 +59,7 @@ class Chatbot
             '%d', // user_id
         ];
 
-        // Adiciona o campo da imagem se existir
+        
         if ($chatbot_image !== null) {
             $data['chatbot_image'] = $chatbot_image;
             $formats[] = '%s';
@@ -70,7 +70,7 @@ class Chatbot
         return $result !== false;
     }
 
-    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null , $user_id)
+    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $user_id)
     {
         $data = [];
         $formats = [];
@@ -184,9 +184,8 @@ class Chatbot
         foreach ($currentChatbot['chatbot_options'] as $option) {
             $training_phrase = $option['training_phrase'];
             $resposta = $option['resposta'];
-
-            if (!empty($option['file_url'])) {
-                $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $option['file_url']);
+            if ($option['field_type'] == 'file') {
+                $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $resposta);
 
                 if (file_exists($file_path)) {
                     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
@@ -195,6 +194,8 @@ class Chatbot
                         $parser = new Parser();
                         $pdf = $parser->parseFile($file_path);
                         $file_content = $pdf->getText();
+                    } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a' , 'ogg'])) {
+                        $file_content = $chatbot->transcribe_audio_with_whisper($file_path);
                     } else {
                         $file_content = file_get_contents($file_path);
                     }
@@ -271,4 +272,48 @@ class Chatbot
             'message' => 'Erro ao processar a resposta da API.'
         ]);
     }
+    public function transcribe_audio_with_whisper($file_path)
+{
+    $url = 'https://api.openai.com/v1/audio/transcriptions';
+    $boundary = uniqid();
+    $delimiter = '--------------------------' . $boundary;
+
+    $file_content = file_get_contents($file_path);
+    $file_name = basename($file_path);
+    $file_mime = mime_content_type($file_path); // Detecta o tipo correto do arquivo
+
+    $file_data = "--$delimiter\r\n" .
+        "Content-Disposition: form-data; name=\"file\"; filename=\"$file_name\"\r\n" .
+        "Content-Type: $file_mime\r\n\r\n" .
+        $file_content . "\r\n" .
+        "--$delimiter\r\n" .
+        "Content-Disposition: form-data; name=\"model\"\r\n\r\n" .
+        "whisper-1\r\n" .
+        "--$delimiter--\r\n";
+
+    $headers = [
+        "Authorization: Bearer " . $this->api_key,
+        "Content-Type: multipart/form-data; boundary=$delimiter",
+    ];
+
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => implode("\r\n", $headers),
+            'content' => $file_data,
+        ],
+    ]);
+
+    $response = file_get_contents($url, false, $context);
+
+    if ($response === false) {
+        plugin_log('Erro na solicitação ao Whisper API');
+    }
+
+    $result = json_decode($response, true);
+
+    return $result['text'] ?? '';
+}
+
+
 }

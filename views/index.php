@@ -589,12 +589,14 @@ foreach ($comportamentoQuestions as $question) {
 					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
 					const resposta = inputElement.value.trim();
 					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
 					chatbotOptions.push({
 						pergunta: perguntaLabel,
 						field_name: inputElement.name,
 						resposta: resposta,
 						training_phrase: trainingPhrase,
+						field_type: fieldType
 					});
 				}
 			});
@@ -646,12 +648,14 @@ foreach ($comportamentoQuestions as $question) {
 					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
 					const resposta = inputElement.value.trim();
 					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
 					chatbotOptions.push({
 						pergunta: perguntaLabel,
 						field_name: inputElement.name,
 						resposta: resposta,
 						training_phrase: trainingPhrase,
+						field_type: fieldType
 					});
 				}
 			});
@@ -773,12 +777,14 @@ foreach ($comportamentoQuestions as $question) {
 					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
 					const resposta = inputElement.value.trim();
 					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
 					chatbotOptions.push({
 						pergunta: perguntaLabel,
 						field_name: inputElement.name,
 						resposta: resposta,
 						training_phrase: trainingPhrase,
+						field_type: fieldType
 					});
 				}
 			});
@@ -1078,7 +1084,7 @@ foreach ($comportamentoQuestions as $question) {
 								body: formData,
 							})
 							.then((response) => response.json())
-							.then((data) => {})
+							.then((data) => { })
 							.finally(() => {
 								unlockNextTab();
 								window.location.reload();
