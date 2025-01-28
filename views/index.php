@@ -22,28 +22,36 @@ foreach ($comportamentoQuestions as $question) {
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 	<!-- Botões das abas -->
-	<button data-tab="Configurações" data-locked="false" class="tab-btn rounded-md cursor-pointer p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent hover:border-gray-800 focus:outline-none">
+	<button data-tab="Configurações" data-locked="false"
+		class="tab-btn rounded-md cursor-pointer p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent hover:border-gray-800 focus:outline-none">
 		Configurações
 	</button>
-	<button data-tab="Comportamento" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Comportamento" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Comportamento
 	</button>
-	<button data-tab="Basedeconhecimento" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Basedeconhecimento" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Base de Conhecimento
 	</button>
-	<button data-tab="Perguntas" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Perguntas" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Perguntas
 	</button>
-	<button data-tab="Integrações" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Integrações" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Integrações
 	</button>
-	<button data-tab="Aparência" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Aparência" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Aparência
 	</button>
-	<button data-tab="Teste" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Teste" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Teste
 	</button>
-	<button data-tab="Download" data-locked="true" class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
+	<button data-tab="Download" data-locked="true"
+		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50">
 		Download
 	</button>
 </div>
@@ -64,7 +72,8 @@ foreach ($comportamentoQuestions as $question) {
 		<?php if (!empty($configQuestions)): ?>
 			<?php foreach ($configQuestions as $index => $question): ?>
 				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+					<label for="question-<?php echo esc_attr($index); ?>"
+						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php echo esc_html($question['title']); ?>
 					</label>
 					<?php
@@ -73,7 +82,8 @@ foreach ($comportamentoQuestions as $question) {
 					?>
 					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 							<?php foreach ($options as $option): ?>
 								<option value="<?php echo esc_attr($option); ?>">
 									<?php echo esc_html($option); ?>
@@ -82,16 +92,12 @@ foreach ($comportamentoQuestions as $question) {
 						</select>
 					<?php elseif ($field_type === 'file'): ?>
 						<!-- Campo do tipo arquivo -->
-						<input
-							type="file"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="file" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 					<?php else: ?>
 						<!-- Campo do tipo texto (padrão) -->
-						<input
-							type="text"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -110,14 +116,17 @@ foreach ($comportamentoQuestions as $question) {
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Comportamento</p>
 		<div x-data="{ tab: 'rapida' }">
-			<button :class="{ 'active': tab === 'rapida' }" @click="tab = 'rapida'" class="px-4 py-2 rounded-md">Rápida</button>
-			<button :class="{ 'active': tab === 'personalizada' }" @click="tab = 'personalizada'" class="px-4 py-2 rounded-md">Personalizada</button>
+			<button :class="{ 'active': tab === 'rapida' }" @click="tab = 'rapida'"
+				class="px-4 py-2 rounded-md">Rápida</button>
+			<button :class="{ 'active': tab === 'personalizada' }" @click="tab = 'personalizada'"
+				class="px-4 py-2 rounded-md">Personalizada</button>
 
 			<div x-show="tab === 'rapida'" class="mt-4">
 				<?php if (!empty($comportamentoOtherQuestions)): ?>
 					<?php foreach ($comportamentoOtherQuestions as $index => $question): ?>
 						<div class="question-block">
-							<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+							<label for="question-<?php echo esc_attr($index); ?>"
+								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 								<?php echo esc_html($question['title']); ?>
 							</label>
 							<?php
@@ -126,7 +135,9 @@ foreach ($comportamentoQuestions as $question) {
 							?>
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
-								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>">
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -135,16 +146,12 @@ foreach ($comportamentoQuestions as $question) {
 								</select>
 							<?php elseif ($field_type === 'file'): ?>
 								<!-- Campo do tipo arquivo -->
-								<input
-									type="file"
-									id="question-<?php echo esc_attr($index); ?>"
+								<input type="file" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 							<?php else: ?>
 								<!-- Campo do tipo texto (padrão) -->
-								<input
-									type="text"
-									id="question-<?php echo esc_attr($index); ?>"
+								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 									placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -160,7 +167,8 @@ foreach ($comportamentoQuestions as $question) {
 				<?php if (!empty($comportamentoPromptQuestions)): ?>
 					<?php foreach ($comportamentoPromptQuestions as $index => $question): ?>
 						<div class="question-block">
-							<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+							<label for="question-<?php echo esc_attr($index); ?>"
+								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 								<?php echo esc_html($question['title']); ?>
 							</label>
 							<?php
@@ -169,7 +177,9 @@ foreach ($comportamentoQuestions as $question) {
 							?>
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
-								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>">
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -178,16 +188,12 @@ foreach ($comportamentoQuestions as $question) {
 								</select>
 							<?php elseif ($field_type === 'file'): ?>
 								<!-- Campo do tipo arquivo -->
-								<input
-									type="file"
-									id="question-<?php echo esc_attr($index); ?>"
+								<input type="file" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 							<?php else: ?>
 								<!-- Campo do tipo texto (padrão) -->
-								<input
-									type="text"
-									id="question-<?php echo esc_attr($index); ?>"
+								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 									placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -210,7 +216,8 @@ foreach ($comportamentoQuestions as $question) {
 		<?php if (!empty($baseDeConhecimentoQuestions)): ?>
 			<?php foreach ($baseDeConhecimentoQuestions as $index => $question): ?>
 				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+					<label for="question-<?php echo esc_attr($index); ?>"
+						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php echo esc_html($question['title']); ?>
 					</label>
 					<?php
@@ -219,7 +226,8 @@ foreach ($comportamentoQuestions as $question) {
 					?>
 					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 							<?php foreach ($options as $option): ?>
 								<option value="<?php echo esc_attr($option); ?>">
 									<?php echo esc_html($option); ?>
@@ -228,16 +236,12 @@ foreach ($comportamentoQuestions as $question) {
 						</select>
 					<?php elseif ($field_type === 'file'): ?>
 						<!-- Campo do tipo arquivo -->
-						<input
-							type="file"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="file" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 					<?php else: ?>
 						<!-- Campo do tipo texto (padrão) -->
-						<input
-							type="text"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -254,7 +258,8 @@ foreach ($comportamentoQuestions as $question) {
 		<?php if (!empty($perguntasQuestions)): ?>
 			<?php foreach ($perguntasQuestions as $index => $question): ?>
 				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+					<label for="question-<?php echo esc_attr($index); ?>"
+						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php echo esc_html($question['title']); ?>
 					</label>
 					<?php
@@ -263,7 +268,8 @@ foreach ($comportamentoQuestions as $question) {
 					?>
 					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 							<?php foreach ($options as $option): ?>
 								<option value="<?php echo esc_attr($option); ?>">
 									<?php echo esc_html($option); ?>
@@ -272,16 +278,12 @@ foreach ($comportamentoQuestions as $question) {
 						</select>
 					<?php elseif ($field_type === 'file'): ?>
 						<!-- Campo do tipo arquivo -->
-						<input
-							type="file"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="file" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 					<?php else: ?>
 						<!-- Campo do tipo texto (padrão) -->
-						<input
-							type="text"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -301,7 +303,8 @@ foreach ($comportamentoQuestions as $question) {
 		<?php if (!empty($integracoesQuestions)): ?>
 			<?php foreach ($integracoesQuestions as $index => $question): ?>
 				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>" data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+					<label for="question-<?php echo esc_attr($index); ?>"
+						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
 						<?php echo esc_html($question['title']); ?>
 					</label>
 					<?php
@@ -310,7 +313,8 @@ foreach ($comportamentoQuestions as $question) {
 					?>
 					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
 							<?php foreach ($options as $option): ?>
 								<option value="<?php echo esc_attr($option); ?>">
 									<?php echo esc_html($option); ?>
@@ -319,16 +323,12 @@ foreach ($comportamentoQuestions as $question) {
 						</select>
 					<?php elseif ($field_type === 'file'): ?>
 						<!-- Campo do tipo arquivo -->
-						<input
-							type="file"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="file" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
 					<?php else: ?>
 						<!-- Campo do tipo texto (padrão) -->
-						<input
-							type="text"
-							id="question-<?php echo esc_attr($index); ?>"
+						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
@@ -348,7 +348,8 @@ foreach ($comportamentoQuestions as $question) {
 				<label for="appearance_image" class="block font-medium text-gray-700 mb-2">
 					Adicione a foto do seu assistente virtual:
 				</label>
-				<input type="file" name="appearance_image" id="appearance_image" class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" accept="image/*">
+				<input type="file" name="appearance_image" id="appearance_image"
+					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" accept="image/*">
 			</div>
 		</div>
 		<button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
@@ -362,14 +363,16 @@ foreach ($comportamentoQuestions as $question) {
 		$user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		$chatbots = $chatbot->getAllChatbots();
 
-		if ($user_has_chatbot) : ?>
+		if ($user_has_chatbot): ?>
 			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
 				<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
 
 					<!-- Select para selecionar o chatbot -->
 					<div class="p-4 bg-gray-200">
-						<label for="chatbot-selector" class="block text-sm font-medium text-gray-700">Selecione o Chatbot:</label>
-						<select id="chatbot-selector" class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+						<label for="chatbot-selector" class="block text-sm font-medium text-gray-700">Selecione o
+							Chatbot:</label>
+						<select id="chatbot-selector"
+							class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 							<?php foreach ($chatbots as $bot): ?>
 								<option value="<?php echo esc_attr($bot->id); ?>">
 									<?php echo esc_html($bot->chatbot_name); ?>
@@ -379,7 +382,8 @@ foreach ($comportamentoQuestions as $question) {
 					</div>
 
 					<!-- Container do chat -->
-					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer" data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
+					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
+						data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
 						<div class="flex w-full mt-2 space-x-3 max-w-xs">
 							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
 								<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
@@ -394,10 +398,15 @@ foreach ($comportamentoQuestions as $question) {
 
 					<!-- Input para mensagem -->
 					<div class="bg-gray-300 p-4 relative">
-						<input class="flex items-center h-10 w-full rounded px-3 text-sm mensagem" type="text" placeholder="Escreva sua mensagem">
-						<button class="bg-blue-600 text-white flex items-center justify-center p-2 rounded absolute top-4 right-4" id="enviarMensagem">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+						<input class="flex items-center h-10 w-full rounded px-3 text-sm mensagem" type="text"
+							placeholder="Escreva sua mensagem">
+						<button
+							class="bg-blue-600 text-white flex items-center justify-center p-2 rounded absolute top-4 right-4"
+							id="enviarMensagem">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+								stroke="currentColor" class="size-6">
+								<path stroke-linecap="round" stroke-linejoin="round"
+									d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
 							</svg>
 						</button>
 					</div>
@@ -405,7 +414,8 @@ foreach ($comportamentoQuestions as $question) {
 
 				<div class="flex justify-center gap-10">
 					<form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar Chatbot</button>
+						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
+							Chatbot</button>
 					</form>
 					<!-- <form action="" method="" id="">
 						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
@@ -419,22 +429,30 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Download</p>
-		<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
-		<div id="clipboardSection" class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+		<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar
+			link</button>
+		<div id="clipboardSection"
+			class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
 			<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
 			<pre id="targetText" class="w-full whitespace-normal"></pre>
-			<button
-				id="copyButton"
+			<button id="copyButton"
 				class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
-				title="Copiar"
-				aria-label="Copy">
+				title="Copiar" aria-label="Copy">
 				<span id="copyStatus" class="">Copiar</span>
-				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true">
-					<path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
+				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+					class="size-4" aria-hidden="true">
+					<path fill-rule="evenodd"
+						d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z"
+						clip-rule="evenodd" />
 				</svg>
-				<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 fill-green-500 hidden">
-					<path fill-rule="evenodd" d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z" clip-rule="evenodd" />
-					<path fill-rule="evenodd" d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z" clip-rule="evenodd" />
+				<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+					class="size-4 fill-green-500 hidden">
+					<path fill-rule="evenodd"
+						d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z"
+						clip-rule="evenodd" />
+					<path fill-rule="evenodd"
+						d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z"
+						clip-rule="evenodd" />
 				</svg>
 			</button>
 		</div>
@@ -552,10 +570,6 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
-
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
@@ -614,17 +628,40 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			//jogar no banco
+			// fetch(conciergeAjax.ajax_url, {
+			// 	method: "POST",
+			// 	headers: {
+			// 		"Content-Type": "application/json",
+			// 	},
+			// 	body: JSON.stringify({
+			// 		chatbotOptions: chatbotOptions,
+			// 		chatbot_id: 13,
+			// 		chatbot_name: "Luis Henrique",
+			// 	}),
+			// })
+			// 	.then((response) => response.json())
+			// 	.then((data) => {
+			// 		if (data.success) {
+			// 			Swal.fire({
+			// 				title: `Respostas salvas`,
+			// 				text: `Respostas salvas para a categoria: ${categoryName}`,
+			// 				icon: "success"
+			// 			});
+			// 		} else {
+			// 			Swal.fire({
+			// 				title: `Erro`,
+			// 				text: `Não foi possível salvar as respostas.`,
+			// 				icon: "error"
+			// 			});
+			// 		}
+			// 	})
+			// 	.catch((error) => console.error("Erro ao salvar dados:", error));
 
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
 			});
-
-			// // Desbloquear a próxima aba
 			unlockNextTab();
 		}
 
@@ -871,7 +908,7 @@ foreach ($comportamentoQuestions as $question) {
 		if (saveConfigButton) {
 			saveConfigButton.addEventListener("click", () => {
 				if (validateCurrentTab(false)) {
-					saveConfigurations(); // Salvar configurações e desbloquear próxima aba
+					saveConfigurations();
 				} else {
 					alert("Preencha todos os campos antes de salvar.");
 				}
@@ -998,16 +1035,17 @@ foreach ($comportamentoQuestions as $question) {
 							method: "POST",
 							body: formData,
 						})
-						.then((response) => response.json())
-						.then((data) => {})
-						.finally(() => {
-							unlockNextTab();
-							window.location.reload();
-						})
-						.catch((error) => {
-							console.error("Erro:", error);
-						});
-					}});
+							.then((response) => response.json())
+							.then((data) => {})
+							.finally(() => {
+								unlockNextTab();
+								window.location.reload();
+							})
+							.catch((error) => {
+								console.error("Erro:", error);
+							});
+					}
+				});
 			});
 
 		}

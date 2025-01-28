@@ -70,7 +70,7 @@ class Chatbot
         // Adiciona o campo da imagem se existir
         if ($chatbot_image !== null) {
             $data['chatbot_image'] = $chatbot_image;
-            $formats[] = '%s'; // chatbot_image
+            $formats[] = '%s';
         }
 
         $result = $this->wpdb->insert($this->table, $data, $formats);
@@ -78,31 +78,31 @@ class Chatbot
         return $result !== false;
     }
 
-    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null)
+    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null , $user_id)
     {
         $data = [];
         $formats = [];
 
         if ($chatbot_name !== null) {
             $data['chatbot_name'] = $chatbot_name;
-            $formats[] = '%s'; // chatbot_name
+            $formats[] = '%s';
         }
 
         if ($chatbot_options !== null) {
-            $current_options = $this->wpdb->get_var($this->wpdb->prepare("SELECT chatbot_options FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id));
+            $current_options = $this->wpdb->get_var($this->wpdb->prepare("SELECT chatbot_options FROM {$this->table} WHERE id = $id AND user_id = $user_id", $id, $this->user_id));
             $current_options = json_decode($current_options, true);
             $new_options = array_merge($current_options, $chatbot_options);
             $data['chatbot_options'] = json_encode($new_options);
-            $formats[] = '%s'; // chatbot_options
+            $formats[] = '%s';
         }
 
         if ($chatbot_image !== null) {
             $data['chatbot_image'] = $chatbot_image;
-            $formats[] = '%s'; // chatbot_image
+            $formats[] = '%s';
         }
 
         if (empty($data)) {
-            return false; // No data to update
+            return false;
         }
 
         $result = $this->wpdb->update(
