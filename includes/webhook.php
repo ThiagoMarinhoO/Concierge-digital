@@ -13,6 +13,7 @@ function gerar_script_chatbot()
     $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
     $chatbot_image = isset($currentChatbot['chatbot_image']) ? (string)$currentChatbot['chatbot_image'] : '';
+    $chatbot_welcome_message = isset($currentChatbot['chatbot_welcome_message']) ? (string)$currentChatbot['chatbot_welcome_message'] : '';
 
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
     if (!$token) {
@@ -33,6 +34,7 @@ function gerar_script_chatbot()
                     localStorage.setItem('chatbot_user_id', ".$user_id.");
                     localStorage.setItem('chatbot_id' , ".$chatbot_id.");
                     localStorage.setItem('chatbot_image' , '".$chatbot_image."');
+                    localStorage.setItem('chatbot_welcome_message' , ".$chatbot_welcome_message.");
                     var script = document.createElement('script');
                     script.async = false;
                     script.defer = true;

@@ -121,7 +121,9 @@
     <label for="question_categories">Categorias:</label><br>
     <select id="question_categories" name="question_categories[]" multiple>
         <?php foreach ($categories as $category): ?>
+            <?php if($category['title'] !== "Perguntas Fixas (criação do lead)") : ?>
             <option value="<?php echo esc_attr($category['id']); ?>"><?php echo esc_html($category['title']); ?></option>
+            <?php endif; ?>
         <?php endforeach; ?>
     </select><br>
     <button type="submit" name="add_question">Adicionar Pergunta</button>
@@ -172,16 +174,58 @@
     </thead>
     <tbody>
         <?php foreach ($questions as $question): ?>
+            <?php if ($question['categories'] !== 'Perguntas Fixas (criação do lead)'): ?>
+                <tr>
+                    <td><?php echo esc_html($question['title']); ?></td>
+                    <td><?php echo esc_html($question['categories']); ?></td>
+                    <td class="actions">
+                        <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
+                    </td>
+                </tr>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </tbody>
+    </tbody>
+</table>
+
+<!-- Formulário de Adicionar Pergunta -->
+<h2>Adicionar Pergunta à Categoria: Perguntas Fixas (criação do lead)</h2>
+<form id="fixed-question-form">
+    <label for="response">Resposta</label>
+    <input type="text" id="response" name="response" required>
+    <button type="submit">Adicionar Pergunta</button>
+</form>
+
+<!-- Tabela de Perguntas Fixas Existentes -->
+<h2>Perguntas Fixas Existentes</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Resposta</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        $question = new Question();
+        $questions = $question->getQuestionsByCategory('Perguntas Fixas (criação do lead)');
+
+        foreach ($questions as $q): ?>
             <tr>
-                <td><?php echo esc_html($question['title']); ?></td>
-                <td><?php echo esc_html($question['categories']); ?></td>
+                <td><?php echo esc_html($q['response'] ?? 'Não definida'); ?></td>
                 <td class="actions">
-                    <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
+                    <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($q['id']); ?>)">Excluir</a>
                 </td>
             </tr>
         <?php endforeach; ?>
+    <?php if (empty($questions)): ?>
+        <tr>
+            <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
+        </tr>
+    <?php endif; ?>
     </tbody>
 </table>
+
 
 <!-- Script para Excluir Pergunta -->
 <script>
@@ -245,4 +289,59 @@
                 });
         }
     }
+
+    document.getElementById('fixed-question-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const responseInput = document.getElementById('response').value;
+
+        if (!responseInput) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'O campo de resposta é obrigatório.',
+            });
+            return;
+        }
+
+        // URL do AJAX
+        const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
+
+        // Fazendo o fetch
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'add_fixed_question',
+                response: responseInput
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso',
+                    text: data.data.message,
+                }).then((result) => {
+					if (result.isConfirmed) {
+                    location.reload();
+                }});
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: data.data.message,
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Ocorreu um erro. Tente novamente.',
+            });
+        });
+    });
 </script>

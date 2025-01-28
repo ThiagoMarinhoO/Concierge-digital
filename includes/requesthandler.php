@@ -8,14 +8,14 @@ function concierge_chat()
     $chatbotId = isset($_POST['assistantId']) ? $_POST['assistantId'] : null;
     $user_id = get_current_user_id();
 
-    error_log('---- assistantId ---');
-    error_log($chatbotId);
+    // error_log('---- assistantId ---');
+    // error_log($chatbotId);
 
     $chatbot = new Chatbot();
 
     $result = $chatbot->enviarMensagem($userMensagem, $chatbotId, $user_id);
-    error_log('---- Resposta do sistema -----');
-    error_log(print_r($result, true));
+    // error_log('---- Resposta do sistema -----');
+    // error_log(print_r($result, true));
 
     wp_send_json_success($result);
     
@@ -29,6 +29,7 @@ function create_chatbot()
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chatbot_options = $_POST['chatbot_options'] ?? '';
         $chatbot_name = $_POST['chatbot_name'] ?? '';
+        $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
 
         if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['chatbot_image'];
@@ -96,7 +97,7 @@ function create_chatbot()
         }
         
         $chatbot = new Chatbot();
-        $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image);
+        $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image,  $chatbot_welcome_message);
 
         wp_send_json_success(['chatbotName' => $chatbot_name]);
     } else {
@@ -249,5 +250,30 @@ function get_questions_by_category()
     error_log(print_r($questions, true));
 
     wp_send_json_success($questions);
+}
+
+add_action('wp_ajax_add_fixed_question', 'add_fixed_question');
+add_action('wp_ajax_nopriv_add_fixed_question', 'add_fixed_question');
+
+function add_fixed_question()
+{
+    try {
+        $response = sanitize_text_field($_POST['response']);
+        
+        if (empty($response)) {
+            wp_send_json_error(['message' => 'O campo de resposta é obrigatório.']);
+        }
+
+        $question = new Question();
+        $question_id = $question->addFixedQuestion($response);
+
+        if ($question_id) {
+            wp_send_json_success(['message' => 'Pergunta adicionada com sucesso!']);
+        } else {
+            wp_send_json_error(['message' => 'Erro ao adicionar a pergunta. Tente novamente.']);
+        }
+    } catch (Exception $e) {
+        wp_send_json_error(['message' => $e->getMessage()]);
+    }
 }
 ?>

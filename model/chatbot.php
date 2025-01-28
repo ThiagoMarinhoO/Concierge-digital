@@ -24,17 +24,6 @@ class Chatbot
         $this->user_id = get_current_user_id();
     }
 
-    // public function getCurrentUserId()
-    // {
-    //     if (is_user_logged_in()) {
-    //         return get_current_user_id();
-    //     } else {
-    //         return null;
-    //     }
-
-
-    // }
-
     public function createTable()
     {
         $charset_collate = $this->wpdb->get_charset_collate();
@@ -43,6 +32,7 @@ class Chatbot
         $sql = "CREATE TABLE {$this->table} (
         id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         chatbot_name TEXT NOT NULL,
+        chatbot_welcome_message TEXT NOT NULL,
         chatbot_options TEXT NOT NULL,
         chatbot_image TEXT,
         user_id BIGINT UNSIGNED NOT NULL,
@@ -53,16 +43,18 @@ class Chatbot
         dbDelta($sql);
     }
 
-    public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null)
+    public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null, $chatbot_welcome_message = null)
     {
         $data = [
             'chatbot_name' => $chatbot_name,
+            'chatbot_welcome_message' => $chatbot_welcome_message,
             'chatbot_options' => json_encode($chatbot_options),
             'user_id' => $this->user_id,
         ];
 
         $formats = [
             '%s', // chatbot_name
+            '%s', // chatbot_welcome_message
             '%s', // chatbot_options
             '%d', // user_id
         ];
