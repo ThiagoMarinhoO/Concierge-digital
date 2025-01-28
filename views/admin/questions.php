@@ -74,6 +74,10 @@
         font-weight: bold;
     }
 
+    .edit-btn {
+        color: rgb(6, 54, 212) !important;
+    }
+
     .toplevel_page_question-manager .actions a:hover {
         text-decoration: underline;
     }
@@ -103,11 +107,14 @@
     <input type="text" id="question_title" name="question_title" required><br>
 
     <label>Tipo de Campo:</label><br>
-    <input type="radio" id="option_file" name="field_type" value="file" onclick="document.getElementById('selection_options').style.display='none'" required>
+    <input type="radio" id="option_file" name="field_type" value="file"
+        onclick="document.getElementById('selection_options').style.display='none'" required>
     <label for="option_file">Arquivo</label><br>
-    <input type="radio" id="option_text" name="field_type" value="text" onclick="document.getElementById('selection_options').style.display='none'" required>
+    <input type="radio" id="option_text" name="field_type" value="text"
+        onclick="document.getElementById('selection_options').style.display='none'" required>
     <label for="option_text">Texto</label><br>
-    <input type="radio" id="option_selection" name="field_type" value="selection" onclick="document.getElementById('selection_options').style.display='block'" required>
+    <input type="radio" id="option_selection" name="field_type" value="selection"
+        onclick="document.getElementById('selection_options').style.display='block'" required>
     <label for="option_selection">Seleção</label><br>
 
     <div id="selection_options" style="display:none;">
@@ -148,12 +155,13 @@
         <?php
         $question = new Question();
 
-        foreach ($categories as $category) : ?>
+        foreach ($categories as $category): ?>
             <tr>
                 <td><?php echo esc_html($category['title']); ?></td>
                 <td><?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?></td>
                 <td class="actions">
-                    <a href="javascript:void(0);" onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
+                    <a href="javascript:void(0);"
+                        onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -166,17 +174,25 @@
     <thead>
         <tr>
             <th>Título</th>
+            <th>Frase de treinamento</th>
+            <th>Tipo de campo</th>
             <th>Categoria</th>
             <th>Ações</th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($questions as $question): ?>
-            <tr>
-                <td><?php echo esc_html($question['title']); ?></td>
-                <td><?php echo esc_html($question['categories']); ?></td>
+            <tr data-question-id="<?php echo esc_attr($question['id']); ?>">
+                <td class="title"><?php echo esc_html($question['title']); ?></td>
+                <td class="training-phrase"><?php echo esc_html($question['training_phrase']); ?></td>
+                <td class="field-type"><?php echo esc_html($question['field_type']); ?></td>
+                <td class="categories"><?php echo esc_html($question['categories']); ?></td>
                 <td class="actions">
-                    <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
+                    <div style="display: flex; gap: 20px;">
+                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                        <a href="javascript:void(0);" class="delete-btn"
+                            onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -190,15 +206,15 @@
     function deleteQuestion(questionId) {
         if (confirm('Tem certeza que deseja excluir esta pergunta?')) {
             fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({
-                        action: 'delete_question',
-                        question_id: questionId
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'delete_question',
+                    question_id: questionId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -217,16 +233,104 @@
                 });
         }
     }
+    function editQuestion(row) {
+        const questionId = row.dataset.questionId;
+        const titleCell = row.querySelector('.title');
+        const trainingPhraseCell = row.querySelector('.training-phrase');
+        const fieldTypeCell = row.querySelector('.field-type');
+        const categoriesCell = row.querySelector('.categories');
+        const actionsCell = row.querySelector('.actions');
+
+        // Armazena os valores originais
+        const originalData = {
+            title: titleCell.innerText,
+            trainingPhrase: trainingPhraseCell.innerText,
+            fieldType: fieldTypeCell.innerText,
+            categories: categoriesCell.innerText
+        };
+
+        // Torna os campos editáveis
+        titleCell.innerHTML = `<input type="text" value="${originalData.title}" />`;
+        trainingPhraseCell.innerHTML = `<input type="text" value="${originalData.trainingPhrase}" />`;
+        fieldTypeCell.innerHTML = `<input type="text" value="${originalData.fieldType}" />`;
+        categoriesCell.innerHTML = `<input type="text" value="${originalData.categories}" />`;
+
+        // Adiciona botões Salvar e Cancelar
+        actionsCell.innerHTML = `
+            <a href="javascript:void(0);" class="save-btn">Salvar</a>
+            <a href="javascript:void(0);" class="cancel-btn">Cancelar</a>
+        `;
+
+        // Botão Salvar
+        actionsCell.querySelector('.save-btn').addEventListener('click', () => {
+            const newData = {
+                question_id: questionId,
+                title: titleCell.querySelector('input').value,
+                training_phrase: trainingPhraseCell.querySelector('input').value,
+                field_type: fieldTypeCell.querySelector('input').value,
+                categories: categoriesCell.querySelector('input').value
+            };
+
+            fetch(conciergeAjax.ajax_url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    action: 'edit_question',
+                    question_id: newData.question_id,
+                    title: newData.title,
+                    training_phrase: newData.training_phrase,
+                    field_type: newData.field_type,
+                    categories: newData.categories
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        titleCell.innerText = newData.title;
+                        trainingPhraseCell.innerText = newData.training_phrase;
+                        fieldTypeCell.innerText = newData.field_type;
+                        categoriesCell.innerText = newData.categories;
+                        actionsCell.innerHTML = `
+                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                        <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
+                    `;
+                        location.reload();
+                    } else {
+                        console.log(data)
+                    }
+                })
+                .catch(error => console.error('Erro ao salvar:', error));
+        });
+
+        // Botão Cancelar
+        actionsCell.querySelector('.cancel-btn').addEventListener('click', () => {
+            titleCell.innerText = originalData.title;
+            trainingPhraseCell.innerText = originalData.trainingPhrase;
+            fieldTypeCell.innerText = originalData.fieldType;
+            categoriesCell.innerText = originalData.categories;
+            actionsCell.innerHTML = `
+                <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
+            `;
+        });
+    }
+
+    // Listener para o botão Editar
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const row = this.closest('tr');
+            editQuestion(row);
+        });
+    });
 
     function deleteCategory(categoryId) {
         if (confirm('Tem certeza que deseja excluir esta categoria?')) {
             fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    body: new URLSearchParams({
-                        action: 'delete_category',
-                        category_id: categoryId
-                    })
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'delete_category',
+                    category_id: categoryId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
