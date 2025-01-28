@@ -611,15 +611,19 @@ foreach ($comportamentoQuestions as $question) {
 			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			
+			unlockNextTab();
 
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Comportamento");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveBehavior() {
@@ -701,12 +705,18 @@ foreach ($comportamentoQuestions as $question) {
 			// 	})
 			// 	.catch((error) => console.error("Erro ao salvar dados:", error));
 
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Basedeconhecimento");
+				}
 			});
-			unlockNextTab();
 		}
 
 		function saveKnowledge() {
@@ -750,14 +760,18 @@ foreach ($comportamentoQuestions as $question) {
 			// // Feedback ao usuário
 			// alert(`Respostas salvas para a categoria: ${categoryName}`);
 			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Perguntas");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveQuestions() {
@@ -804,14 +818,18 @@ foreach ($comportamentoQuestions as $question) {
 			// alert(`Respostas salvas para a categoria: ${categoryName}`);
 			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
 
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Integrações");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveIntegrations() {
@@ -852,17 +870,18 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Aparência");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveStyles() {
@@ -903,17 +922,18 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Teste");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		buttons.forEach((button, index) => {
