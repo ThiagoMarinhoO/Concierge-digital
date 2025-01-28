@@ -150,7 +150,7 @@ class Question
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
     }
 
-    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type): bool
+    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type, $question_response): bool
 {
     $updated = $this->wpdb->update(
         $this->table,
@@ -158,7 +158,8 @@ class Question
             'title' => $title,
             'options' => json_encode($options),
             'training_phrase' => $training_phrase,
-            'field_type' => $field_type
+            'field_type' => $field_type,
+            'response' => $question_response
         ],
         ['id' => $id],
         ['%s', '%s', '%s', '%s'],

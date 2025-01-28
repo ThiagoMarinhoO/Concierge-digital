@@ -231,18 +231,22 @@
         $questions = $question->getQuestionsByCategory('Perguntas Fixas (criação do lead)');
 
         foreach ($questions as $q): ?>
-            <tr>
-                <td><?php echo esc_html($q['response'] ?? 'Não definida'); ?></td>
+            <tr data-question-id="<?php echo esc_attr($q['id']); ?>">
+                <td class="question-response"><?php echo esc_html($q['response'] ?? 'Não definida'); ?></td>
                 <td class="actions">
-                    <a href="javascript:void(0);" onclick="deleteQuestion(<?php echo esc_attr($q['id']); ?>)">Excluir</a>
+                    <div style="display: flex; gap: 20px;">
+                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                        <a href="javascript:void(0);"
+                            onclick="deleteQuestion(<?php echo esc_attr($q['id']); ?>)">Excluir</a>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>
-    <?php if (empty($questions)): ?>
-        <tr>
-            <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
-        </tr>
-    <?php endif; ?>
+        <?php if (empty($questions)): ?>
+            <tr>
+                <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
+            </tr>
+        <?php endif; ?>
     </tbody>
 </table>
 
@@ -288,62 +292,82 @@
         const fieldTypeCell = row.querySelector('.field-type');
         const categoriesCell = row.querySelector('.categories');
         const actionsCell = row.querySelector('.actions');
+        const questionResponseCell = row.querySelector('.question-response');
 
-        // Armazena os valores originais
+        const title = titleCell ? titleCell.innerText : null;
+        const training = trainingPhraseCell ? trainingPhraseCell.innerText : null;
+        const fieldType = fieldTypeCell ? fieldTypeCell.innerText : null;
+        const categories = categoriesCell ? categoriesCell.innerText : 'Perguntas Fixas (criação do lead)';
+        const questionResponse = questionResponseCell ? questionResponseCell.innerText : null;
+
         const originalData = {
-            title: titleCell.innerText,
-            trainingPhrase: trainingPhraseCell.innerText,
-            fieldType: fieldTypeCell.innerText,
-            categories: categoriesCell.innerText
+            title: title,
+            trainingPhrase: training,
+            fieldType: fieldType,
+            categories: categories,
+            questionResponse: questionResponse
         };
 
-        // Torna os campos editáveis
-        titleCell.innerHTML = `<input type="text" value="${originalData.title}" />`;
-        trainingPhraseCell.innerHTML = `<input type="text" value="${originalData.trainingPhrase}" />`;
-        fieldTypeCell.innerHTML = `<input type="text" value="${originalData.fieldType}" />`;
-        categoriesCell.innerHTML = `<input type="text" value="${originalData.categories}" />`;
+        if (titleCell) titleCell.innerHTML = `<input type="text" value="${originalData.title || ''}" />`;
+        if (trainingPhraseCell) trainingPhraseCell.innerHTML = `<input type="text" value="${originalData.trainingPhrase || ''}" />`;
+        if (fieldTypeCell) fieldTypeCell.innerHTML = `<input type="text" value="${originalData.fieldType || ''}" />`;
+        if (categoriesCell) categoriesCell.innerHTML = `<input type="text" value="${originalData.categories || ''}" />`;
+        if (questionResponseCell) questionResponseCell.innerHTML = `<input type="text" value="${originalData.questionResponse || ''}" />`;
 
-        // Adiciona botões Salvar e Cancelar
         actionsCell.innerHTML = `
-            <a href="javascript:void(0);" class="save-btn">Salvar</a>
-            <a href="javascript:void(0);" class="cancel-btn">Cancelar</a>
-        `;
+        <a href="javascript:void(0);" class="save-btn">Salvar</a>
+        <a href="javascript:void(0);" class="cancel-btn">Cancelar</a>
+    `;
 
         // Botão Salvar
         actionsCell.querySelector('.save-btn').addEventListener('click', () => {
             const newData = {
                 question_id: questionId,
-                title: titleCell.querySelector('input').value,
-                training_phrase: trainingPhraseCell.querySelector('input').value,
-                field_type: fieldTypeCell.querySelector('input').value,
-                categories: categoriesCell.querySelector('input').value
+                title: titleCell ? titleCell.querySelector('input').value : null,
+                training_phrase: trainingPhraseCell ? trainingPhraseCell.querySelector('input').value : null,
+                field_type: fieldTypeCell ? fieldTypeCell.querySelector('input').value : null,
+                categories: categoriesCell ? categoriesCell.querySelector('input').value : 'Perguntas Fixas (criação do lead)',
+                questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null
             };
 
-            fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
+            const bodyData = newData.categories == "Perguntas Fixas (criação do lead)"
+                ? new URLSearchParams({
+                    action: 'edit_question',
+                    question_id: newData.question_id,
+                    responseQuestion: newData.questionResponse,
+                    categories: newData.categories
+                })
+                : new URLSearchParams({
                     action: 'edit_question',
                     question_id: newData.question_id,
                     title: newData.title,
                     training_phrase: newData.training_phrase,
                     field_type: newData.field_type,
-                    categories: newData.categories
-                })
-            }).then(response => response.json())
+                    categories: newData.categories,
+                    responseQuestion: newData.questionResponse
+                });
+
+            fetch(conciergeAjax.ajax_url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: bodyData
+            })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        titleCell.innerText = newData.title;
-                        trainingPhraseCell.innerText = newData.training_phrase;
-                        fieldTypeCell.innerText = newData.field_type;
-                        categoriesCell.innerText = newData.categories;
+                        if (titleCell) titleCell.innerText = newData.title;
+                        if (trainingPhraseCell) trainingPhraseCell.innerText = newData.training_phrase;
+                        if (fieldTypeCell) fieldTypeCell.innerText = newData.field_type;
+                        if (categoriesCell) categoriesCell.innerText = newData.categories;
+                        if (questionResponseCell) questionResponseCell.innerText = newData.questionResponse;
+
                         actionsCell.innerHTML = `
-                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
-                        <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
-                    `;
+                    <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                    <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
+                `;
                         location.reload();
                     } else {
-                        console.log(data)
+                        console.error(data);
                     }
                 })
                 .catch(error => console.error('Erro ao salvar:', error));
@@ -351,14 +375,21 @@
 
         // Botão Cancelar
         actionsCell.querySelector('.cancel-btn').addEventListener('click', () => {
-            titleCell.innerText = originalData.title;
-            trainingPhraseCell.innerText = originalData.trainingPhrase;
-            fieldTypeCell.innerText = originalData.fieldType;
-            categoriesCell.innerText = originalData.categories;
+            if (titleCell) titleCell.innerText = originalData.title;
+            if (trainingPhraseCell) trainingPhraseCell.innerText = originalData.trainingPhrase;
+            if (fieldTypeCell) fieldTypeCell.innerText = originalData.fieldType;
+            if (categoriesCell) categoriesCell.innerText = originalData.categories;
+            if (questionResponseCell) questionResponseCell.innerText = originalData.questionResponse;
             actionsCell.innerHTML = `
-                <a href="javascript:void(0);" class="edit-btn">Editar</a>
-                <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
-            `;
+            <a href="javascript:void(0);" class="edit-btn">Editar</a>
+            <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
+        `;
+
+            // Reanexar o evento ao botão Editar
+            actionsCell.querySelector('.edit-btn').addEventListener('click', function () {
+                const row = this.closest('tr');
+                editQuestion(row);
+            });
         });
     }
 
@@ -369,6 +400,7 @@
             editQuestion(row);
         });
     });
+
 
     function deleteCategory(categoryId) {
         if (confirm('Tem certeza que deseja excluir esta categoria?')) {

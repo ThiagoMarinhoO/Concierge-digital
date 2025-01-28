@@ -241,9 +241,8 @@ function edit_question()
     $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
     $training_phrase = isset($_POST['training_phrase']) ? sanitize_text_field($_POST['training_phrase']) : '';
     $options = isset($_POST['options']) ? json_decode(stripslashes($_POST['options']), true) : [];
-    $categories = isset($_POST['categories']) ? $_POST['categories'] : [];
-
-    plugin_log(print_r($categories , true));
+    $categories = isset($_POST['categories']) ? sanitize_text_field($_POST['categories']) : '';
+    $responseQuestion = isset($_POST['responseQuestion']) ? sanitize_text_field($_POST['responseQuestion']) : '';
 
     $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : '';
 
@@ -251,15 +250,25 @@ function edit_question()
         wp_send_json_error(['message' => 'ID da pergunta inválido']);
     }
 
-
     $question = new Question();
 
-    $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type);
+    // Se a categoria está vazia, atualize apenas o `responseQuestion`
+    if ($categories == 'Perguntas Fixas (criação do lead)') {
+        $updated = $question->updateQuestion($question_id, '' , '' , [] , 'Perguntas Fixas (criação do lead)' , '' , $responseQuestion);
 
-    if ($updated) {
-        wp_send_json_success(['message' => 'Pergunta atualizada com sucesso!']);
+        if ($updated) {
+            wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
+        } else {
+            wp_send_json_error(['message' => 'Erro ao atualizar a resposta da pergunta']);
+        }
     } else {
-        wp_send_json_error(['message' => 'Erro ao atualizar a pergunta']);
+        $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type, $responseQuestion);
+
+        if ($updated) {
+            wp_send_json_success(['message' => 'Pergunta atualizada com sucesso!']);
+        } else {
+            wp_send_json_error(['message' => 'Erro ao atualizar a pergunta']);
+        }
     }
 }
 
