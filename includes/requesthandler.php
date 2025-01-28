@@ -8,14 +8,14 @@ function concierge_chat()
     $chatbotId = isset($_POST['assistantId']) ? $_POST['assistantId'] : null;
     $user_id = get_current_user_id();
 
-    error_log('---- assistantId ---');
-    error_log($chatbotId);
+    // error_log('---- assistantId ---');
+    // error_log($chatbotId);
 
     $chatbot = new Chatbot();
 
     $result = $chatbot->enviarMensagem($userMensagem, $chatbotId, $user_id);
-    error_log('---- Resposta do sistema -----');
-    error_log(print_r($result, true));
+    // error_log('---- Resposta do sistema -----');
+    // error_log(print_r($result, true));
 
     wp_send_json_success($result);
     
@@ -155,7 +155,15 @@ function update_chatbot()
                 if (isset($_FILES[$option['field_name']]) && $_FILES[$option['field_name']]['error'] === UPLOAD_ERR_OK) {
                     $file = $_FILES[$option['field_name']];
 
-                    $allowed_types = ['text/csv', 'text/plain', 'application/pdf'];
+                    $allowed_types = [
+                        'text/csv',
+                        'text/plain',
+                        'application/pdf',
+                        'audio/mpeg',
+                        'audio/wav',
+                        'audio/ogg'
+                    ];
+                    
                     $max_size = 5 * 1024 * 1024;
 
                     if (!in_array($file['type'], $allowed_types)) {
