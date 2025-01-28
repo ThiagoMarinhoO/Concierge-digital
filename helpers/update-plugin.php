@@ -11,7 +11,7 @@ function check_github_plugin_update($transient) {
         $release_data = json_decode($response['body']);
 
         if (isset($release_data->tag_name)) {
-            $plugin_version = '2.0.0';
+            $plugin_version = '2.0.1';
 
             if (version_compare($plugin_version, $release_data->tag_name, '<')) {
                 $transient->checked[plugin_basename(__FILE__)] = $release_data->tag_name;
