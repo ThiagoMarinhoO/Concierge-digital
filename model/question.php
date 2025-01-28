@@ -150,6 +150,57 @@ class Question
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
     }
 
+    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type): bool
+{
+    $updated = $this->wpdb->update(
+        $this->table,
+        [
+            'title' => $title,
+            'options' => json_encode($options),
+            'training_phrase' => $training_phrase,
+            'field_type' => $field_type
+        ],
+        ['id' => $id],
+        ['%s', '%s', '%s', '%s'],
+        ['%d']
+    );
+
+    if ($updated === false) {
+        return false;
+    }
+
+    $relation_table = $this->getRelationTable();
+
+    $this->wpdb->delete($relation_table, ['question_id' => $id], ['%d']);
+
+    $category_table = $this->wpdb->prefix . 'question_categories';
+    $category_id = $this->wpdb->get_var(
+        $this->wpdb->prepare("SELECT id FROM {$category_table} WHERE title = %s", $category)
+    );
+
+    if (!$category_id) {
+        $this->wpdb->insert(
+            $category_table,
+            ['title' => $category],
+            ['%s']
+        );
+
+        $category_id = $this->wpdb->insert_id;
+    }
+
+    $this->wpdb->insert(
+        $relation_table,
+        [
+            'question_id' => $id,
+            'category_id' => $category_id
+        ],
+        ['%d', '%d']
+    );
+
+    return true;
+}
+
+
     private function getRelationTable(): string
     {
         return $this->wpdb->prefix . 'question_category_relationships';

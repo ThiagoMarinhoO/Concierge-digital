@@ -18,7 +18,7 @@ function concierge_chat()
     // error_log(print_r($result, true));
 
     wp_send_json_success($result);
-    
+
 }
 
 add_action('wp_ajax_create_chatbot', 'create_chatbot');
@@ -95,7 +95,7 @@ function create_chatbot()
 
             // error_log(print_r($chatbot_options, true));
         }
-        
+
         $chatbot = new Chatbot();
         $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image,  $chatbot_welcome_message);
 
@@ -118,26 +118,26 @@ function update_chatbot()
         $chatbot_name = $_POST['chatbot_name'] ?? '';
         $chatbot_image = $_POST['chatbot_image'] ?? '';
 
-        if($chatbot_image) {
+        if ($chatbot_image) {
             if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
                 $file = $_FILES['chatbot_image'];
-    
+
                 $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
                 $max_size = 2 * 1024 * 1024;
-    
+
                 if (!in_array($file['type'], $allowed_types)) {
                     wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
                     return;
                 }
-    
+
                 if ($file['size'] > $max_size) {
                     wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
                     return;
                 }
-    
+
                 $upload_dir = wp_upload_dir();
                 $target_path = $upload_dir['path'] . '/' . basename($file['name']);
-    
+
                 if (move_uploaded_file($file['tmp_name'], $target_path)) {
                     $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
                 } else {
@@ -164,7 +164,7 @@ function update_chatbot()
                         'audio/wav',
                         'audio/ogg'
                     ];
-                    
+
                     $max_size = 5 * 1024 * 1024;
 
                     if (!in_array($file['type'], $allowed_types)) {
@@ -192,7 +192,7 @@ function update_chatbot()
 
             // error_log(print_r($chatbot_options, true));
         }
-        
+
         $chatbot = new Chatbot();
         $chatbot->updateChatbot($chatbot_name, $chatbot_options, $chatbot_image);
 
@@ -235,6 +235,38 @@ function delete_question()
 add_action('wp_ajax_delete_category', 'delete_category');
 add_action('wp_ajax_nopriv_delete_category', 'delete_category');
 
+function edit_question()
+{
+    $question_id = isset($_POST['question_id']) ? intval($_POST['question_id']) : null;
+    $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $training_phrase = isset($_POST['training_phrase']) ? sanitize_text_field($_POST['training_phrase']) : '';
+    $options = isset($_POST['options']) ? json_decode(stripslashes($_POST['options']), true) : [];
+    $categories = isset($_POST['categories']) ? $_POST['categories'] : [];
+
+    plugin_log(print_r($categories , true));
+
+    $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : '';
+
+    if (empty($question_id)) {
+        wp_send_json_error(['message' => 'ID da pergunta inválido']);
+    }
+
+
+    $question = new Question();
+
+    $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type);
+
+    if ($updated) {
+        wp_send_json_success(['message' => 'Pergunta atualizada com sucesso!']);
+    } else {
+        wp_send_json_error(['message' => 'Erro ao atualizar a pergunta']);
+    }
+}
+
+add_action('wp_ajax_edit_question', 'edit_question');
+add_action('wp_ajax_nopriv_edit_question', 'edit_question');
+
+
 function delete_category()
 {
     $category_id = isset($_POST['category_id']) ? $_POST['category_id'] : null;
@@ -251,7 +283,7 @@ add_action('wp_ajax_nopriv_get_questions_by_category', 'get_questions_by_categor
 function get_questions_by_category()
 {
     $category_title = isset($_POST['category_title']) ? $_POST['category_title'] : null;
-    
+
     $question = new Question();
     $questions = $question->getQuestionsByCategory($category_title);
 
