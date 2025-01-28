@@ -16,19 +16,37 @@ class Question
         $charset_collate = $this->wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE {$this->table} (
-    id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    title TEXT NOT NULL,
-    options TEXT DEFAULT NULL,
-    training_phrase TEXT NOT NULL,
-    field_type VARCHAR(50) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) $charset_collate;";
+            id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            title TEXT NOT NULL,
+            options TEXT DEFAULT NULL,
+            training_phrase TEXT NOT NULL,
+            field_type VARCHAR(50) NOT NULL,
+            response TEXT DEFAULT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
 
-    public function addQuestion(string $title, string $training_phrase, array $options, array $categories, string $field_type): int
+    public function getAllQuestions(): array
+    {
+        $relation_table = $this->getRelationTable();
+        $category_table = $this->wpdb->prefix . 'question_categories';
+
+        $sql = "
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.created_at,
+               GROUP_CONCAT(c.title) AS categories
+        FROM {$this->table} q
+        LEFT JOIN {$relation_table} r ON q.id = r.question_id
+        LEFT JOIN {$category_table} c ON r.category_id = c.id
+        GROUP BY q.id
+        ";
+
+        return $this->wpdb->get_results($sql, ARRAY_A);
+    }
+
+    public function addQuestion(string $title = null, string $training_phrase = null, array $options = null, array $categories, string $field_type = null, ?string $response = null): int
     {
         $this->wpdb->insert(
             $this->table,
@@ -36,9 +54,11 @@ class Question
                 'title' => $title,
                 'options' => json_encode($options),
                 'training_phrase' => $training_phrase,
-                'field_type' => $field_type
+                'field_type' => $field_type,
+                'response' => $response
             ],
             [
+                '%s',
                 '%s',
                 '%s',
                 '%s',
@@ -68,22 +88,60 @@ class Question
         return $question_id;
     }
 
-    public function getAllQuestions(): array
+    public function addFixedQuestion(string $response): int
     {
-        $relation_table = $this->getRelationTable();
+        // ID fixo ou busca pela categoria "Perguntas Fixas (criação do lead)"
         $category_table = $this->wpdb->prefix . 'question_categories';
+        $relation_table = $this->getRelationTable();
 
-        $sql = "
-        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.created_at,
-               GROUP_CONCAT(c.title) AS categories
-        FROM {$this->table} q
-        LEFT JOIN {$relation_table} r ON q.id = r.question_id
-        LEFT JOIN {$category_table} c ON r.category_id = c.id
-        GROUP BY q.id
-    ";
+        // Buscar o ID da categoria
+        $category_id = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT id FROM {$category_table} WHERE title = %s",
+            'Perguntas Fixas (criação do lead)'
+        ));
 
-        return $this->wpdb->get_results($sql, ARRAY_A);
+        if (!$category_id) {
+            // Caso a categoria não exista, lance um erro
+            throw new Exception('A categoria "Perguntas Fixas (criação do lead)" não foi encontrada.');
+        }
+
+        // Adicionar a pergunta com apenas a resposta
+        $this->wpdb->insert(
+            $this->table,
+            [
+                'title' => '',
+                'training_phrase' => '',
+                'field_type' => '', // Define o tipo de campo como texto por padrão
+                'response' => $response
+            ],
+            [
+                '%s',
+                '%s',
+                '%s',
+                '%s'
+            ]
+        );
+
+        $question_id = $this->wpdb->insert_id;
+
+        if ($question_id) {
+            // Criar a relação entre a pergunta e a categoria
+            $this->wpdb->insert(
+                $relation_table,
+                [
+                    'question_id' => $question_id,
+                    'category_id' => $category_id
+                ],
+                [
+                    '%d',
+                    '%d'
+                ]
+            );
+        }
+
+        return $question_id;
     }
+
 
     public function deleteQuestion($id)
     {
@@ -154,12 +212,12 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type
+        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response
         FROM {$this->table} q
         INNER JOIN {$relation_table} r ON q.id = r.question_id
         INNER JOIN {$category_table} c ON r.category_id = c.id
         WHERE c.title = %s
-    ";
+        ";
 
         return $this->wpdb->get_results($this->wpdb->prepare($sql, $category_title), ARRAY_A);
     }

@@ -39,6 +39,12 @@ class QuestionCategory
         return $this->wpdb->get_results("SELECT * FROM {$this->table}", ARRAY_A);
     }
 
+    public function getCategoryByName(string $name)
+    {
+        $result = $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM {$this->table} WHERE title = %s", $name), ARRAY_A);
+        return $result ? $result : null;
+    }
+
     public function deleteCategory(int $id): void
     {
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);

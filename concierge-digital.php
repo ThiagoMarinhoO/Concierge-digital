@@ -61,6 +61,8 @@ function concierge_enqueue_admin_assets()
 {
     // wp_enqueue_script('tailwind', 'https://cdn.tailwindcss.com');
     wp_enqueue_script('alpine-js', 'https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js', [], '3.12.0', true);
+    wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', [], '11', true);
+
 }
 
 // session_start();

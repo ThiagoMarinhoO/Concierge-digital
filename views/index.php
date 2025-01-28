@@ -2,7 +2,7 @@
 
 $question = new Question();
 
-$configQuestions = $question->getQuestionsByCategory('configuração');
+$configQuestions = $question->getQuestionsByCategory('Configurações');
 $comportamentoQuestions = $question->getQuestionsByCategory('Comportamento');
 $perguntasQuestions = $question->getQuestionsByCategory('Perguntas');
 $baseDeConhecimentoQuestions = $question->getQuestionsByCategory('Base de Conhecimento');
@@ -13,7 +13,7 @@ $comportamentoPromptQuestions = [];
 $comportamentoOtherQuestions = [];
 
 foreach ($comportamentoQuestions as $question) {
-	if ($question['title'] === 'Personalize ainda mais seu assistente virtual:') {
+	if ($question['title'] === 'Escreva aqui seu prompt:') {
 		$comportamentoPromptQuestions[] = $question;
 	} else {
 		$comportamentoOtherQuestions[] = $question;
@@ -65,10 +65,48 @@ foreach ($comportamentoQuestions as $question) {
 				<label for="chatbot_name" class="block font-medium text-gray-700 mb-2">
 					Nome do Assistente
 				</label>
-				<input type="text" name="chatbot_name" placeholder="Qual o nome do chatbot ?"
+				<input type="text" name="chatbot_name" placeholde="Qual o nome do chatbot ?"
 					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" required>
 			</div>
 		</div>
+		<div class="question-block">
+			<label for="toggle_welcome_message" class="block font-medium text-gray-700 mb-2">
+				Mostrar mensagem de boas vindas?
+			</label>
+			<input type="checkbox" id="toggle_welcome_message" class="toggle-checkbox">
+			<div id="welcome_message_container" class="hidden">
+				<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
+					Qual será a mensagem de boas vindas?
+				</label>
+				<input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas vindas?"
+					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
+			</div>
+		</div>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
+				const welcomeMessageContainer = document.getElementById("welcome_message_container");
+
+				toggleWelcomeMessage.addEventListener("change", () => {
+					const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
+					if (toggleWelcomeMessage.checked) {
+						welcomeMessageContainer.classList.remove("hidden");
+						label.classList.add("hidden");
+					} else {
+						welcomeMessageContainer.classList.add("hidden");
+						label.classList.remove("hidden");
+					}
+				});
+			});
+		</script>
+		<!-- <div class="question-block">
+			<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
+				Qual será a mensagem de boas vindas ?
+			</label>
+			<input type="text" name="chatbot_welcome_message" placeholde="Qual o nome do chatbot ?"
+				class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
+		</div> -->
 		<?php if (!empty($configQuestions)): ?>
 			<?php foreach ($configQuestions as $index => $question): ?>
 				<div class="question-block">
@@ -100,7 +138,7 @@ foreach ($comportamentoQuestions as $question) {
 						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
@@ -154,7 +192,7 @@ foreach ($comportamentoQuestions as $question) {
 								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -196,7 +234,7 @@ foreach ($comportamentoQuestions as $question) {
 								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -244,7 +282,7 @@ foreach ($comportamentoQuestions as $question) {
 						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
@@ -286,7 +324,7 @@ foreach ($comportamentoQuestions as $question) {
 						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
@@ -331,7 +369,7 @@ foreach ($comportamentoQuestions as $question) {
 						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholder="<?php echo esc_attr($question['training_phrase']); ?>">
+							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
 					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
@@ -384,22 +422,24 @@ foreach ($comportamentoQuestions as $question) {
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
+						<?php if($chatbots[0]->chatbot_welcome_message) : ?>
 						<div class="flex w-full mt-2 space-x-3 max-w-xs">
 							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
 								<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
 							</div>
 							<div>
 								<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-									<p class="text-sm">Olá! Como posso ajudar?</p>
+									<p class="text-sm"><?php echo $chatbots[0]->chatbot_welcome_message; ?></p>
 								</div>
 							</div>
 						</div>
+						<?php endif; ?>
 					</div>
 
 					<!-- Input para mensagem -->
 					<div class="bg-gray-300 p-4 relative">
 						<input class="flex items-center h-10 w-full rounded px-3 text-sm mensagem" type="text"
-							placeholder="Escreva sua mensagem">
+							placeholde="Escreva sua mensagem">
 						<button
 							class="bg-blue-600 text-white flex items-center justify-center p-2 rounded absolute top-4 right-4"
 							id="enviarMensagem">
@@ -544,7 +584,7 @@ foreach ($comportamentoQuestions as $question) {
 
 			// Iterar pelos blocos de perguntas
 			activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-				const inputElement = questionBlock.querySelector("input, select");
+				const inputElement = questionBlock.querySelector("input:not([type='checkbox']), select");
 				if (inputElement) {
 					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
 					const resposta = inputElement.value.trim();
@@ -571,15 +611,19 @@ foreach ($comportamentoQuestions as $question) {
 			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			
+			unlockNextTab();
 
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Comportamento");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveBehavior() {
@@ -661,12 +705,18 @@ foreach ($comportamentoQuestions as $question) {
 			// 	})
 			// 	.catch((error) => console.error("Erro ao salvar dados:", error));
 
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Basedeconhecimento");
+				}
 			});
-			unlockNextTab();
 		}
 
 		function saveKnowledge() {
@@ -710,14 +760,18 @@ foreach ($comportamentoQuestions as $question) {
 			// // Feedback ao usuário
 			// alert(`Respostas salvas para a categoria: ${categoryName}`);
 			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Perguntas");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveQuestions() {
@@ -764,14 +818,18 @@ foreach ($comportamentoQuestions as $question) {
 			// alert(`Respostas salvas para a categoria: ${categoryName}`);
 			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
 
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Integrações");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveIntegrations() {
@@ -812,17 +870,18 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Aparência");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		function saveStyles() {
@@ -863,17 +922,18 @@ foreach ($comportamentoQuestions as $question) {
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+			unlockNextTab();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
 				icon: "success"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					hideAllTabs();
+					showTabContent("Teste");
+				}
 			});
-
-			// Desbloquear a próxima aba
-			unlockNextTab();
 		}
 
 		buttons.forEach((button, index) => {
@@ -1015,12 +1075,14 @@ foreach ($comportamentoQuestions as $question) {
 				const localChatbotOptions = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
 				const chatbotOptions = Object.values(localChatbotOptions).reduce((acc, val) => acc.concat(val), []);
 				const chatbotName = localChatbotOptions["Configurações"][0]?.resposta;
+				const chatbotWelcomeMessage = localChatbotOptions["Configurações"][1]?.resposta;
 
 				const appearanceImageInput = document.querySelector("#appearance_image");
 				const formData = new FormData();
 
 				formData.append("action", "create_chatbot");
 				formData.append("chatbot_name", chatbotName);
+				formData.append("chatbot_welcome_message", chatbotWelcomeMessage);
 				formData.append("chatbot_options", JSON.stringify(chatbotOptions));
 
 				if (appearanceImageInput && appearanceImageInput.files.length > 0) {
@@ -1038,9 +1100,9 @@ foreach ($comportamentoQuestions as $question) {
 				}).then((result) => {
 					if (result.isConfirmed) {
 						fetch(conciergeAjax.ajax_url, {
-							method: "POST",
-							body: formData,
-						})
+								method: "POST",
+								body: formData,
+							})
 							.then((response) => response.json())
 							.then((data) => { })
 							.finally(() => {
