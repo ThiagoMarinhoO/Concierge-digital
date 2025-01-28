@@ -307,7 +307,7 @@ class Chatbot
     $response = file_get_contents($url, false, $context);
 
     if ($response === false) {
-        plugin_log('Erro na solicitação ao Whisper API');
+        // plugin_log('Erro na solicitação ao Whisper API');
     }
 
     $result = json_decode($response, true);

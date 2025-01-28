@@ -34,7 +34,7 @@ function gerar_script_chatbot()
                     localStorage.setItem('chatbot_user_id', ".$user_id.");
                     localStorage.setItem('chatbot_id' , ".$chatbot_id.");
                     localStorage.setItem('chatbot_image' , '".$chatbot_image."');
-                    localStorage.setItem('chatbot_welcome_message' , ".$chatbot_welcome_message.");
+                    localStorage.setItem('chatbot_welcome_message' , '".$chatbot_welcome_message."' );
                     var script = document.createElement('script');
                     script.async = false;
                     script.defer = true;

@@ -95,42 +95,44 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const form = document.getElementById('deleteChatbotForm');
-        const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
-
-        const formData = new FormData(form);
-        formData.append('action', 'delete_chatbot');
-        formData.append('chatbot_id', chatbotId);
-
-        Swal.fire({
-            title: 'Tem certeza?',
-            text: "Tem certeza de que quer resetar o chatbot?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sim, resetar!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    body: formData
-                }).then(response => response.json())
-                    .then(data => {
-                    })
-                    .finally(() => {
-                        localStorage.removeItem('chatbotRespostas');
-                        window.location.reload();
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-            }
-        });
-    })
+    if(document.querySelector('#deleteChatbotForm')) {
+        document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+    
+            const form = document.getElementById('deleteChatbotForm');
+            const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
+    
+            const formData = new FormData(form);
+            formData.append('action', 'delete_chatbot');
+            formData.append('chatbot_id', chatbotId);
+    
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Tem certeza de que quer resetar o chatbot?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, resetar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(conciergeAjax.ajax_url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json())
+                        .then(data => {
+                        })
+                        .finally(() => {
+                            localStorage.removeItem('chatbotRespostas');
+                            window.location.reload();
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+        })
+    }
 });
 jQuery(document).ready(function ($) {
     // Verifica se o script já está no localStorage
