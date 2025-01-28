@@ -1,9 +1,36 @@
-2025-01-25 16:40:32 - 1
-2025-01-25 16:42:36 - 12
-2025-01-25 16:42:40 - 12
-2025-01-27 16:59:45 - 33
-2025-01-27 17:07:43 - 33
-2025-01-27 17:08:46 - 33
-2025-01-27 17:09:05 - 33
-2025-01-27 17:11:41 - 33
-2025-01-27 17:14:17 - 33
+2025-01-28 16:20:06 - C:\fakepath\WhatsApp Ptt 2025-01-28 at 12.24.42.ogg
+2025-01-28 16:20:06 - C:\fakepath\Documento sem título (1).pdf
+2025-01-28 16:24:56 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:24:56 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:25:24 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:25:24 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:26:04 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:26:04 - ogg
+2025-01-28 16:26:04 - https://heygen.devhouse.com.br/audio-teste.ogg
+2025-01-28 16:26:04 - ogg
+2025-01-28 16:26:58 - Aqui
+2025-01-28 16:27:00 - 
+2025-01-28 16:27:00 - Aqui
+2025-01-28 16:27:01 - 
+2025-01-28 16:27:33 - Aqui
+2025-01-28 16:27:34 - 
+2025-01-28 16:27:34 - Aqui
+2025-01-28 16:27:35 - 
+2025-01-28 16:29:18 - Aqui
+2025-01-28 16:29:20 - 
+2025-01-28 16:29:20 - Erro na solicitação ao Whisper API
+2025-01-28 16:29:20 - Aqui
+2025-01-28 16:29:22 - 
+2025-01-28 16:29:22 - Erro na solicitação ao Whisper API
+2025-01-28 16:30:41 - Aqui
+2025-01-28 16:30:43 - {"text":"Estou com fortes dores na cabeça e diarreia."}
+2025-01-28 16:30:44 - Aqui
+2025-01-28 16:30:47 - {"text":"Estou com fortes dores na cabeça e diarreia."}
+2025-01-28 16:56:42 - Aqui
+2025-01-28 16:56:44 - {"text":"Estou com fortes dores na cabeça e diarreia."}
+2025-01-28 16:56:44 - Aqui
+2025-01-28 16:56:47 - {"text":"Estou com fortes dores na cabeça e diarreia."}
+2025-01-28 16:57:05 - Aqui
+2025-01-28 16:57:07 - {"text":"Estou com fortes dores na cabeça e diarreia."}
+2025-01-28 16:57:07 - Aqui
+2025-01-28 16:57:09 - {"text":"Estou com fortes dores na cabeça e diarreia."}
