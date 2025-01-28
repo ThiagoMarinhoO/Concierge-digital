@@ -25,6 +25,9 @@
 
     var chatBubble = document.createElement('div');
     chatBubble.id = 'chatbot-bubble';
+    // if (localStorage.getItem('chatbot_welcome_message')) {
+    //     chatBubble.textContent = localStorage.getItem('chatbot_welcome_message');
+    // }
     chatBubble.textContent = 'Olá! Posso ajudar?';
     chatBubble.style.position = 'fixed';
     chatBubble.style.bottom = '26px';
@@ -91,7 +94,10 @@
     botAvatar.appendChild(botAvatarImg);
     
     var botMessage = document.createElement('div');
-    botMessage.textContent = 'Olá! Como posso te ajudar?';
+    if (localStorage.getItem('chatbot_welcome_message')) {
+        botMessage.textContent = localStorage.getItem('chatbot_welcome_message');
+    }
+    // botMessage.textContent = 'Olá! Como posso te ajudar?';
     botMessage.style.marginLeft = '10px';
     botMessage.style.padding = '10px';
     botMessage.style.background = '#f0f0f0';
