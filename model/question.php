@@ -90,19 +90,19 @@ class Question
 
     public function addFixedQuestion(string $response): int
     {
-        // ID fixo ou busca pela categoria "Perguntas Fixas (criação do lead)"
+        // ID fixo ou busca pela categoria "Regras Gerais"
         $category_table = $this->wpdb->prefix . 'question_categories';
         $relation_table = $this->getRelationTable();
 
         // Buscar o ID da categoria
         $category_id = $this->wpdb->get_var($this->wpdb->prepare(
             "SELECT id FROM {$category_table} WHERE title = %s",
-            'Perguntas Fixas (criação do lead)'
+            'Regras Gerais'
         ));
 
         if (!$category_id) {
             // Caso a categoria não exista, lance um erro
-            throw new Exception('A categoria "Perguntas Fixas (criação do lead)" não foi encontrada.');
+            throw new Exception('A categoria "Regras Gerais" não foi encontrada.');
         }
 
         // Adicionar a pergunta com apenas a resposta

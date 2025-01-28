@@ -128,7 +128,7 @@
     <label for="question_categories">Categorias:</label><br>
     <select id="question_categories" name="question_categories[]" multiple>
         <?php foreach ($categories as $category): ?>
-            <?php if ($category['title'] !== "Perguntas Fixas (criação do lead)"): ?>
+            <?php if ($category['title'] !== "Regras Gerais"): ?>
                 <option value="<?php echo esc_attr($category['id']); ?>"><?php echo esc_html($category['title']); ?></option>
             <?php endif; ?>
         <?php endforeach; ?>
@@ -184,7 +184,7 @@
     </thead>
     <tbody>
         <?php foreach ($questions as $question): ?>
-            <?php if ($question['categories'] !== 'Perguntas Fixas (criação do lead)'): ?>
+            <?php if ($question['categories'] !== 'Regras Gerais'): ?>
                 <tr data-question-id="<?php echo esc_attr($question['id']); ?>">
                     <td class="title"><?php echo esc_html($question['title']); ?></td>
                     <td class="training-phrase"><?php echo esc_html($question['training_phrase']); ?></td>
@@ -209,15 +209,15 @@
 </table>
 
 <!-- Formulário de Adicionar Pergunta -->
-<h2>Adicionar Pergunta à Categoria: Perguntas Fixas (criação do lead)</h2>
+<h2>Adicionar Pergunta à Categoria: Regras Gerais</h2>
 <form id="fixed-question-form">
     <label for="response">Resposta</label>
     <input type="text" id="response" name="response" required>
     <button type="submit">Adicionar Pergunta</button>
 </form>
 
-<!-- Tabela de Perguntas Fixas Existentes -->
-<h2>Perguntas Fixas Existentes</h2>
+<!-- Tabela de Regras Gerais Existentes -->
+<h2>Regras Gerais Existentes</h2>
 <table>
     <thead>
         <tr>
@@ -228,7 +228,7 @@
     <tbody>
         <?php
         $question = new Question();
-        $questions = $question->getQuestionsByCategory('Perguntas Fixas (criação do lead)');
+        $questions = $question->getQuestionsByCategory('Regras Gerais');
 
         foreach ($questions as $q): ?>
             <tr data-question-id="<?php echo esc_attr($q['id']); ?>">
@@ -297,7 +297,7 @@
         const title = titleCell ? titleCell.innerText : null;
         const training = trainingPhraseCell ? trainingPhraseCell.innerText : null;
         const fieldType = fieldTypeCell ? fieldTypeCell.innerText : null;
-        const categories = categoriesCell ? categoriesCell.innerText : 'Perguntas Fixas (criação do lead)';
+        const categories = categoriesCell ? categoriesCell.innerText : 'Regras Gerais';
         const questionResponse = questionResponseCell ? questionResponseCell.innerText : null;
 
         const originalData = {
@@ -326,11 +326,11 @@
                 title: titleCell ? titleCell.querySelector('input').value : null,
                 training_phrase: trainingPhraseCell ? trainingPhraseCell.querySelector('input').value : null,
                 field_type: fieldTypeCell ? fieldTypeCell.querySelector('input').value : null,
-                categories: categoriesCell ? categoriesCell.querySelector('input').value : 'Perguntas Fixas (criação do lead)',
+                categories: categoriesCell ? categoriesCell.querySelector('input').value : 'Regras Gerais',
                 questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null
             };
 
-            const bodyData = newData.categories == "Perguntas Fixas (criação do lead)"
+            const bodyData = newData.categories == "Regras Gerais"
                 ? new URLSearchParams({
                     action: 'edit_question',
                     question_id: newData.question_id,

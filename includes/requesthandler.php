@@ -253,8 +253,8 @@ function edit_question()
     $question = new Question();
 
     // Se a categoria está vazia, atualize apenas o `responseQuestion`
-    if ($categories == 'Perguntas Fixas (criação do lead)') {
-        $updated = $question->updateQuestion($question_id, '' , '' , [] , 'Perguntas Fixas (criação do lead)' , '' , $responseQuestion);
+    if ($categories == 'Regras Gerais') {
+        $updated = $question->updateQuestion($question_id, '' , '' , [] , 'Regras Gerais' , '' , $responseQuestion);
 
         if ($updated) {
             wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
