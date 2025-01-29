@@ -187,7 +187,7 @@ class Chatbot
             if ($option['field_type'] == 'file') {
                 $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $resposta);
 
-                if (file_exists($file_path)) {
+            if (file_exists($file_path)) {
                     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
 
                     if ($file_extension == 'pdf') {
