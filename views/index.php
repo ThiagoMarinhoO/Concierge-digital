@@ -80,7 +80,8 @@ foreach ($comportamentoQuestions as $question) {
 						<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
 							Qual será a mensagem de boas vindas?
 						</label>
-						<input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas vindas?"
+						<input type="text" name="chatbot_welcome_message"
+							placeholder="Qual será a mensagem de boas vindas?"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
 					</div>
 				</div>
@@ -98,7 +99,8 @@ foreach ($comportamentoQuestions as $question) {
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>">
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -126,7 +128,9 @@ foreach ($comportamentoQuestions as $question) {
 			<div class="">
 				<div class="video-container mb-4">
 					<video controls class="w-full rounded-lg size-64">
-						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/configuracoes.mp4'); ?>" type="video/mp4">
+						<source
+							src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/configuracoes.mp4'); ?>"
+							type="video/mp4">
 					</video>
 				</div>
 			</div>
@@ -145,7 +149,7 @@ foreach ($comportamentoQuestions as $question) {
 						class="px-4 py-2 rounded-md">Rápida</button>
 					<button :class="{ 'active': tab === 'personalizada' }" @click="tab = 'personalizada'"
 						class="px-4 py-2 rounded-md">Personalizada</button>
-		
+
 					<div x-show="tab === 'rapida'" class="mt-4">
 						<?php if (!empty($comportamentoOtherQuestions)): ?>
 							<?php foreach ($comportamentoOtherQuestions as $index => $question): ?>
@@ -187,7 +191,7 @@ foreach ($comportamentoQuestions as $question) {
 							<p>Nenhuma pergunta cadastrada no momento.</p>
 						<?php endif; ?>
 					</div>
-		
+
 					<div x-show="tab === 'personalizada'" class="mt-4">
 						<?php if (!empty($comportamentoPromptQuestions)): ?>
 							<?php foreach ($comportamentoPromptQuestions as $index => $question): ?>
@@ -234,7 +238,9 @@ foreach ($comportamentoQuestions as $question) {
 			<div class="">
 				<div class="video-container mb-4">
 					<video controls class="w-full rounded-lg size-64">
-						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/comportamento.mp4'); ?>" type="video/mp4">
+						<source
+							src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/comportamento.mp4'); ?>"
+							type="video/mp4">
 					</video>
 				</div>
 			</div>
@@ -262,7 +268,8 @@ foreach ($comportamentoQuestions as $question) {
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>">
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -290,7 +297,9 @@ foreach ($comportamentoQuestions as $question) {
 			<div class="">
 				<div class="video-container mb-4">
 					<video controls class="w-full rounded-lg size-64">
-						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/base-de-conhecimento.mp4'); ?>" type="video/mp4">
+						<source
+							src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/base-de-conhecimento.mp4'); ?>"
+							type="video/mp4">
 					</video>
 				</div>
 			</div>
@@ -361,7 +370,8 @@ foreach ($comportamentoQuestions as $question) {
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>">
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -389,7 +399,9 @@ foreach ($comportamentoQuestions as $question) {
 			<div class="">
 				<div class="video-container mb-4">
 					<video controls class="w-full rounded-lg size-64">
-						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/integracao.mp4'); ?>" type="video/mp4">
+						<source
+							src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/integracao.mp4'); ?>"
+							type="video/mp4">
 					</video>
 				</div>
 			</div>
@@ -440,7 +452,7 @@ foreach ($comportamentoQuestions as $question) {
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
-						<?php if ($chatbots[0]->chatbot_welcome_message) : ?>
+						<?php if ($chatbots[0]->chatbot_welcome_message): ?>
 							<div class="flex w-full mt-2 space-x-3 max-w-xs">
 								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
 									<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
@@ -520,7 +532,9 @@ foreach ($comportamentoQuestions as $question) {
 			<div class="w-1/2">
 				<div class="video-container mb-4">
 					<video controls class="w-full rounded-lg size-64">
-						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/download.mp4'); ?>" type="video/mp4">
+						<source
+							src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/download.mp4'); ?>"
+							type="video/mp4">
 					</video>
 				</div>
 			</div>
@@ -610,66 +624,109 @@ foreach ($comportamentoQuestions as $question) {
 		}
 
 		function saveConfigurations() {
-			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
+			const activeContent = document.querySelector(".tab-content:not(.hidden)");
 			const chatbotOptions = [];
+			const fileInputs = activeContent.querySelectorAll('input[type="file"]');
 
-			// Verificar se a aba visível foi encontrada
 			if (!activeContent) {
 				console.error("Aba ativa não encontrada");
 				return;
 			}
 
-			// Iterar pelos blocos de perguntas
-			activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-				const inputElement = questionBlock.querySelector("input:not([type='checkbox']), select");
-				if (inputElement) {
-					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-					const resposta = inputElement.value.trim();
-					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
-					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
+			// Função para salvar no localStorage
+			const saveData = (chatbotOptions) => {
+				const categoryNameElement = activeContent.querySelector("h2") || {
+					innerText: activeContent.id.replace("-content", ""),
+				};
+				const categoryName = categoryNameElement.innerText.trim();
 
-					chatbotOptions.push({
-						pergunta: perguntaLabel,
-						field_name: inputElement.name,
-						resposta: resposta,
-						training_phrase: trainingPhrase,
-						field_type: fieldType
-					});
-				}
-			});
+				const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
+				savedData[categoryName] = chatbotOptions;
+				localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// Obter o nome da categoria
-			const categoryNameElement = activeContent.querySelector("h2") || {
-				innerText: activeContent.id.replace("-content", "")
+				unlockNextTab();
+				stopAllVideos();
+
+				Swal.fire({
+					title: `Respostas salvas`,
+					text: `Respostas salvas para a categoria: ${categoryName}`,
+					icon: "success",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						hideAllTabs();
+						showTabContent("Comportamento");
+					}
+				});
 			};
-			const categoryName = categoryNameElement.innerText.trim();
 
-			// Salvar no localStorage
-			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-			savedData[categoryName] = chatbotOptions;
-			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			// Função para processar blocos de perguntas
+			const processQuestionBlocks = (fileUrls = []) => {
+				activeContent.querySelectorAll(".question-block").forEach((questionBlock, index) => {
+					const inputElement = questionBlock.querySelector("input:not([type='checkbox']), select");
+					if (inputElement) {
+						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+						let resposta = inputElement.value.trim();
 
-			unlockNextTab();
+						// Verifica se o input é de arquivo e atribui a URL correta
+						if (inputElement.type === "file" && fileUrls.length > 0) {
+							resposta = fileUrls.shift(); // Remove a URL já vinculada
+						}
 
-			stopAllVideos();
+						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+						const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
-			Swal.fire({
-				title: `Respostas salvas`,
-				text: `Respostas salvas para a categoria: ${categoryName}`,
-				icon: "success"
-			}).then((result) => {
-				if (result.isConfirmed) {
-					hideAllTabs();
-					showTabContent("Comportamento");
-				}
-			});
+						chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+							field_type: fieldType,
+						});
+					}
+				});
+				saveData(chatbotOptions);
+			};
+
+			// Processar upload de arquivos se houver
+			if (fileInputs.length > 0) {
+				const formData = new FormData();
+
+				fileInputs.forEach((fileInput) => {
+					if (fileInput.files.length > 0) {
+						formData.append("files[]", fileInput.files[0]);
+					}
+				});
+
+				formData.append("action", "upload_files_to_media_library");
+
+				// Fazer upload dos arquivos via AJAX
+				fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: formData,
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							// Processa blocos com URLs dos arquivos
+							processQuestionBlocks(data.data.urls);
+						} else {
+							console.error("Falha ao enviar arquivos:", data.message);
+						}
+					})
+					.catch((error) => {
+						console.error("Erro na requisição de upload:", error);
+					});
+			} else {
+				// Sem arquivos, apenas processa os blocos
+				processQuestionBlocks();
+			}
 		}
 
 		function saveBehavior() {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
 			const chatbotOptions = [];
+			const fileInputs = activeContent.querySelectorAll('input[type="file"]');
 
-			// Verificar se a aba visível foi encontrada
 			if (!activeContent) {
 				console.error("Aba ativa não encontrada");
 				return;
@@ -678,148 +735,105 @@ foreach ($comportamentoQuestions as $question) {
 			const activeTabContent = activeContent.querySelector("button.active").innerHTML.trim();
 
 			let tabToSearch;
-			if (activeTabContent === 'Rápida') {
+			if (activeTabContent === "Rápida") {
 				tabToSearch = activeContent.querySelector('[x-show="tab === \'rapida\'"]');
-			} else if (activeTabContent === 'Personalizada') {
+			} else if (activeTabContent === "Personalizada") {
 				tabToSearch = activeContent.querySelector('[x-show="tab === \'personalizada\'"]');
 			}
 
-			// Iterar pelos blocos de perguntas
-			tabToSearch.querySelectorAll(".question-block").forEach((questionBlock) => {
-				const inputElement = questionBlock.querySelector("input, select");
-				if (inputElement) {
-					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-					const resposta = inputElement.value.trim();
-					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
-					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
+			// Função para salvar no localStorage
+			const saveData = (chatbotOptions) => {
+				const categoryNameElement = activeContent.querySelector("h2") || {
+					innerText: activeContent.id.replace("-content", ""),
+				};
+				const categoryName = categoryNameElement.innerText.trim();
 
-					chatbotOptions.push({
-						pergunta: perguntaLabel,
-						field_name: inputElement.name,
-						resposta: resposta,
-						training_phrase: trainingPhrase,
-						field_type: fieldType
-					});
-				}
-			});
+				const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
+				savedData[categoryName] = chatbotOptions;
+				localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// // Obter o nome da categoria
-			const categoryNameElement = activeContent.querySelector("h2") || {
-				innerText: activeContent.id.replace("-content", "")
+				unlockNextTab();
+				stopAllVideos();
+
+				Swal.fire({
+					title: `Respostas salvas`,
+					text: `Respostas salvas para a categoria: ${categoryName}`,
+					icon: "success",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						hideAllTabs();
+						showTabContent("Basedeconhecimento");
+					}
+				});
 			};
-			const categoryName = categoryNameElement.innerText.trim();
 
-			// // Salvar no localStorage
-			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-			savedData[categoryName] = chatbotOptions;
-			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			// Função para processar blocos de perguntas
+			const processQuestionBlocks = (fileUrls = []) => {
+				tabToSearch.querySelectorAll(".question-block").forEach((questionBlock, index) => {
+					const inputElement = questionBlock.querySelector("input, select");
+					if (inputElement) {
+						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+						let resposta = inputElement.value.trim();
 
-			//jogar no banco
-			// fetch(conciergeAjax.ajax_url, {
-			// 	method: "POST",
-			// 	headers: {
-			// 		"Content-Type": "application/json",
-			// 	},
-			// 	body: JSON.stringify({
-			// 		chatbotOptions: chatbotOptions,
-			// 		chatbot_id: 13,
-			// 		chatbot_name: "Luis Henrique",
-			// 	}),
-			// })
-			// 	.then((response) => response.json())
-			// 	.then((data) => {
-			// 		if (data.success) {
-			// 			Swal.fire({
-			// 				title: `Respostas salvas`,
-			// 				text: `Respostas salvas para a categoria: ${categoryName}`,
-			// 				icon: "success"
-			// 			});
-			// 		} else {
-			// 			Swal.fire({
-			// 				title: `Erro`,
-			// 				text: `Não foi possível salvar as respostas.`,
-			// 				icon: "error"
-			// 			});
-			// 		}
-			// 	})
-			// 	.catch((error) => console.error("Erro ao salvar dados:", error));
+						// Verifica se o input é de arquivo e atribui a URL correta
+						if (inputElement.type === "file" && fileUrls.length > 0) {
+							resposta = fileUrls.shift();
+						}
 
-			unlockNextTab();
+						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+						const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
-			stopAllVideos();
+						chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+							field_type: fieldType,
+						});
+					}
+				});
+				saveData(chatbotOptions);
+			};
 
-			Swal.fire({
-				title: `Respostas salvas`,
-				text: `Respostas salvas para a categoria: ${categoryName}`,
-				icon: "success"
-			}).then((result) => {
-				if (result.isConfirmed) {
-					hideAllTabs();
-					showTabContent("Basedeconhecimento");
-				}
-			});
+			// Processar upload de arquivos se houver
+			if (fileInputs.length > 0) {
+				const formData = new FormData();
+
+				fileInputs.forEach((fileInput) => {
+					if (fileInput.files.length > 0) {
+						formData.append("files[]", fileInput.files[0]);
+					}
+				});
+
+				formData.append("action", "upload_files_to_media_library");
+
+				// Fazer upload dos arquivos via AJAX
+				fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: formData,
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							// Processa blocos com URLs dos arquivos
+							processQuestionBlocks(data.data.urls);
+						} else {
+							console.error("Falha ao enviar arquivos:", data.message);
+						}
+					})
+					.catch((error) => {
+						console.error("Erro na requisição de upload:", error);
+					});
+			} else {
+				// Sem arquivos, apenas processa os blocos
+				processQuestionBlocks();
+			}
 		}
 
 		function saveKnowledge() {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
 			const chatbotOptions = [];
-
-			// // Verificar se a aba visível foi encontrada
-			if (!activeContent) {
-				console.error("Aba ativa não encontrada");
-				return;
-			}
-
-			// // Iterar pelos blocos de perguntas
-			// activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-			// 	const inputElement = questionBlock.querySelector("input, select");
-			// 	if (inputElement) {
-			// 		const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-			// 		const resposta = inputElement.value.trim();
-			// 		const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
-
-			// 		chatbotOptions.push({
-			// 			pergunta: perguntaLabel,
-			// 			field_name: inputElement.name,
-			// 			resposta: resposta,
-			// 			training_phrase: trainingPhrase,
-			// 		});
-			// 	}
-			// });
-
-			// Obter o nome da categoria
-			const categoryNameElement = activeContent.querySelector("h2") || {
-				innerText: activeContent.id.replace("-content", "")
-			};
-			const categoryName = categoryNameElement.innerText.trim();
-
-			// Salvar no localStorage
-			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-			savedData[categoryName] = chatbotOptions;
-			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
-
-			// // Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
-			unlockNextTab();
-
-			stopAllVideos();
-
-			Swal.fire({
-				title: `Respostas salvas`,
-				text: `Respostas salvas para a categoria: ${categoryName}`,
-				icon: "success"
-			}).then((result) => {
-				if (result.isConfirmed) {
-					hideAllTabs();
-					showTabContent("Perguntas");
-				}
-			});
-		}
-
-		function saveQuestions() {
-			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
-			const chatbotOptions = [];
+			const fileInputs = activeContent.querySelectorAll('input[type="file"]');
 
 			// Verificar se a aba visível foi encontrada
 			if (!activeContent) {
@@ -827,108 +841,293 @@ foreach ($comportamentoQuestions as $question) {
 				return;
 			}
 
-			// Iterar pelos blocos de perguntas
-			activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-				const inputElement = questionBlock.querySelector("input, select");
-				if (inputElement) {
-					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-					const resposta = inputElement.value.trim();
-					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
-					const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
+			// Função para salvar no localStorage
+			const saveData = (chatbotOptions) => {
+				const categoryNameElement = activeContent.querySelector("h2") || {
+					innerText: activeContent.id.replace("-content", ""),
+				};
+				const categoryName = categoryNameElement.innerText.trim();
 
-					chatbotOptions.push({
-						pergunta: perguntaLabel,
-						field_name: inputElement.name,
-						resposta: resposta,
-						training_phrase: trainingPhrase,
-						field_type: fieldType
-					});
-				}
-			});
+				const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
+				savedData[categoryName] = chatbotOptions;
+				localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// Obter o nome da categoria
-			const categoryNameElement = activeContent.querySelector("h2") || {
-				innerText: activeContent.id.replace("-content", "")
+				unlockNextTab();
+				stopAllVideos();
+
+				Swal.fire({
+					title: `Respostas salvas`,
+					text: `Respostas salvas para a categoria: ${categoryName}`,
+					icon: "success",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						hideAllTabs();
+						showTabContent("Perguntas");
+					}
+				});
 			};
-			const categoryName = categoryNameElement.innerText.trim();
 
-			// Salvar no localStorage
-			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-			savedData[categoryName] = chatbotOptions;
-			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			// Função para processar blocos de perguntas
+			const processQuestionBlocks = (fileUrls = []) => {
+				activeContent.querySelectorAll(".question-block").forEach((questionBlock, index) => {
+					const inputElement = questionBlock.querySelector("input, select");
+					if (inputElement) {
+						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+						let resposta = inputElement.value.trim();
 
-			// Feedback ao usuário
-			// alert(`Respostas salvas para a categoria: ${categoryName}`);
-			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
+						// Verifica se o input é de arquivo e atribui a URL correta
+						if (inputElement.type === "file" && fileUrls.length > 0) {
+							resposta = fileUrls.shift();
+						}
 
-			unlockNextTab();
+						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
 
-			stopAllVideos();
+						chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+						});
+					}
+				});
+				saveData(chatbotOptions);
+			};
 
-			Swal.fire({
-				title: `Respostas salvas`,
-				text: `Respostas salvas para a categoria: ${categoryName}`,
-				icon: "success"
-			}).then((result) => {
-				if (result.isConfirmed) {
-					hideAllTabs();
-					showTabContent("Integrações");
-				}
-			});
+			// Processar upload de arquivos se houver
+			if (fileInputs.length > 0) {
+				const formData = new FormData();
+
+				fileInputs.forEach((fileInput) => {
+					if (fileInput.files.length > 0) {
+						formData.append("files[]", fileInput.files[0]);
+					}
+				});
+
+				formData.append("action", "upload_files_to_media_library");
+
+				// Fazer upload dos arquivos via AJAX
+				fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: formData,
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							// Processa blocos com URLs dos arquivos
+							processQuestionBlocks(data.data.urls);
+						} else {
+							console.error("Falha ao enviar arquivos:", data.message);
+						}
+					})
+					.catch((error) => {
+						console.error("Erro na requisição de upload:", error);
+					});
+			} else {
+				// Sem arquivos, apenas processa os blocos
+				processQuestionBlocks();
+			}
 		}
 
-		function saveIntegrations() {
+
+		function saveQuestions() {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
 			const chatbotOptions = [];
+			const fileInputs = activeContent.querySelectorAll('input[type="file"]');
 
-			// // Verificar se a aba visível foi encontrada
+			// Verificar se a aba visível foi encontrada
 			if (!activeContent) {
 				console.error("Aba ativa não encontrada");
 				return;
 			}
 
-			// // Iterar pelos blocos de perguntas
-			// activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-			// 	const inputElement = questionBlock.querySelector("input, select");
-			// 	if (inputElement) {
-			// 		const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-			// 		const resposta = inputElement.value.trim();
-			// 		const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+			// Função para salvar no localStorage
+			const saveData = (chatbotOptions) => {
+				const categoryNameElement = activeContent.querySelector("h2") || {
+					innerText: activeContent.id.replace("-content", ""),
+				};
+				const categoryName = categoryNameElement.innerText.trim();
 
-			// 		chatbotOptions.push({
-			// 			pergunta: perguntaLabel,
-			// 			field_name: inputElement.name,
-			// 			resposta: resposta,
-			// 			training_phrase: trainingPhrase,
-			// 		});
-			// 	}
-			// });
+				const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
+				savedData[categoryName] = chatbotOptions;
+				localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
-			// Obter o nome da categoria
-			const categoryNameElement = activeContent.querySelector("h2") || {
-				innerText: activeContent.id.replace("-content", "")
+				unlockNextTab();
+				stopAllVideos();
+
+				Swal.fire({
+					title: `Respostas salvas`,
+					text: `Respostas salvas para a categoria: ${categoryName}`,
+					icon: "success",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						hideAllTabs();
+						showTabContent("Integrações");
+					}
+				});
 			};
-			const categoryName = categoryNameElement.innerText.trim();
 
-			// Salvar no localStorage
-			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
-			savedData[categoryName] = chatbotOptions;
-			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+			// Função para processar blocos de perguntas
+			const processQuestionBlocks = (fileUrls = []) => {
+				activeContent.querySelectorAll(".question-block").forEach((questionBlock, index) => {
+					const inputElement = questionBlock.querySelector("input, select");
+					if (inputElement) {
+						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+						let resposta = inputElement.value.trim();
 
-			unlockNextTab();
+						// Verifica se o input é de arquivo e atribui a URL correta
+						if (inputElement.type === "file" && fileUrls.length > 0) {
+							resposta = fileUrls.shift();
+						}
 
-			stopAllVideos();
+						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+						const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
-			Swal.fire({
-				title: `Respostas salvas`,
-				text: `Respostas salvas para a categoria: ${categoryName}`,
-				icon: "success"
-			}).then((result) => {
-				if (result.isConfirmed) {
-					hideAllTabs();
-					showTabContent("Aparência");
-				}
-			});
+						chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+							field_type: fieldType,
+						});
+					}
+				});
+				saveData(chatbotOptions);
+			};
+
+			// Processar upload de arquivos se houver
+			if (fileInputs.length > 0) {
+				const formData = new FormData();
+
+				fileInputs.forEach((fileInput) => {
+					if (fileInput.files.length > 0) {
+						formData.append("files[]", fileInput.files[0]);
+					}
+				});
+
+				formData.append("action", "upload_files_to_media_library");
+
+				// Fazer upload dos arquivos via AJAX
+				fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: formData,
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							// Processa blocos com URLs dos arquivos
+							processQuestionBlocks(data.data.urls);
+						} else {
+							console.error("Falha ao enviar arquivos:", data.message);
+						}
+					})
+					.catch((error) => {
+						console.error("Erro na requisição de upload:", error);
+					});
+			} else {
+				// Sem arquivos, apenas processa os blocos
+				processQuestionBlocks();
+			}
+		}
+
+
+		function saveIntegrations() {
+			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
+			const chatbotOptions = [];
+			const fileInputs = activeContent.querySelectorAll('input[type="file"]');
+
+			// Verificar se a aba visível foi encontrada
+			if (!activeContent) {
+				console.error("Aba ativa não encontrada");
+				return;
+			}
+
+			// Função para salvar no localStorage
+			const saveData = (chatbotOptions) => {
+				const categoryNameElement = activeContent.querySelector("h2") || {
+					innerText: activeContent.id.replace("-content", ""),
+				};
+				const categoryName = categoryNameElement.innerText.trim();
+
+				const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
+				savedData[categoryName] = chatbotOptions;
+				localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+
+				unlockNextTab();
+				stopAllVideos();
+
+				Swal.fire({
+					title: `Respostas salvas`,
+					text: `Respostas salvas para a categoria: ${categoryName}`,
+					icon: "success",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						hideAllTabs();
+						showTabContent("Aparência");
+					}
+				});
+			};
+
+			// Função para processar blocos de perguntas
+			const processQuestionBlocks = (fileUrls = []) => {
+				activeContent.querySelectorAll(".question-block").forEach((questionBlock, index) => {
+					const inputElement = questionBlock.querySelector("input, select");
+					if (inputElement) {
+						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+						let resposta = inputElement.value.trim();
+
+						// Verifica se o input é de arquivo e atribui a URL correta
+						if (inputElement.type === "file" && fileUrls.length > 0) {
+							resposta = fileUrls.shift();
+						}
+
+						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+						const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
+
+						chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+							field_type: fieldType,
+						});
+					}
+				});
+				saveData(chatbotOptions);
+			};
+
+			// Processar upload de arquivos se houver
+			if (fileInputs.length > 0) {
+				const formData = new FormData();
+
+				fileInputs.forEach((fileInput) => {
+					if (fileInput.files.length > 0) {
+						formData.append("files[]", fileInput.files[0]);
+					}
+				});
+
+				formData.append("action", "upload_files_to_media_library");
+
+				// Fazer upload dos arquivos via AJAX
+				fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: formData,
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							// Processa blocos com URLs dos arquivos
+							processQuestionBlocks(data.data.urls);
+						} else {
+							console.error("Falha ao enviar arquivos:", data.message);
+						}
+					})
+					.catch((error) => {
+						console.error("Erro na requisição de upload:", error);
+					});
+			} else {
+				// Sem arquivos, apenas processa os blocos
+				processQuestionBlocks();
+			}
 		}
 
 		function saveStyles() {
@@ -1150,11 +1349,11 @@ foreach ($comportamentoQuestions as $question) {
 				}).then((result) => {
 					if (result.isConfirmed) {
 						fetch(conciergeAjax.ajax_url, {
-								method: "POST",
-								body: formData,
-							})
+							method: "POST",
+							body: formData,
+						})
 							.then((response) => response.json())
-							.then((data) => {})
+							.then((data) => { })
 							.finally(() => {
 								unlockNextTab();
 								stopAllVideos();
