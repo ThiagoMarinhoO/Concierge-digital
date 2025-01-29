@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Concierge Digital Chatbot
  * Description: Plugin para criar e testar chatbots no front-end usando a API OpenAI.
- * Version: 2.3
+ * Version: 2.5
  * Author: DevHouse
  */
 
