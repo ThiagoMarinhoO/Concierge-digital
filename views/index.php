@@ -60,187 +60,183 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Configurações-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Configurações</p>
-		<div class="input-container mb-4">
-			<div class="question-block">
-				<label for="chatbot_name" class="block font-medium text-gray-700 mb-2">
-					Nome do Assistente
-				</label>
-				<input type="text" name="chatbot_name" placeholde="Qual o nome do chatbot ?"
-					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" required>
-			</div>
-		</div>
-		<div class="question-block">
-			<label for="toggle_welcome_message" class="block font-medium text-gray-700 mb-2">
-				Mostrar mensagem de boas vindas?
-			</label>
-			<input type="checkbox" id="toggle_welcome_message" class="toggle-checkbox">
-			<div id="welcome_message_container" class="hidden">
-				<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
-					Qual será a mensagem de boas vindas?
-				</label>
-				<input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas vindas?"
-					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
-			</div>
-		</div>
-
-		<script>
-			document.addEventListener("DOMContentLoaded", () => {
-				const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
-				const welcomeMessageContainer = document.getElementById("welcome_message_container");
-
-				toggleWelcomeMessage.addEventListener("change", () => {
-					const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
-					if (toggleWelcomeMessage.checked) {
-						welcomeMessageContainer.classList.remove("hidden");
-						label.classList.add("hidden");
-					} else {
-						welcomeMessageContainer.classList.add("hidden");
-						label.classList.remove("hidden");
-					}
-				});
-			});
-		</script>
-		<!-- <div class="question-block">
-			<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
-				Qual será a mensagem de boas vindas ?
-			</label>
-			<input type="text" name="chatbot_welcome_message" placeholde="Qual o nome do chatbot ?"
-				class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
-		</div> -->
-		<?php if (!empty($configQuestions)): ?>
-			<?php foreach ($configQuestions as $index => $question): ?>
-				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>"
-						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-						<?php echo esc_html($question['title']); ?>
-					</label>
-					<?php
-					$options = json_decode($question['options'], true);
-					$field_type = $question['field_type']; // Verifica o tipo de campo
-					?>
-					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
-							<?php foreach ($options as $option): ?>
-								<option value="<?php echo esc_attr($option); ?>">
-									<?php echo esc_html($option); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-					<?php elseif ($field_type === 'file'): ?>
-						<!-- Campo do tipo arquivo -->
-						<input type="file" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-					<?php else: ?>
-						<!-- Campo do tipo texto (padrão) -->
-						<input type="text" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
-					<?php endif; ?>
+		<div class="flex items-center justify-center gap-12">
+			<div class="">
+				<div class="input-container mb-4">
+					<div class="question-block">
+						<label for="chatbot_name" class="block font-medium text-gray-700 mb-2">
+							Nome do Assistente
+						</label>
+						<input type="text" name="chatbot_name" placeholde="Qual o nome do chatbot ?"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" required>
+					</div>
 				</div>
-			<?php endforeach; ?>
-		<?php else: ?>
-			<p>Nenhuma pergunta cadastrada no momento.</p>
-		<?php endif; ?>
+				<div class="question-block">
+					<label for="toggle_welcome_message" class="block font-medium text-gray-700 mb-2">
+						Mostrar mensagem de boas vindas?
+					</label>
+					<input type="checkbox" id="toggle_welcome_message" class="toggle-checkbox">
+					<div id="welcome_message_container" class="hidden">
+						<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
+							Qual será a mensagem de boas vindas?
+						</label>
+						<input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas vindas?"
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
+					</div>
+				</div>
+				<?php if (!empty($configQuestions)): ?>
+					<?php foreach ($configQuestions as $index => $question): ?>
+						<div class="question-block">
+							<label for="question-<?php echo esc_attr($index); ?>"
+								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+								<?php echo esc_html($question['title']); ?>
+							</label>
+							<?php
+							$options = json_decode($question['options'], true);
+							$field_type = $question['field_type']; // Verifica o tipo de campo
+							?>
+							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+								<!-- Campo do tipo seleção -->
+								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									<?php foreach ($options as $option): ?>
+										<option value="<?php echo esc_attr($option); ?>">
+											<?php echo esc_html($option); ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							<?php elseif ($field_type === 'file'): ?>
+								<!-- Campo do tipo arquivo -->
+								<input type="file" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+							<?php else: ?>
+								<!-- Campo do tipo texto (padrão) -->
+								<input type="text" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				<?php else: ?>
+					<p>Nenhuma pergunta cadastrada no momento.</p>
+				<?php endif; ?>
+			</div>
+			<div class="">
+				<div class="video-container mb-4">
+					<video controls class="w-full rounded-lg size-64">
+						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/configuracoes.mp4'); ?>" type="video/mp4">
+					</video>
+				</div>
+			</div>
+		</div>
 		<div class="flex justify-center mt-10">
 			<button class="saveConfigButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 		</div>
-		<!-- <button id="validate-configuracoes" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">Validar</button> -->
 	</div>
 	<div id="Comportamento-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Comportamento</p>
-		<div x-data="{ tab: 'rapida' }">
-			<button :class="{ 'active': tab === 'rapida' }" @click="tab = 'rapida'"
-				class="px-4 py-2 rounded-md">Rápida</button>
-			<button :class="{ 'active': tab === 'personalizada' }" @click="tab = 'personalizada'"
-				class="px-4 py-2 rounded-md">Personalizada</button>
-
-			<div x-show="tab === 'rapida'" class="mt-4">
-				<?php if (!empty($comportamentoOtherQuestions)): ?>
-					<?php foreach ($comportamentoOtherQuestions as $index => $question): ?>
-						<div class="question-block">
-							<label for="question-<?php echo esc_attr($index); ?>"
-								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-								<?php echo esc_html($question['title']); ?>
-							</label>
-							<?php
-							$options = json_decode($question['options'], true);
-							$field_type = $question['field_type']; // Verifica o tipo de campo
-							?>
-							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-								<!-- Campo do tipo seleção -->
-								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>">
-									<?php foreach ($options as $option): ?>
-										<option value="<?php echo esc_attr($option); ?>">
-											<?php echo esc_html($option); ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
-							<?php elseif ($field_type === 'file'): ?>
-								<!-- Campo do tipo arquivo -->
-								<input type="file" id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-							<?php else: ?>
-								<!-- Campo do tipo texto (padrão) -->
-								<input type="text" id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
-							<?php endif; ?>
-						</div>
-					<?php endforeach; ?>
-				<?php else: ?>
-					<p>Nenhuma pergunta cadastrada no momento.</p>
-				<?php endif; ?>
+		<div class="flex items-center justify-center gap-12">
+			<div class="">
+				<div x-data="{ tab: 'rapida' }">
+					<button :class="{ 'active': tab === 'rapida' }" @click="tab = 'rapida'"
+						class="px-4 py-2 rounded-md">Rápida</button>
+					<button :class="{ 'active': tab === 'personalizada' }" @click="tab = 'personalizada'"
+						class="px-4 py-2 rounded-md">Personalizada</button>
+		
+					<div x-show="tab === 'rapida'" class="mt-4">
+						<?php if (!empty($comportamentoOtherQuestions)): ?>
+							<?php foreach ($comportamentoOtherQuestions as $index => $question): ?>
+								<div class="question-block">
+									<label for="question-<?php echo esc_attr($index); ?>"
+										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+										<?php echo esc_html($question['title']); ?>
+									</label>
+									<?php
+									$options = json_decode($question['options'], true);
+									$field_type = $question['field_type']; // Verifica o tipo de campo
+									?>
+									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+										<!-- Campo do tipo seleção -->
+										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+											id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>">
+											<?php foreach ($options as $option): ?>
+												<option value="<?php echo esc_attr($option); ?>">
+													<?php echo esc_html($option); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									<?php elseif ($field_type === 'file'): ?>
+										<!-- Campo do tipo arquivo -->
+										<input type="file" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+									<?php else: ?>
+										<!-- Campo do tipo texto (padrão) -->
+										<input type="text" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+											placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						<?php else: ?>
+							<p>Nenhuma pergunta cadastrada no momento.</p>
+						<?php endif; ?>
+					</div>
+		
+					<div x-show="tab === 'personalizada'" class="mt-4">
+						<?php if (!empty($comportamentoPromptQuestions)): ?>
+							<?php foreach ($comportamentoPromptQuestions as $index => $question): ?>
+								<div class="question-block">
+									<label for="question-<?php echo esc_attr($index); ?>"
+										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+										<?php echo esc_html($question['title']); ?>
+									</label>
+									<?php
+									$options = json_decode($question['options'], true);
+									$field_type = $question['field_type']; // Verifica o tipo de campo
+									?>
+									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+										<!-- Campo do tipo seleção -->
+										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+											id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>">
+											<?php foreach ($options as $option): ?>
+												<option value="<?php echo esc_attr($option); ?>">
+													<?php echo esc_html($option); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									<?php elseif ($field_type === 'file'): ?>
+										<!-- Campo do tipo arquivo -->
+										<input type="file" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+									<?php else: ?>
+										<!-- Campo do tipo texto (padrão) -->
+										<input type="text" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+											placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						<?php else: ?>
+							<p>Nenhuma pergunta cadastrada no momento.</p>
+						<?php endif; ?>
+					</div>
+				</div>
 			</div>
-
-			<div x-show="tab === 'personalizada'" class="mt-4">
-				<?php if (!empty($comportamentoPromptQuestions)): ?>
-					<?php foreach ($comportamentoPromptQuestions as $index => $question): ?>
-						<div class="question-block">
-							<label for="question-<?php echo esc_attr($index); ?>"
-								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-								<?php echo esc_html($question['title']); ?>
-							</label>
-							<?php
-							$options = json_decode($question['options'], true);
-							$field_type = $question['field_type']; // Verifica o tipo de campo
-							?>
-							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-								<!-- Campo do tipo seleção -->
-								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>">
-									<?php foreach ($options as $option): ?>
-										<option value="<?php echo esc_attr($option); ?>">
-											<?php echo esc_html($option); ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
-							<?php elseif ($field_type === 'file'): ?>
-								<!-- Campo do tipo arquivo -->
-								<input type="file" id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-							<?php else: ?>
-								<!-- Campo do tipo texto (padrão) -->
-								<input type="text" id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
-							<?php endif; ?>
-						</div>
-					<?php endforeach; ?>
-				<?php else: ?>
-					<p>Nenhuma pergunta cadastrada no momento.</p>
-				<?php endif; ?>
+			<div class="">
+				<div class="video-container mb-4">
+					<video controls class="w-full rounded-lg size-64">
+						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/comportamento.mp4'); ?>" type="video/mp4">
+					</video>
+				</div>
 			</div>
 		</div>
 		<div class="flex justify-center mt-10">
@@ -250,45 +246,56 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Basedeconhecimento-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Base de conhecimento</p>
-		<button class="saveknowledgeButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
-		<?php if (!empty($baseDeConhecimentoQuestions)): ?>
-			<?php foreach ($baseDeConhecimentoQuestions as $index => $question): ?>
-				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>"
-						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-						<?php echo esc_html($question['title']); ?>
-					</label>
-					<?php
-					$options = json_decode($question['options'], true);
-					$field_type = $question['field_type']; // Verifica o tipo de campo
-					?>
-					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
-							<?php foreach ($options as $option): ?>
-								<option value="<?php echo esc_attr($option); ?>">
-									<?php echo esc_html($option); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-					<?php elseif ($field_type === 'file'): ?>
-						<!-- Campo do tipo arquivo -->
-						<input type="file" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-					<?php else: ?>
-						<!-- Campo do tipo texto (padrão) -->
-						<input type="text" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
-					<?php endif; ?>
+		<div class="flex items-center justify-center gap-12">
+			<div class="">
+				<?php if (!empty($baseDeConhecimentoQuestions)): ?>
+					<?php foreach ($baseDeConhecimentoQuestions as $index => $question): ?>
+						<div class="question-block">
+							<label for="question-<?php echo esc_attr($index); ?>"
+								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+								<?php echo esc_html($question['title']); ?>
+							</label>
+							<?php
+							$options = json_decode($question['options'], true);
+							$field_type = $question['field_type']; // Verifica o tipo de campo
+							?>
+							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+								<!-- Campo do tipo seleção -->
+								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									<?php foreach ($options as $option): ?>
+										<option value="<?php echo esc_attr($option); ?>">
+											<?php echo esc_html($option); ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							<?php elseif ($field_type === 'file'): ?>
+								<!-- Campo do tipo arquivo -->
+								<input type="file" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+							<?php else: ?>
+								<!-- Campo do tipo texto (padrão) -->
+								<input type="text" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				<?php else: ?>
+					<p>Nenhuma pergunta cadastrada no momento.</p>
+				<?php endif; ?>
+			</div>
+			<div class="">
+				<div class="video-container mb-4">
+					<video controls class="w-full rounded-lg size-64">
+						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/base-de-conhecimento.mp4'); ?>" type="video/mp4">
+					</video>
 				</div>
-			<?php endforeach; ?>
-		<?php else: ?>
-			<p>Nenhuma pergunta cadastrada no momento.</p>
-		<?php endif; ?>
+			</div>
+		</div>
+		<button class="saveknowledgeButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 	</div>
 	<div id="Perguntas-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
@@ -338,44 +345,55 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Integrações-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Integrações</p>
-		<?php if (!empty($integracoesQuestions)): ?>
-			<?php foreach ($integracoesQuestions as $index => $question): ?>
-				<div class="question-block">
-					<label for="question-<?php echo esc_attr($index); ?>"
-						data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-						<?php echo esc_html($question['title']); ?>
-					</label>
-					<?php
-					$options = json_decode($question['options'], true);
-					$field_type = $question['field_type']; // Verifica o tipo de campo
-					?>
-					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-						<!-- Campo do tipo seleção -->
-						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
-							<?php foreach ($options as $option): ?>
-								<option value="<?php echo esc_attr($option); ?>">
-									<?php echo esc_html($option); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-					<?php elseif ($field_type === 'file'): ?>
-						<!-- Campo do tipo arquivo -->
-						<input type="file" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
-					<?php else: ?>
-						<!-- Campo do tipo texto (padrão) -->
-						<input type="text" id="question-<?php echo esc_attr($index); ?>"
-							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
-					<?php endif; ?>
+		<div class="flex items-center justify-center gap-12">
+			<div class="">
+				<?php if (!empty($integracoesQuestions)): ?>
+					<?php foreach ($integracoesQuestions as $index => $question): ?>
+						<div class="question-block">
+							<label for="question-<?php echo esc_attr($index); ?>"
+								data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+								<?php echo esc_html($question['title']); ?>
+							</label>
+							<?php
+							$options = json_decode($question['options'], true);
+							$field_type = $question['field_type']; // Verifica o tipo de campo
+							?>
+							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+								<!-- Campo do tipo seleção -->
+								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+									<?php foreach ($options as $option): ?>
+										<option value="<?php echo esc_attr($option); ?>">
+											<?php echo esc_html($option); ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							<?php elseif ($field_type === 'file'): ?>
+								<!-- Campo do tipo arquivo -->
+								<input type="file" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+							<?php else: ?>
+								<!-- Campo do tipo texto (padrão) -->
+								<input type="text" id="question-<?php echo esc_attr($index); ?>"
+									name="question_<?php echo esc_attr($question['id']); ?>"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				<?php else: ?>
+					<p>Nenhuma pergunta cadastrada no momento.</p>
+				<?php endif; ?>
+			</div>
+			<div class="">
+				<div class="video-container mb-4">
+					<video controls class="w-full rounded-lg size-64">
+						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/integracao.mp4'); ?>" type="video/mp4">
+					</video>
 				</div>
-			<?php endforeach; ?>
-		<?php else: ?>
-			<p>Nenhuma pergunta cadastrada no momento.</p>
-		<?php endif; ?>
+			</div>
+		</div>
 		<button class="saveIntegracaoButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 	</div>
 	<div id="Aparência-content" class="tab-content hidden absolute inset-0 bg-white p-4">
@@ -422,17 +440,17 @@ foreach ($comportamentoQuestions as $question) {
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
-						<?php if($chatbots[0]->chatbot_welcome_message) : ?>
-						<div class="flex w-full mt-2 space-x-3 max-w-xs">
-							<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-								<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
-							</div>
-							<div>
-								<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-									<p class="text-sm"><?php echo $chatbots[0]->chatbot_welcome_message; ?></p>
+						<?php if ($chatbots[0]->chatbot_welcome_message) : ?>
+							<div class="flex w-full mt-2 space-x-3 max-w-xs">
+								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+									<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
+								</div>
+								<div>
+									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+										<p class="text-sm"><?php echo $chatbots[0]->chatbot_welcome_message; ?></p>
+									</div>
 								</div>
 							</div>
-						</div>
 						<?php endif; ?>
 					</div>
 
@@ -469,32 +487,43 @@ foreach ($comportamentoQuestions as $question) {
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Conteúdo da aba Download</p>
-		<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar
-			link</button>
-		<div id="clipboardSection"
-			class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
-			<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
-			<pre id="targetText" class="w-full whitespace-normal"></pre>
-			<button id="copyButton"
-				class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
-				title="Copiar" aria-label="Copy">
-				<span id="copyStatus" class="">Copiar</span>
-				<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-					class="size-4" aria-hidden="true">
-					<path fill-rule="evenodd"
-						d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z"
-						clip-rule="evenodd" />
-				</svg>
-				<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-					class="size-4 fill-green-500 hidden">
-					<path fill-rule="evenodd"
-						d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z"
-						clip-rule="evenodd" />
-					<path fill-rule="evenodd"
-						d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z"
-						clip-rule="evenodd" />
-				</svg>
-			</button>
+		<div class="flex items-center justify-center gap-12">
+			<div class="w-1/2">
+				<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar
+					link</button>
+				<div id="clipboardSection"
+					class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+					<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
+					<pre id="targetText" class="w-full whitespace-normal"></pre>
+					<button id="copyButton"
+						class="rounded-full w-fit p-1 flex items-center gap-4 text-neutral-600/75 hover:bg-neutral-950/10 hover:text-neutral-600 focus:outline-hidden focus-visible:text-neutral-600 focus-visible:outline focus-visible:outline-offset-0 focus-visible:outline-black active:bg-neutral-950/5 active:-outline-offset-2 dark:text-neutral-300/75 dark:hover:bg-white/10 dark:hover:text-neutral-300 dark:focus-visible:text-neutral-300 dark:focus-visible:outline-white dark:active:bg-white/5"
+						title="Copiar" aria-label="Copy">
+						<span id="copyStatus" class="">Copiar</span>
+						<svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+							class="size-4" aria-hidden="true">
+							<path fill-rule="evenodd"
+								d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z"
+								clip-rule="evenodd" />
+						</svg>
+						<svg id="successIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+							class="size-4 fill-green-500 hidden">
+							<path fill-rule="evenodd"
+								d="M11.986 3H12a2 2 0 0 1 2 2v6a2 2 0 0 1-1.5 1.937V7A2.5 2.5 0 0 0 10 4.5H4.063A2 2 0 0 1 6 3h.014A2.25 2.25 0 0 1 8.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM10.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z"
+								clip-rule="evenodd" />
+							<path fill-rule="evenodd"
+								d="M2 7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm6.585 1.08a.75.75 0 0 1 .336 1.005l-1.75 3.5a.75.75 0 0 1-1.16.234l-1.75-1.5a.75.75 0 0 1 .977-1.139l1.02.875 1.321-2.64a.75.75 0 0 1 1.006-.336Z"
+								clip-rule="evenodd" />
+						</svg>
+					</button>
+				</div>
+			</div>
+			<div class="w-1/2">
+				<div class="video-container mb-4">
+					<video controls class="w-full rounded-lg size-64">
+						<source src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/download.mp4'); ?>" type="video/mp4">
+					</video>
+				</div>
+			</div>
 		</div>
 
 
@@ -572,6 +601,14 @@ foreach ($comportamentoQuestions as $question) {
 			}
 		}
 
+		function stopAllVideos() {
+			const videos = document.querySelectorAll("video");
+			videos.forEach(video => {
+				video.pause();
+				video.currentTime = 0;
+			});
+		}
+
 		function saveConfigurations() {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)"); // Aba visível
 			const chatbotOptions = [];
@@ -611,8 +648,10 @@ foreach ($comportamentoQuestions as $question) {
 			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
-			
+
 			unlockNextTab();
+
+			stopAllVideos();
 
 			Swal.fire({
 				title: `Respostas salvas`,
@@ -707,6 +746,8 @@ foreach ($comportamentoQuestions as $question) {
 
 			unlockNextTab();
 
+			stopAllVideos();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
@@ -761,6 +802,8 @@ foreach ($comportamentoQuestions as $question) {
 			// alert(`Respostas salvas para a categoria: ${categoryName}`);
 			// console.log(`Respostas salvas para ${categoryName}:`, chatbotOptions);
 			unlockNextTab();
+
+			stopAllVideos();
 
 			Swal.fire({
 				title: `Respostas salvas`,
@@ -820,6 +863,8 @@ foreach ($comportamentoQuestions as $question) {
 
 			unlockNextTab();
 
+			stopAllVideos();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
@@ -871,6 +916,8 @@ foreach ($comportamentoQuestions as $question) {
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
 			unlockNextTab();
+
+			stopAllVideos();
 
 			Swal.fire({
 				title: `Respostas salvas`,
@@ -924,6 +971,8 @@ foreach ($comportamentoQuestions as $question) {
 
 			unlockNextTab();
 
+			stopAllVideos();
+
 			Swal.fire({
 				title: `Respostas salvas`,
 				text: `Respostas salvas para a categoria: ${categoryName}`,
@@ -965,6 +1014,7 @@ foreach ($comportamentoQuestions as $question) {
 			const backButton = contentDiv.querySelector(".back-btn");
 			if (backButton) {
 				backButton.addEventListener("click", () => {
+					stopAllVideos();
 					hideAllTabs();
 				});
 			}
@@ -1104,9 +1154,10 @@ foreach ($comportamentoQuestions as $question) {
 								body: formData,
 							})
 							.then((response) => response.json())
-							.then((data) => { })
+							.then((data) => {})
 							.finally(() => {
 								unlockNextTab();
+								stopAllVideos();
 								window.location.reload();
 							})
 							.catch((error) => {
@@ -1169,5 +1220,21 @@ foreach ($comportamentoQuestions as $question) {
 		copyButton.addEventListener("click", copyToClipboard);
 
 
+	});
+
+	document.addEventListener("DOMContentLoaded", () => {
+		const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
+		const welcomeMessageContainer = document.getElementById("welcome_message_container");
+
+		toggleWelcomeMessage.addEventListener("change", () => {
+			const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
+			if (toggleWelcomeMessage.checked) {
+				welcomeMessageContainer.classList.remove("hidden");
+				label.classList.add("hidden");
+			} else {
+				welcomeMessageContainer.classList.add("hidden");
+				label.classList.remove("hidden");
+			}
+		});
 	});
 </script>
