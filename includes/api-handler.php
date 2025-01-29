@@ -48,7 +48,7 @@ function concierge_process_form()
         'messages' => [
             ['role' => 'user', 'content' => "Processar o seguinte JSONL:\n" . $jsonl_data],
         ],
-        'temperature' => 0.7,
+        'temperature' => 0.5,
     ];
 
     // Enviar os dados para a API da OpenAI usando cURL
