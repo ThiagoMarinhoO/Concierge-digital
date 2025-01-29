@@ -2,7 +2,10 @@
 
 $question = new Question();
 
-$configQuestions = $question->getQuestionsByCategory('Configurações');
+$configQuestions = $question->getQuestionsByCategory('configuração');
+if( empty($configQuestions) ) {
+	$configQuestions = $question->getQuestionsByCategory('Configurações');
+}
 $comportamentoQuestions = $question->getQuestionsByCategory('Comportamento');
 $perguntasQuestions = $question->getQuestionsByCategory('Perguntas');
 $baseDeConhecimentoQuestions = $question->getQuestionsByCategory('Base de Conhecimento');
@@ -72,18 +75,12 @@ foreach ($comportamentoQuestions as $question) {
 					</div>
 				</div>
 				<div class="question-block">
-					<label for="toggle_welcome_message" class="block font-medium text-gray-700 mb-2">
-						Mostrar mensagem de boas vindas?
-					</label>
-					<input type="checkbox" id="toggle_welcome_message" class="toggle-checkbox">
-					<div id="welcome_message_container" class="hidden">
-						<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
-							Qual será a mensagem de boas vindas?
-						</label>
-						<input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas vindas?"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
-					</div>
-				</div>
+                    <label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
+                        Qual será a mensagem de boas-vindas?
+                    </label>
+                    <input type="text" name="chatbot_welcome_message" placeholder="Qual será a mensagem de boas-vindas?"
+                        class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
+                </div>
 				<?php if (!empty($configQuestions)): ?>
 					<?php foreach ($configQuestions as $index => $question): ?>
 						<div class="question-block">
@@ -771,21 +768,20 @@ foreach ($comportamentoQuestions as $question) {
 			}
 
 			// // Iterar pelos blocos de perguntas
-			// activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-			// 	const inputElement = questionBlock.querySelector("input, select");
-			// 	if (inputElement) {
-			// 		const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-			// 		const resposta = inputElement.value.trim();
-			// 		const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
-
-			// 		chatbotOptions.push({
-			// 			pergunta: perguntaLabel,
-			// 			field_name: inputElement.name,
-			// 			resposta: resposta,
-			// 			training_phrase: trainingPhrase,
-			// 		});
-			// 	}
-			// });
+			 activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
+			 	const inputElement = questionBlock.querySelector("input, select");
+			 	if (inputElement) {
+			 		const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+			 		const resposta = inputElement.value.trim();
+			 		const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+					chatbotOptions.push({
+							pergunta: perguntaLabel,
+							field_name: inputElement.name,
+							resposta: resposta,
+							training_phrase: trainingPhrase,
+						});
+			 	}
+			 });
 
 			// Obter o nome da categoria
 			const categoryNameElement = activeContent.querySelector("h2") || {
@@ -888,21 +884,21 @@ foreach ($comportamentoQuestions as $question) {
 			}
 
 			// // Iterar pelos blocos de perguntas
-			// activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
-			// 	const inputElement = questionBlock.querySelector("input, select");
-			// 	if (inputElement) {
-			// 		const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
-			// 		const resposta = inputElement.value.trim();
-			// 		const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+			activeContent.querySelectorAll(".question-block").forEach((questionBlock) => {
+				const inputElement = questionBlock.querySelector("input, select");
+				if (inputElement) {
+					const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
+					const resposta = inputElement.value.trim();
+					const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
 
-			// 		chatbotOptions.push({
-			// 			pergunta: perguntaLabel,
-			// 			field_name: inputElement.name,
-			// 			resposta: resposta,
-			// 			training_phrase: trainingPhrase,
-			// 		});
-			// 	}
-			// });
+					chatbotOptions.push({
+						pergunta: perguntaLabel,
+						field_name: inputElement.name,
+						resposta: resposta,
+						training_phrase: trainingPhrase,
+					});
+				}
+			});
 
 			// Obter o nome da categoria
 			const categoryNameElement = activeContent.querySelector("h2") || {
@@ -1096,7 +1092,9 @@ foreach ($comportamentoQuestions as $question) {
 						const field = tabContent.querySelector(`[name="${item.field_name}"]`);
 						if (field) {
 							if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
-								field.value = item.resposta;
+								if (field.type !== 'file') {
+									field.value = item.resposta;
+								}
 							} else if (field.tagName === 'SELECT') {
 								const optionExists = Array.from(field.options).some(option => option.value === item.resposta);
 								if (optionExists) {
@@ -1226,15 +1224,17 @@ foreach ($comportamentoQuestions as $question) {
 		const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
 		const welcomeMessageContainer = document.getElementById("welcome_message_container");
 
-		toggleWelcomeMessage.addEventListener("change", () => {
-			const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
-			if (toggleWelcomeMessage.checked) {
-				welcomeMessageContainer.classList.remove("hidden");
-				label.classList.add("hidden");
-			} else {
-				welcomeMessageContainer.classList.add("hidden");
-				label.classList.remove("hidden");
-			}
-		});
+		if(toggleWelcomeMessage) {
+			toggleWelcomeMessage.addEventListener("change", () => {
+				const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
+				if (toggleWelcomeMessage.checked) {
+					welcomeMessageContainer.classList.remove("hidden");
+					label.classList.add("hidden");
+				} else {
+					welcomeMessageContainer.classList.add("hidden");
+					label.classList.remove("hidden");
+				}
+			});
+		}
 	});
 </script>
