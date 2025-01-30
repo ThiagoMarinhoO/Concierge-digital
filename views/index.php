@@ -1295,7 +1295,10 @@ foreach ($comportamentoQuestions as $question) {
 						const field = tabContent.querySelector(`[name="${item.field_name}"]`);
 						if (field) {
 							if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
-								field.value = item.resposta;
+								// field.value = item.resposta;
+								if (field.type !== 'file') {
+									field.value = item.resposta;
+								}
 							} else if (field.tagName === 'SELECT') {
 								const optionExists = Array.from(field.options).some(option => option.value === item.resposta);
 								if (optionExists) {
