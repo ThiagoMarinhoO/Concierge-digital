@@ -2,7 +2,7 @@
 
 $question = new Question();
 
-$configQuestions = $question->getQuestionsByCategory('Configurações');
+$configQuestions = $question->getQuestionsByCategory('Configuração');
 $comportamentoQuestions = $question->getQuestionsByCategory('Comportamento');
 $perguntasQuestions = $question->getQuestionsByCategory('Perguntas');
 $baseDeConhecimentoQuestions = $question->getQuestionsByCategory('Base de Conhecimento');
