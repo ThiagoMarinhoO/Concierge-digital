@@ -465,8 +465,8 @@ foreach ($comportamentoQuestions as $question) {
 									<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
 								</div>
 								<div>
-									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-										<p class="text-sm"><?php echo $chatbots[0]->chatbot_welcome_message; ?></p>
+									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+										<?php echo $chatbots[0]->chatbot_welcome_message; ?>
 									</div>
 								</div>
 							</div>
@@ -1442,15 +1442,17 @@ foreach ($comportamentoQuestions as $question) {
 		const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
 		const welcomeMessageContainer = document.getElementById("welcome_message_container");
 
-		toggleWelcomeMessage.addEventListener("change", () => {
-			const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
-			if (toggleWelcomeMessage.checked) {
-				welcomeMessageContainer.classList.remove("hidden");
-				label.classList.add("hidden");
-			} else {
-				welcomeMessageContainer.classList.add("hidden");
-				label.classList.remove("hidden");
-			}
-		});
+		if(toggleWelcomeMessage) {
+			toggleWelcomeMessage.addEventListener("change", () => {
+				const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
+				if (toggleWelcomeMessage.checked) {
+					welcomeMessageContainer.classList.remove("hidden");
+					label.classList.add("hidden");
+				} else {
+					welcomeMessageContainer.classList.add("hidden");
+					label.classList.remove("hidden");
+				}
+			});
+		}
 	});
 </script>

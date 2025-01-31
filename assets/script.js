@@ -13,8 +13,8 @@ window.addEventListener('DOMContentLoaded', function () {
             const userMsgTemplate = `
                             <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
                                 <div>
-                                    <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
-                                        <p class="text-sm">${document.querySelector(".mensagem").value}</p>
+                                    <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
+                                        ${document.querySelector(".mensagem").value}
                                     </div>
                                     <span class="text-xs text-gray-500 leading-none">${currHour.getHours() + ":" + currHour.getMinutes()}</span>
                                 </div>
@@ -48,14 +48,22 @@ window.addEventListener('DOMContentLoaded', function () {
                     let responseData = JSON.parse(data.data);
                     console.log(responseData);
 
+                    // Função para transformar links formatados em HTML clicável
+                    function transformarLinks(texto) {
+                        return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+                    }
+
+                    // Converte os links dentro da mensagem
+                    let mensagemFormatada = transformarLinks(responseData.message);
+
                     let aiMsgTemplate = `
                                 <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
                 <img src="${responseData.image}" class="size-10 rounded-full" alt="">
             </div>
             <div>
-                <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-                    <p class="text-sm">${responseData.message}</p>
+                <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+                    ${mensagemFormatada}
                 </div>
                 <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
             </div>
@@ -95,17 +103,17 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if(document.querySelector('#deleteChatbotForm')) {
+    if (document.querySelector('#deleteChatbotForm')) {
         document.querySelector('#deleteChatbotForm').addEventListener('submit', (event) => {
             event.preventDefault();
-    
+
             const form = document.getElementById('deleteChatbotForm');
             const chatbotId = document.querySelector('.chatContainer').getAttribute('data-chatbot-id');
-    
+
             const formData = new FormData(form);
             formData.append('action', 'delete_chatbot');
             formData.append('chatbot_id', chatbotId);
-    
+
             Swal.fire({
                 title: 'Tem certeza?',
                 text: "Tem certeza de que quer resetar o chatbot?",
