@@ -95,12 +95,13 @@ foreach ($comportamentoQuestions as $question) {
 							<?php
 							$options = json_decode($question['options'], true);
 							$field_type = $question['field_type']; // Verifica o tipo de campo
+							$required = $question['required_field'] == 'Sim' ? 'required' : '';
 							?>
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 									id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>">
+									name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -111,13 +112,13 @@ foreach ($comportamentoQuestions as $question) {
 								<!-- Campo do tipo arquivo -->
 								<input type="file" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 							<?php else: ?>
 								<!-- Campo do tipo texto (padrão) -->
 								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -161,12 +162,13 @@ foreach ($comportamentoQuestions as $question) {
 									<?php
 									$options = json_decode($question['options'], true);
 									$field_type = $question['field_type']; // Verifica o tipo de campo
+									$required = $question['required_field'] == 'Sim' ? 'required' : '';
 									?>
 									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 										<!-- Campo do tipo seleção -->
 										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 											id="question-<?php echo esc_attr($index); ?>"
-											name="question_<?php echo esc_attr($question['id']); ?>">
+											name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
 											<?php foreach ($options as $option): ?>
 												<option value="<?php echo esc_attr($option); ?>">
 													<?php echo esc_html($option); ?>
@@ -177,13 +179,13 @@ foreach ($comportamentoQuestions as $question) {
 										<!-- Campo do tipo arquivo -->
 										<input type="file" id="question-<?php echo esc_attr($index); ?>"
 											name="question_<?php echo esc_attr($question['id']); ?>"
-											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 									<?php else: ?>
 										<!-- Campo do tipo texto (padrão) -->
 										<input type="text" id="question-<?php echo esc_attr($index); ?>"
 											name="question_<?php echo esc_attr($question['id']); ?>"
 											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-											placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+											placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 									<?php endif; ?>
 								</div>
 							<?php endforeach; ?>
@@ -203,12 +205,13 @@ foreach ($comportamentoQuestions as $question) {
 									<?php
 									$options = json_decode($question['options'], true);
 									$field_type = $question['field_type']; // Verifica o tipo de campo
+									$required = $question['required_field'] == 'Sim' ? 'required' : '';
 									?>
 									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 										<!-- Campo do tipo seleção -->
 										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 											id="question-<?php echo esc_attr($index); ?>"
-											name="question_<?php echo esc_attr($question['id']); ?>">
+											name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
 											<?php foreach ($options as $option): ?>
 												<option value="<?php echo esc_attr($option); ?>">
 													<?php echo esc_html($option); ?>
@@ -219,13 +222,13 @@ foreach ($comportamentoQuestions as $question) {
 										<!-- Campo do tipo arquivo -->
 										<input type="file" id="question-<?php echo esc_attr($index); ?>"
 											name="question_<?php echo esc_attr($question['id']); ?>"
-											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 									<?php else: ?>
 										<!-- Campo do tipo texto (padrão) -->
 										<input type="text" id="question-<?php echo esc_attr($index); ?>"
 											name="question_<?php echo esc_attr($question['id']); ?>"
 											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-											placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+											placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 									<?php endif; ?>
 								</div>
 							<?php endforeach; ?>
@@ -264,12 +267,13 @@ foreach ($comportamentoQuestions as $question) {
 							<?php
 							$options = json_decode($question['options'], true);
 							$field_type = $question['field_type']; // Verifica o tipo de campo
+							$required = $question['required_field'] == 'Sim' ? 'required' : '';
 							?>
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 									id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>">
+									name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -280,13 +284,13 @@ foreach ($comportamentoQuestions as $question) {
 								<!-- Campo do tipo arquivo -->
 								<input type="file" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 							<?php else: ?>
 								<!-- Campo do tipo texto (padrão) -->
 								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -319,11 +323,13 @@ foreach ($comportamentoQuestions as $question) {
 					<?php
 					$options = json_decode($question['options'], true);
 					$field_type = $question['field_type']; // Verifica o tipo de campo
+					$required = $question['required_field'] == 'Sim' ? 'required' : '';
 					?>
 					<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 						<!-- Campo do tipo seleção -->
 						<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>">
+							id="question-<?php echo esc_attr($index); ?>" name="question_<?php echo esc_attr($question['id']); ?>"
+							<?php echo $required ?>>
 							<?php foreach ($options as $option): ?>
 								<option value="<?php echo esc_attr($option); ?>">
 									<?php echo esc_html($option); ?>
@@ -334,13 +340,13 @@ foreach ($comportamentoQuestions as $question) {
 						<!-- Campo do tipo arquivo -->
 						<input type="file" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 					<?php else: ?>
 						<!-- Campo do tipo texto (padrão) -->
 						<input type="text" id="question-<?php echo esc_attr($index); ?>"
 							name="question_<?php echo esc_attr($question['id']); ?>"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-							placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+							placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
@@ -366,12 +372,13 @@ foreach ($comportamentoQuestions as $question) {
 							<?php
 							$options = json_decode($question['options'], true);
 							$field_type = $question['field_type']; // Verifica o tipo de campo
+							$required = $question['required_field'] == 'Sim' ? 'required' : '';
 							?>
 							<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
 								<!-- Campo do tipo seleção -->
 								<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
 									id="question-<?php echo esc_attr($index); ?>"
-									name="question_<?php echo esc_attr($question['id']); ?>">
+									name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
 									<?php foreach ($options as $option): ?>
 										<option value="<?php echo esc_attr($option); ?>">
 											<?php echo esc_html($option); ?>
@@ -382,13 +389,13 @@ foreach ($comportamentoQuestions as $question) {
 								<!-- Campo do tipo arquivo -->
 								<input type="file" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
-									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2">
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
 							<?php else: ?>
 								<!-- Campo do tipo texto (padrão) -->
 								<input type="text" id="question-<?php echo esc_attr($index); ?>"
 									name="question_<?php echo esc_attr($question['id']); ?>"
 									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-									placeholde="<?php echo esc_attr($question['training_phrase']); ?>">
+									placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -571,8 +578,26 @@ foreach ($comportamentoQuestions as $question) {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)");
 			if (!activeContent) return false;
 
+			// Função auxiliar para validar apenas os campos obrigatórios
+			function validateInputs(container) {
+				const inputs = container.querySelectorAll("input[required], select[required]");
+				let isValid = true;
+
+				inputs.forEach(input => {
+					if (!input.value.trim()) {
+						isValid = false;
+						// Adiciona classe de erro se quiser
+						input.classList.add("error");
+					} else {
+						input.classList.remove("error");
+					}
+				});
+
+				return isValid;
+			}
+
 			if (isComplex) {
-				const activeTabContent = activeContent.querySelector("button.active").innerHTML.trim();
+				const activeTabContent = activeContent.querySelector("button.active")?.innerHTML.trim();
 
 				let tabToSearch;
 				if (activeTabContent === 'Rápida') {
@@ -581,30 +606,10 @@ foreach ($comportamentoQuestions as $question) {
 					tabToSearch = activeContent.querySelector('[x-show="tab === \'personalizada\'"]');
 				}
 
-				const inputs = tabToSearch.querySelectorAll("input, select");
-
-				let isValid = true;
-
-				inputs.forEach(input => {
-					if (!input.value.trim()) {
-						isValid = false;
-					}
-				});
-
-				return isValid;
+				return tabToSearch ? validateInputs(tabToSearch) : false;
 			}
 
-			const inputs = activeContent.querySelectorAll("input, select");
-			let isValid = true;
-
-			// Verificar se todos os campos estão preenchidos
-			inputs.forEach(input => {
-				if (!input.value.trim()) {
-					isValid = false;
-				}
-			});
-
-			return isValid;
+			return validateInputs(activeContent);
 		}
 
 		function unlockNextTab() {
@@ -669,7 +674,7 @@ foreach ($comportamentoQuestions as $question) {
 
 						// Verifica se o input é de arquivo e atribui a URL correta
 						if (inputElement.type === "file" && fileUrls.length > 0) {
-							resposta = fileUrls.shift(); // Remove a URL já vinculada
+							resposta = fileUrls.shift();
 						}
 
 						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
@@ -687,39 +692,47 @@ foreach ($comportamentoQuestions as $question) {
 				saveData(chatbotOptions);
 			};
 
-			// Processar upload de arquivos se houver
 			if (fileInputs.length > 0) {
 				const formData = new FormData();
+				let hasFiles = false;
 
 				fileInputs.forEach((fileInput) => {
 					if (fileInput.files.length > 0) {
 						formData.append("files[]", fileInput.files[0]);
+						hasFiles = true;
 					}
 				});
 
-				formData.append("action", "upload_files_to_media_library");
+				if (hasFiles) {
+					formData.append("action", "upload_files_to_media_library");
 
-				// Fazer upload dos arquivos via AJAX
-				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						if (data.success) {
-							// Processa blocos com URLs dos arquivos
-							processQuestionBlocks(data.data.urls);
-						} else {
-							console.error("Falha ao enviar arquivos:", data.message);
-						}
+					// Fazer upload dos arquivos via AJAX
+					fetch(conciergeAjax.ajax_url, {
+						method: "POST",
+						body: formData,
 					})
-					.catch((error) => {
-						console.error("Erro na requisição de upload:", error);
-					});
+						.then((response) => response.json())
+						.then((data) => {
+							if (data.success) {
+								// Processa blocos com URLs dos arquivos
+								processQuestionBlocks(data.data.urls);
+							} else {
+								console.error("Falha ao enviar arquivos:", data.message);
+							}
+						})
+						.catch((error) => {
+							console.error("Erro na requisição de upload:", error);
+						});
+				} else {
+					// Sem arquivos, apenas processa os blocos
+					processQuestionBlocks();
+				}
 			} else {
 				// Sem arquivos, apenas processa os blocos
 				processQuestionBlocks();
 			}
+
+
 		}
 
 		function saveBehavior() {
@@ -818,6 +831,7 @@ foreach ($comportamentoQuestions as $question) {
 							// Processa blocos com URLs dos arquivos
 							processQuestionBlocks(data.data.urls);
 						} else {
+							processQuestionBlocks();
 							console.error("Falha ao enviar arquivos:", data.message);
 						}
 					})

@@ -122,6 +122,16 @@
         <input type="text" id="selection_options_input" name="selection_options_input"><br>
     </div>
 
+    <div style="display: flex; flex-direction: column; jutify-content: center;">
+        <label>Campo obrigatório?</label>
+        <div>
+            <input type="radio" id="required-yes" class="required-field" name="required_field" value="Sim" required>
+            <label for="required-yes">Sim</label>
+            <input type="radio" id="required-no" class="required-field" name="required_field" value="Não" required>
+            <label for="required-no">Não</label>
+        </div>
+    </div>
+
     <label for="training_phrase">Frase de Treinamento:</label><br>
     <input type="text" id="training_phrase" name="training_phrase" required><br>
 
@@ -179,6 +189,7 @@
             <th>Frase de treinamento</th>
             <th>Tipo de campo</th>
             <th>Categoria</th>
+            <th>Obrigatório?</th>
             <th>Ações</th>
         </tr>
     </thead>
@@ -190,6 +201,7 @@
                     <td class="training-phrase"><?php echo esc_html($question['training_phrase']); ?></td>
                     <td class="field-type"><?php echo esc_html($question['field_type']); ?></td>
                     <td class="categories"><?php echo esc_html($question['categories']); ?></td>
+                    <td class="requiredFields"><?php echo esc_html($question['required_field']); ?></td>
                     <td class="actions">
                         <div style="display: flex; gap: 20px;">
                             <a href="javascript:void(0);" class="edit-btn">Editar</a>
@@ -293,19 +305,22 @@
         const categoriesCell = row.querySelector('.categories');
         const actionsCell = row.querySelector('.actions');
         const questionResponseCell = row.querySelector('.question-response');
+        const requiredFieldCell = row.querySelector('.requiredFields');
 
         const title = titleCell ? titleCell.innerText : null;
         const training = trainingPhraseCell ? trainingPhraseCell.innerText : null;
         const fieldType = fieldTypeCell ? fieldTypeCell.innerText : null;
         const categories = categoriesCell ? categoriesCell.innerText : 'Regras Gerais';
         const questionResponse = questionResponseCell ? questionResponseCell.innerText : null;
+        const requiredField = requiredFieldCell ? requiredFieldCell.innerText : null;
 
         const originalData = {
             title: title,
             trainingPhrase: training,
             fieldType: fieldType,
             categories: categories,
-            questionResponse: questionResponse
+            questionResponse: questionResponse,
+            requiredField: requiredField
         };
 
         if (titleCell) titleCell.innerHTML = `<input type="text" value="${originalData.title || ''}" />`;
@@ -313,6 +328,7 @@
         if (fieldTypeCell) fieldTypeCell.innerHTML = `<input type="text" value="${originalData.fieldType || ''}" />`;
         if (categoriesCell) categoriesCell.innerHTML = `<input type="text" value="${originalData.categories || ''}" />`;
         if (questionResponseCell) questionResponseCell.innerHTML = `<input type="text" value="${originalData.questionResponse || ''}" />`;
+        if (requiredFieldCell) requiredFieldCell.innerHTML = `<input type="text" value="${originalData.requiredField || ''}" />`;
 
         actionsCell.innerHTML = `
         <a href="javascript:void(0);" class="save-btn">Salvar</a>
@@ -327,7 +343,8 @@
                 training_phrase: trainingPhraseCell ? trainingPhraseCell.querySelector('input').value : null,
                 field_type: fieldTypeCell ? fieldTypeCell.querySelector('input').value : null,
                 categories: categoriesCell ? categoriesCell.querySelector('input').value : 'Regras Gerais',
-                questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null
+                questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null,
+                requiredField: requiredFieldCell ? requiredFieldCell.querySelector('input').value : null,
             };
 
             const bodyData = newData.categories == "Regras Gerais"
@@ -344,7 +361,8 @@
                     training_phrase: newData.training_phrase,
                     field_type: newData.field_type,
                     categories: newData.categories,
-                    responseQuestion: newData.questionResponse
+                    responseQuestion: newData.questionResponse,
+                    requiredField: newData.requiredField
                 });
 
             fetch(conciergeAjax.ajax_url, {
@@ -360,6 +378,7 @@
                         if (fieldTypeCell) fieldTypeCell.innerText = newData.field_type;
                         if (categoriesCell) categoriesCell.innerText = newData.categories;
                         if (questionResponseCell) questionResponseCell.innerText = newData.questionResponse;
+                        if (requiredFieldCell) requiredFieldCell.innerText = newData.requiredField;
 
                         actionsCell.innerHTML = `
                     <a href="javascript:void(0);" class="edit-btn">Editar</a>
@@ -380,6 +399,7 @@
             if (fieldTypeCell) fieldTypeCell.innerText = originalData.fieldType;
             if (categoriesCell) categoriesCell.innerText = originalData.categories;
             if (questionResponseCell) questionResponseCell.innerText = originalData.questionResponse;
+            if (requiredFieldCell) requiredFieldCell.innerText = originalData.requiredField;
             actionsCell.innerHTML = `
             <a href="javascript:void(0);" class="edit-btn">Editar</a>
             <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
