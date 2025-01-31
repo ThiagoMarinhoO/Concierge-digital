@@ -172,6 +172,9 @@ class Chatbot
         $chatbot = new Chatbot();
         $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
+        $question = new Question();
+        $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
+
         if (empty($currentChatbot)) {
             return json_encode([
                 'error' => true,
@@ -212,6 +215,10 @@ class Chatbot
             } else {
                 $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
             }
+        }
+
+        foreach($chatbotFixedQuestions as $question) {
+            $chatbot_trainning[] = $question['response'];
         }
 
         $chatbot_trainning[] = 'seu nome é ' . $currentChatbot['chatbot_name'];
