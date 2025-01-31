@@ -240,12 +240,15 @@ function edit_question()
     $question_id = isset($_POST['question_id']) ? intval($_POST['question_id']) : null;
     $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
     $training_phrase = isset($_POST['training_phrase']) ? sanitize_text_field($_POST['training_phrase']) : '';
-    $options = isset($_POST['options']) ? json_decode(stripslashes($_POST['options']), true) : [];
     $categories = isset($_POST['categories']) ? sanitize_text_field($_POST['categories']) : '';
     $responseQuestion = isset($_POST['responseQuestion']) ? sanitize_text_field($_POST['responseQuestion']) : '';
     $required_field = isset($_POST['requiredField']) ? sanitize_text_field($_POST['requiredField']) : '';
-
     $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : '';
+
+    $options = isset($_POST['options']) ? json_decode(stripslashes($_POST['options']), true) : [];
+
+    // Sanitizar cada opção individual
+    $options = array_map('sanitize_text_field', $options);
 
     if (empty($question_id)) {
         wp_send_json_error(['message' => 'ID da pergunta inválido']);
@@ -253,9 +256,8 @@ function edit_question()
 
     $question = new Question();
 
-    // Se a categoria está vazia, atualize apenas o `responseQuestion`
     if ($categories == 'Regras Gerais') {
-        $updated = $question->updateQuestion($question_id, '' , '' , [] , 'Regras Gerais' , '' , $responseQuestion);
+        $updated = $question->updateQuestion($question_id, '', '', $options, 'Regras Gerais', '', $responseQuestion, $required_field);
 
         if ($updated) {
             wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
@@ -263,7 +265,7 @@ function edit_question()
             wp_send_json_error(['message' => 'Erro ao atualizar a resposta da pergunta']);
         }
     } else {
-        $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type, $responseQuestion , $required_field);
+        $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type, $responseQuestion, $required_field);
 
         if ($updated) {
             wp_send_json_success(['message' => 'Pergunta atualizada com sucesso!']);

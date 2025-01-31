@@ -188,6 +188,7 @@
             <th>Título</th>
             <th>Frase de treinamento</th>
             <th>Tipo de campo</th>
+            <th>Opções</th>
             <th>Categoria</th>
             <th>Obrigatório?</th>
             <th>Ações</th>
@@ -200,6 +201,7 @@
                     <td class="title"><?php echo esc_html($question['title']); ?></td>
                     <td class="training-phrase"><?php echo esc_html($question['training_phrase']); ?></td>
                     <td class="field-type"><?php echo esc_html($question['field_type']); ?></td>
+                    <td class="options-select"><?php echo esc_html($question['options']); ?></td>
                     <td class="categories"><?php echo esc_html($question['categories']); ?></td>
                     <td class="requiredFields"><?php echo esc_html($question['required_field']); ?></td>
                     <td class="actions">
@@ -303,6 +305,7 @@
         const trainingPhraseCell = row.querySelector('.training-phrase');
         const fieldTypeCell = row.querySelector('.field-type');
         const categoriesCell = row.querySelector('.categories');
+        const optionsCell = row.querySelector('.options-select');
         const actionsCell = row.querySelector('.actions');
         const questionResponseCell = row.querySelector('.question-response');
         const requiredFieldCell = row.querySelector('.requiredFields');
@@ -313,6 +316,7 @@
         const categories = categoriesCell ? categoriesCell.innerText : 'Regras Gerais';
         const questionResponse = questionResponseCell ? questionResponseCell.innerText : null;
         const requiredField = requiredFieldCell ? requiredFieldCell.innerText : null;
+        const options = optionsCell ? optionsCell.innerText : null;
 
         const originalData = {
             title: title,
@@ -320,6 +324,7 @@
             fieldType: fieldType,
             categories: categories,
             questionResponse: questionResponse,
+            options: options ? JSON.parse(options) : [],
             requiredField: requiredField
         };
 
@@ -329,6 +334,8 @@
         if (categoriesCell) categoriesCell.innerHTML = `<input type="text" value="${originalData.categories || ''}" />`;
         if (questionResponseCell) questionResponseCell.innerHTML = `<input type="text" value="${originalData.questionResponse || ''}" />`;
         if (requiredFieldCell) requiredFieldCell.innerHTML = `<input type="text" value="${originalData.requiredField || ''}" />`;
+
+        if (optionsCell) optionsCell.innerHTML = `<input type="text" value='${JSON.stringify(originalData.options)}' />`;
 
         actionsCell.innerHTML = `
         <a href="javascript:void(0);" class="save-btn">Salvar</a>
@@ -344,6 +351,7 @@
                 field_type: fieldTypeCell ? fieldTypeCell.querySelector('input').value : null,
                 categories: categoriesCell ? categoriesCell.querySelector('input').value : 'Regras Gerais',
                 questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null,
+                options: optionsCell ? JSON.parse(optionsCell.querySelector('input').value || '[]') : [],
                 requiredField: requiredFieldCell ? requiredFieldCell.querySelector('input').value : null,
             };
 
@@ -361,6 +369,7 @@
                     training_phrase: newData.training_phrase,
                     field_type: newData.field_type,
                     categories: newData.categories,
+                    options: JSON.stringify(newData.options),
                     responseQuestion: newData.questionResponse,
                     requiredField: newData.requiredField
                 });
@@ -379,11 +388,12 @@
                         if (categoriesCell) categoriesCell.innerText = newData.categories;
                         if (questionResponseCell) questionResponseCell.innerText = newData.questionResponse;
                         if (requiredFieldCell) requiredFieldCell.innerText = newData.requiredField;
+                        if (optionsCell) optionsCell.innerText = JSON.stringify(newData.options);
 
                         actionsCell.innerHTML = `
-                    <a href="javascript:void(0);" class="edit-btn">Editar</a>
-                    <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
-                `;
+                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                        <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
+                    `;
                         location.reload();
                     } else {
                         console.error(data);
@@ -400,6 +410,7 @@
             if (categoriesCell) categoriesCell.innerText = originalData.categories;
             if (questionResponseCell) questionResponseCell.innerText = originalData.questionResponse;
             if (requiredFieldCell) requiredFieldCell.innerText = originalData.requiredField;
+            if (optionsCell) optionsCell.innerText = JSON.stringify(originalData.options);
             actionsCell.innerHTML = `
             <a href="javascript:void(0);" class="edit-btn">Editar</a>
             <a href="javascript:void(0);" class="delete-btn" onclick="deleteQuestion(${questionId})">Excluir</a>
@@ -412,6 +423,7 @@
             });
         });
     }
+
 
     // Listener para o botão Editar
     document.querySelectorAll('.edit-btn').forEach(btn => {

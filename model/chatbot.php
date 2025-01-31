@@ -225,8 +225,7 @@ class Chatbot
 
         $training_context = implode("\n", $chatbot_trainning);
 
-        // Limita o contexto ao tamanho máximo permitido (8k tokens)
-        $training_context = $chatbot->truncate_to_token_limit($training_context, 8000);
+        $training_context = $chatbot->truncate_to_token_limit($training_context, 2000000);
 
         $data = [
             'messages' => [
@@ -243,7 +242,7 @@ class Chatbot
             'temperature' => 0.5
         ];
 
-        plugin_log(print_r($data, true));
+        // plugin_log(print_r($data, true));
 
         $headers = [
             'Content-Type: application/json',
@@ -278,7 +277,7 @@ class Chatbot
                 'image' => $chatbot_image,
             ];
 
-            plugin_log(print_r($result, true));
+            // plugin_log(print_r($result, true));
 
             return json_encode($result);
         }
