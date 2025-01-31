@@ -22,6 +22,7 @@ class Question
             training_phrase TEXT NOT NULL,
             field_type VARCHAR(50) NOT NULL,
             response TEXT DEFAULT NULL,
+            required_field TEXT DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
@@ -35,7 +36,7 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.created_at,
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.required_field , q.created_at,
                GROUP_CONCAT(c.title) AS categories
         FROM {$this->table} q
         LEFT JOIN {$relation_table} r ON q.id = r.question_id
@@ -46,7 +47,7 @@ class Question
         return $this->wpdb->get_results($sql, ARRAY_A);
     }
 
-    public function addQuestion(string $title = null, string $training_phrase = null, array $options = null, array $categories, string $field_type = null, ?string $response = null): int
+    public function addQuestion(string $title = null, string $training_phrase = null, array $options = null, array $categories, string $field_type = null, ?string $response = null , string $required_field = 'Sim'): int
     {
         $this->wpdb->insert(
             $this->table,
@@ -55,7 +56,8 @@ class Question
                 'options' => json_encode($options),
                 'training_phrase' => $training_phrase,
                 'field_type' => $field_type,
-                'response' => $response
+                'response' => $response,
+                'required_field' => $required_field
             ],
             [
                 '%s',
@@ -150,7 +152,7 @@ class Question
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
     }
 
-    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type, $question_response): bool
+    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type, $question_response , $required_field): bool
 {
     $updated = $this->wpdb->update(
         $this->table,
@@ -159,7 +161,8 @@ class Question
             'options' => json_encode($options),
             'training_phrase' => $training_phrase,
             'field_type' => $field_type,
-            'response' => $question_response
+            'response' => $question_response,
+            'required_field' => $required_field
         ],
         ['id' => $id],
         ['%s', '%s', '%s', '%s'],
@@ -213,7 +216,7 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response
+        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response , q.required_field
         FROM {$this->table} q
         INNER JOIN {$relation_table} r ON q.id = r.question_id
         INNER JOIN {$category_table} c ON r.category_id = c.id
