@@ -4,7 +4,8 @@ add_action('wp_ajax_upload_files_to_media_library', 'handle_file_upload');
 function handle_file_upload() {
 
 	if (empty($_FILES['files'])) {
-		wp_send_json_error(['message' => 'Nenhum arquivo enviado']);
+		wp_send_json_success(['message' => 'Nenhum arquivo enviado']);
+		return;
 	}
 
 	$uploaded_urls = [];

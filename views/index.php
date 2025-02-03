@@ -697,6 +697,7 @@ foreach ($comportamentoQuestions as $question) {
 				let hasFiles = false;
 
 				fileInputs.forEach((fileInput) => {
+					console.log(fileInput)
 					if (fileInput.files.length > 0) {
 						formData.append("files[]", fileInput.files[0]);
 						hasFiles = true;
