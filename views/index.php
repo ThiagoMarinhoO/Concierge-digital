@@ -72,17 +72,14 @@ foreach ($comportamentoQuestions as $question) {
 					</div>
 				</div>
 				<div class="question-block">
-					<label for="toggle_welcome_message" class="block font-medium text-gray-700 mb-2">
-						Mostrar mensagem de boas vindas?
-					</label>
-					<input type="checkbox" id="toggle_welcome_message" class="toggle-checkbox">
-					<div id="welcome_message_container" class="hidden">
+					<div id="welcome_message_container" class="">
 						<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
 							Qual será a mensagem de boas vindas?
 						</label>
 						<input type="text" name="chatbot_welcome_message"
 							placeholder="Qual será a mensagem de boas vindas?"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full">
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full"
+							required>
 					</div>
 				</div>
 				<?php if (!empty($configQuestions)): ?>
@@ -195,46 +192,16 @@ foreach ($comportamentoQuestions as $question) {
 					</div>
 
 					<div x-show="tab === 'personalizada'" class="mt-4">
-						<?php if (!empty($comportamentoPromptQuestions)): ?>
-							<?php foreach ($comportamentoPromptQuestions as $index => $question): ?>
-								<div class="question-block">
-									<label for="question-<?php echo esc_attr($index); ?>"
-										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-										<?php echo esc_html($question['title']); ?>
-									</label>
-									<?php
-									$options = json_decode($question['options'], true);
-									$field_type = $question['field_type']; // Verifica o tipo de campo
-									$required = $question['required_field'] == 'Sim' ? 'required' : '';
-									?>
-									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-										<!-- Campo do tipo seleção -->
-										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-											id="question-<?php echo esc_attr($index); ?>"
-											name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
-											<?php foreach ($options as $option): ?>
-												<option value="<?php echo esc_attr($option); ?>">
-													<?php echo esc_html($option); ?>
-												</option>
-											<?php endforeach; ?>
-										</select>
-									<?php elseif ($field_type === 'file'): ?>
-										<!-- Campo do tipo arquivo -->
-										<input type="file" id="question-<?php echo esc_attr($index); ?>"
-											name="question_<?php echo esc_attr($question['id']); ?>"
-											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2" <?php echo $required ?>>
-									<?php else: ?>
-										<!-- Campo do tipo texto (padrão) -->
-										<input type="text" id="question-<?php echo esc_attr($index); ?>"
-											name="question_<?php echo esc_attr($question['id']); ?>"
-											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2"
-											placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
-									<?php endif; ?>
-								</div>
-							<?php endforeach; ?>
-						<?php else: ?>
-							<p>Nenhuma pergunta cadastrada no momento.</p>
-						<?php endif; ?>
+						<div class="question-block">
+							<div class="">
+								<label for="chatbot_custom_prompt" class="block font-medium text-gray-700 mb-2">
+									Personalize ainda mais seu assistente virtual
+								</label>
+								<textarea name="chatbot_custom_prompt"
+									placeholder="Personalize ainda mais seu assistente virtual"
+									class="py-2 px-2.5 border border-gray-100 rounded-lg w-full"></textarea>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -709,9 +676,9 @@ foreach ($comportamentoQuestions as $question) {
 
 					// Fazer upload dos arquivos via AJAX
 					fetch(conciergeAjax.ajax_url, {
-						method: "POST",
-						body: formData,
-					})
+							method: "POST",
+							body: formData,
+						})
 						.then((response) => response.json())
 						.then((data) => {
 							if (data.success) {
@@ -784,7 +751,7 @@ foreach ($comportamentoQuestions as $question) {
 			// Função para processar blocos de perguntas
 			const processQuestionBlocks = (fileUrls = []) => {
 				tabToSearch.querySelectorAll(".question-block").forEach((questionBlock, index) => {
-					const inputElement = questionBlock.querySelector("input, select");
+					const inputElement = questionBlock.querySelector("input, select, textarea");
 					if (inputElement) {
 						const perguntaLabel = questionBlock.querySelector("label").innerText.trim();
 						let resposta = inputElement.value.trim();
@@ -823,9 +790,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
+						method: "POST",
+						body: formData,
+					})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -925,9 +892,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
+						method: "POST",
+						body: formData,
+					})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -1026,9 +993,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
+						method: "POST",
+						body: formData,
+					})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -1127,9 +1094,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-					method: "POST",
-					body: formData,
-				})
+						method: "POST",
+						body: formData,
+					})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -1378,11 +1345,11 @@ foreach ($comportamentoQuestions as $question) {
 				}).then((result) => {
 					if (result.isConfirmed) {
 						fetch(conciergeAjax.ajax_url, {
-							method: "POST",
-							body: formData,
-						})
+								method: "POST",
+								body: formData,
+							})
 							.then((response) => response.json())
-							.then((data) => { })
+							.then((data) => {})
 							.finally(() => {
 								unlockNextTab();
 								stopAllVideos();
@@ -1448,23 +1415,5 @@ foreach ($comportamentoQuestions as $question) {
 		copyButton.addEventListener("click", copyToClipboard);
 
 
-	});
-
-	document.addEventListener("DOMContentLoaded", () => {
-		const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
-		const welcomeMessageContainer = document.getElementById("welcome_message_container");
-
-		if (toggleWelcomeMessage) {
-			toggleWelcomeMessage.addEventListener("change", () => {
-				const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
-				if (toggleWelcomeMessage.checked) {
-					welcomeMessageContainer.classList.remove("hidden");
-					label.classList.add("hidden");
-				} else {
-					welcomeMessageContainer.classList.add("hidden");
-					label.classList.remove("hidden");
-				}
-			});
-		}
 	});
 </script>
