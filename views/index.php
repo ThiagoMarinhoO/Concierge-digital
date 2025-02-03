@@ -869,6 +869,7 @@ foreach ($comportamentoQuestions as $question) {
 				unlockNextTab();
 				stopAllVideos();
 
+				Swal.close()
 				Swal.fire({
 					title: `Respostas salvas`,
 					text: `Respostas salvas para a categoria: ${categoryName}`,
@@ -895,12 +896,14 @@ foreach ($comportamentoQuestions as $question) {
 						}
 
 						const trainingPhrase = questionBlock.querySelector("label").dataset.questionBase;
+						const fieldType = inputElement.tagName.toLowerCase() === "select" ? "select" : inputElement.type;
 
 						chatbotOptions.push({
 							pergunta: perguntaLabel,
 							field_name: inputElement.name,
 							resposta: resposta,
 							training_phrase: trainingPhrase,
+							field_type: fieldType
 						});
 					}
 				});
@@ -1258,6 +1261,14 @@ foreach ($comportamentoQuestions as $question) {
 		const saveknowledgeButton = document.querySelector("button.saveknowledgeButton");
 		if (saveknowledgeButton) {
 			saveknowledgeButton.addEventListener("click", () => {
+				Swal.fire({
+					title: 'Carregando...',
+					text: 'Por favor, aguarde enquanto salvamos os dados.',
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
 				// if (validateCurrentTab(true)) {
 				saveKnowledge();
 				// } else {
@@ -1442,7 +1453,7 @@ foreach ($comportamentoQuestions as $question) {
 		const toggleWelcomeMessage = document.getElementById("toggle_welcome_message");
 		const welcomeMessageContainer = document.getElementById("welcome_message_container");
 
-		if(toggleWelcomeMessage) {
+		if (toggleWelcomeMessage) {
 			toggleWelcomeMessage.addEventListener("change", () => {
 				const label = toggleWelcomeMessage.closest('.question-block').querySelector('label');
 				if (toggleWelcomeMessage.checked) {

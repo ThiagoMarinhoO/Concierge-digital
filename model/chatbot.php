@@ -198,8 +198,10 @@ class Chatbot
                         $parser = new Parser();
                         $pdf = $parser->parseFile($file_path);
                         $file_content = $pdf->getText();
+                        // plugin_log(print_r($file_content , true));
                     } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
                         $file_content = $chatbot->transcribe_audio_with_whisper($file_path);
+                        // plugin_log(print_r($file_content , true));
                     } else {
                         $file_content = file_get_contents($file_path);
                     }
@@ -225,7 +227,7 @@ class Chatbot
 
         $training_context = implode("\n", $chatbot_trainning);
 
-        $training_context = $chatbot->truncate_to_token_limit($training_context, 2000000);
+        $training_context = $chatbot->truncate_to_token_limit($training_context, 120000);
 
         $data = [
             'messages' => [
@@ -335,10 +337,11 @@ class Chatbot
         $response = file_get_contents($url, false, $context);
 
         if ($response === false) {
-            // plugin_log('Erro na solicitação ao Whisper API');
+            plugin_log('Erro na solicitação ao Whisper API');
         }
 
         $result = json_decode($response, true);
+
 
         return $result['text'] ?? '';
     }
