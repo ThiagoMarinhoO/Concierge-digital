@@ -70,8 +70,12 @@ class Chatbot
         return $result !== false;
     }
 
-    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $user_id)
+    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null, $user_id)
     {
+        if (empty($id)) {
+            return false;
+        }
+
         $data = [];
         $formats = [];
 
@@ -81,15 +85,26 @@ class Chatbot
         }
 
         if ($chatbot_options !== null) {
-            $current_options = $this->wpdb->get_var($this->wpdb->prepare("SELECT chatbot_options FROM {$this->table} WHERE id = $id AND user_id = $user_id", $id, $this->user_id));
+            $current_options = $this->wpdb->get_var(
+                $this->wpdb->prepare(
+                    "SELECT chatbot_options FROM {$this->table} WHERE id = %d AND user_id = %d",
+                    $id,
+                    $user_id
+                )
+            );
             $current_options = json_decode($current_options, true);
-            $new_options = array_merge($current_options, $chatbot_options);
+            $new_options = array_replace_recursive((array) $current_options, $chatbot_options);
             $data['chatbot_options'] = json_encode($new_options);
             $formats[] = '%s';
         }
 
-        if ($chatbot_image !== null) {
+        if ($chatbot_image !== null && !empty($chatbot_image)) {
             $data['chatbot_image'] = $chatbot_image;
+            $formats[] = '%s';
+        }
+
+        if ($chatbot_welcome_message !== null) {
+            $data['chatbot_welcome_message'] = $chatbot_welcome_message;
             $formats[] = '%s';
         }
 
@@ -100,13 +115,14 @@ class Chatbot
         $result = $this->wpdb->update(
             $this->table,
             $data,
-            ['id' => $id, 'user_id' => $this->user_id],
+            ['id' => $id, 'user_id' => $user_id],
             $formats,
             ['%d', '%d']
         );
 
         return $result !== false;
     }
+
 
     public function getAllChatbots()
     {
@@ -121,7 +137,6 @@ class Chatbot
         $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
 
         if ($chatbot) {
-            // Decodificar as opções do chatbot
             $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
         }
 
@@ -140,6 +155,31 @@ class Chatbot
         $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE chatbot_name = %d", $chatbot_name);
 
         return $this->wpdb->get_results($sql);
+    }
+
+    public function getChatbotIdByUser($user_id)
+    {
+        // Verifica se a tabela existe
+        $table_exists = $this->wpdb->get_var(
+            $this->wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $this->table
+            )
+        );
+
+        if (!$table_exists) {
+            return false;
+        }
+
+        // Consulta o ID do chatbot relacionado ao usuário
+        $sql = $this->wpdb->prepare(
+            "SELECT id FROM {$this->table} WHERE user_id = %d LIMIT 1",
+            $user_id
+        );
+
+        $chatbot_id = $this->wpdb->get_var($sql);
+
+        return $chatbot_id ? $chatbot_id : false;
     }
 
     public function userHasChatbot($user_id)
@@ -219,7 +259,7 @@ class Chatbot
             }
         }
 
-        foreach($chatbotFixedQuestions as $question) {
+        foreach ($chatbotFixedQuestions as $question) {
             $chatbot_trainning[] = $question['response'];
         }
 

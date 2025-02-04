@@ -78,8 +78,7 @@ foreach ($comportamentoQuestions as $question) {
 						</label>
 						<input type="text" name="chatbot_welcome_message"
 							placeholder="Qual será a mensagem de boas vindas?"
-							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full"
-							required>
+							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" required>
 					</div>
 				</div>
 				<?php if (!empty($configQuestions)): ?>
@@ -405,6 +404,10 @@ foreach ($comportamentoQuestions as $question) {
 		$user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		$chatbots = $chatbot->getAllChatbots();
 
+		if (!empty($user_id)) {
+			$userchatbot_id = $chatbot->getChatbotIdByUser($user_id);
+		}
+
 		if ($user_has_chatbot): ?>
 			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
 				<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
@@ -412,7 +415,7 @@ foreach ($comportamentoQuestions as $question) {
 					<!-- Select para selecionar o chatbot -->
 					<div class="p-4 bg-gray-200">
 						<label for="chatbot-selector" class="block text-sm font-medium text-gray-700">Selecione o
-							Chatbot:</label>
+							assistente virtual:</label>
 						<select id="chatbot-selector"
 							class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 							<?php foreach ($chatbots as $bot): ?>
@@ -422,6 +425,9 @@ foreach ($comportamentoQuestions as $question) {
 							<?php endforeach; ?>
 						</select>
 					</div>
+
+					<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
+					<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
@@ -459,7 +465,7 @@ foreach ($comportamentoQuestions as $question) {
 				<div class="flex justify-center gap-10">
 					<form action="" method="POST" id="deleteChatbotForm">
 						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-							Chatbot</button>
+							assistente virtual</button>
 					</form>
 					<!-- <form action="" method="" id="">
 						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
@@ -518,7 +524,7 @@ foreach ($comportamentoQuestions as $question) {
 	</div>
 </div>
 
-<script>
+<script type="module">
 	document.addEventListener("DOMContentLoaded", () => {
 
 		const container = document.getElementById("tabs-container");
@@ -540,6 +546,71 @@ foreach ($comportamentoQuestions as $question) {
 		function hideAllTabs() {
 			contentDivs.forEach(contentDiv => contentDiv.classList.add("hidden"));
 		}
+
+		async function updateChatbot(chatbotOptions) {
+			const chatbotId = document.getElementById("chatbotID").value;
+			const chatbotName = document.querySelector("input[name='chatbot_name']").value;
+			const welcomeMessage = document.querySelector("input[name='chatbot_welcome_message']").value;
+			const fileInput = document.getElementById("appearance_image");
+			let file_url = "";
+
+			// Verifica se há um arquivo para upload
+			if (fileInput && fileInput.files.length > 0) {
+				const formData = new FormData();
+				formData.append("files[]", fileInput.files[0]);
+				formData.append("action", "upload_files_to_media_library");
+
+				try {
+					const response = await fetch(conciergeAjax.ajax_url, {
+						method: "POST",
+						body: formData,
+					});
+
+					const data = await response.json();
+					if (data.success) {
+						file_url = data.data.urls;
+					} else {
+						console.error("Falha ao enviar arquivos:", data.message);
+						return;
+					}
+				} catch (error) {
+					console.error("Erro na requisição de upload:", error);
+					return;
+				}
+			}
+
+			chatbotOptions = chatbotOptions.map(option => {
+				if (option.field_type === "file" && !option.value) {
+					delete option.value;
+				}
+				return option;
+			});
+
+			const chatbotFormData = new FormData();
+			chatbotFormData.append("action", "save_responses");
+			chatbotFormData.append("chatbot_options", JSON.stringify(chatbotOptions));
+			chatbotFormData.append("chatbot_id", chatbotId);
+			chatbotFormData.append("chatbot_name", chatbotName);
+			chatbotFormData.append("chatbot_image", file_url);
+			chatbotFormData.append("chatbot_welcome_message", welcomeMessage);
+
+			try {
+				const chatbotResponse = await fetch(conciergeAjax.ajax_url, {
+					method: "POST",
+					body: chatbotFormData,
+				});
+
+				const chatbotData = await chatbotResponse.json();
+				if (chatbotData.success) {
+					console.log("Chatbot atualizado com sucesso!", chatbotData);
+				} else {
+					console.error("Erro ao atualizar chatbot:", chatbotData.message);
+				}
+			} catch (error) {
+				console.error("Erro na requisição do chatbot:", error);
+			}
+		}
+
 
 		function validateCurrentTab(isComplex) {
 			const activeContent = document.querySelector(".tab-content:not(.hidden)");
@@ -657,6 +728,14 @@ foreach ($comportamentoQuestions as $question) {
 					}
 				});
 				saveData(chatbotOptions);
+				const hasChatbot = document.getElementById("hasChatbot").value;
+
+				// Se o usuário já tem um chatbot, atualize as informações
+				if (hasChatbot === '1') {
+					updateChatbot(chatbotOptions);
+				} else {
+					console.log("Usuário não tem chatbot, não atualizar.");
+				}
 			};
 
 			if (fileInputs.length > 0) {
@@ -664,7 +743,6 @@ foreach ($comportamentoQuestions as $question) {
 				let hasFiles = false;
 
 				fileInputs.forEach((fileInput) => {
-					console.log(fileInput)
 					if (fileInput.files.length > 0) {
 						formData.append("files[]", fileInput.files[0]);
 						hasFiles = true;
@@ -676,9 +754,9 @@ foreach ($comportamentoQuestions as $question) {
 
 					// Fazer upload dos arquivos via AJAX
 					fetch(conciergeAjax.ajax_url, {
-							method: "POST",
-							body: formData,
-						})
+						method: "POST",
+						body: formData,
+					})
 						.then((response) => response.json())
 						.then((data) => {
 							if (data.success) {
@@ -774,6 +852,14 @@ foreach ($comportamentoQuestions as $question) {
 					}
 				});
 				saveData(chatbotOptions);
+				const hasChatbot = document.getElementById("hasChatbot").value;
+
+				// Se o usuário já tem um chatbot, atualize as informações
+				if (hasChatbot === '1') {
+					updateChatbot(chatbotOptions);
+				} else {
+					console.log("Usuário não tem chatbot, não atualizar.");
+				}
 			};
 
 			// Processar upload de arquivos se houver
@@ -790,9 +876,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-						method: "POST",
-						body: formData,
-					})
+					method: "POST",
+					body: formData,
+				})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -876,6 +962,14 @@ foreach ($comportamentoQuestions as $question) {
 					}
 				});
 				saveData(chatbotOptions);
+				const hasChatbot = document.getElementById("hasChatbot").value;
+
+				// Se o usuário já tem um chatbot, atualize as informações
+				if (hasChatbot === '1') {
+					updateChatbot(chatbotOptions);
+				} else {
+					console.log("Usuário não tem chatbot, não atualizar.");
+				}
 			};
 
 			// Processar upload de arquivos se houver
@@ -892,9 +986,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-						method: "POST",
-						body: formData,
-					})
+					method: "POST",
+					body: formData,
+				})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -977,6 +1071,14 @@ foreach ($comportamentoQuestions as $question) {
 					}
 				});
 				saveData(chatbotOptions);
+				const hasChatbot = document.getElementById("hasChatbot").value;
+
+				// Se o usuário já tem um chatbot, atualize as informações
+				if (hasChatbot === '1') {
+					updateChatbot(chatbotOptions);
+				} else {
+					console.log("Usuário não tem chatbot, não atualizar.");
+				}
 			};
 
 			// Processar upload de arquivos se houver
@@ -993,9 +1095,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-						method: "POST",
-						body: formData,
-					})
+					method: "POST",
+					body: formData,
+				})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -1078,6 +1180,14 @@ foreach ($comportamentoQuestions as $question) {
 					}
 				});
 				saveData(chatbotOptions);
+				const hasChatbot = document.getElementById("hasChatbot").value;
+
+				// Se o usuário já tem um chatbot, atualize as informações
+				if (hasChatbot === '1') {
+					updateChatbot(chatbotOptions);
+				} else {
+					console.log("Usuário não tem chatbot, não atualizar.");
+				}
 			};
 
 			// Processar upload de arquivos se houver
@@ -1094,9 +1204,9 @@ foreach ($comportamentoQuestions as $question) {
 
 				// Fazer upload dos arquivos via AJAX
 				fetch(conciergeAjax.ajax_url, {
-						method: "POST",
-						body: formData,
-					})
+					method: "POST",
+					body: formData,
+				})
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.success) {
@@ -1152,6 +1262,15 @@ foreach ($comportamentoQuestions as $question) {
 			const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
 			savedData[categoryName] = chatbotOptions;
 			localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
+
+			const hasChatbot = document.getElementById("hasChatbot").value;
+
+			// Se o usuário já tem um chatbot, atualize as informações
+			if (hasChatbot === '1') {
+				updateChatbot(chatbotOptions);
+			} else {
+				console.log("Usuário não tem chatbot, não atualizar.");
+			}
 
 			unlockNextTab();
 
@@ -1336,7 +1455,7 @@ foreach ($comportamentoQuestions as $question) {
 
 				Swal.fire({
 					title: 'Tem certeza?',
-					text: "Você deseja gerar o chatbot?",
+					text: "Você deseja gerar o Assistente Virtual?",
 					icon: 'warning',
 					showCancelButton: true,
 					confirmButtonColor: '#3085d6',
@@ -1345,11 +1464,11 @@ foreach ($comportamentoQuestions as $question) {
 				}).then((result) => {
 					if (result.isConfirmed) {
 						fetch(conciergeAjax.ajax_url, {
-								method: "POST",
-								body: formData,
-							})
+							method: "POST",
+							body: formData,
+						})
 							.then((response) => response.json())
-							.then((data) => {})
+							.then((data) => { })
 							.finally(() => {
 								unlockNextTab();
 								stopAllVideos();
