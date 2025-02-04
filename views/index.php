@@ -78,7 +78,7 @@ usort($integracoesQuestions, function($a, $b) {
 					</div>
 				</div>
 				<div class="question-block">
-					<div id="welcome_message_container" class="">
+					<div id="welcome_message_container" class="" style="display: flex;">
 						<label for="chatbot_welcome_message" class="block font-medium text-gray-700 mb-2">
 							Qual será a mensagem de boas vindas?
 						</label>
