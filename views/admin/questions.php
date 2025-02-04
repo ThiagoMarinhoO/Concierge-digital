@@ -1,4 +1,4 @@
-<h1>Gerenciador de Perguntas</h1>
+<h1 style="font-size: 36px; font-weight: 600; color: #222;">Gerenciador de Perguntas</h1>
 
 <!-- Estilos adicionados dentro da tag <style> -->
 <style>
@@ -101,8 +101,8 @@
 </style>
 
 <!-- Formulário de Adicionar Pergunta -->
-<h2>Adicionar Pergunta</h2>
 <form method="post">
+    <h2>Adicionar Pergunta</h2>
     <label for="question_title">Título:</label><br>
     <input type="text" id="question_title" name="question_title" required><br>
 
@@ -122,7 +122,7 @@
         <input type="text" id="selection_options_input" name="selection_options_input"><br>
     </div>
 
-    <div style="display: flex; flex-direction: column; jutify-content: center;">
+    <div style="display: flex; flex-direction: column; justify-content: center;">
         <label>Campo obrigatório?</label>
         <div>
             <input type="radio" id="required-yes" class="required-field" name="required_field" value="Sim" required>
@@ -146,81 +146,103 @@
     <button type="submit" name="add_question">Adicionar Pergunta</button>
 </form>
 
-<h2>Adicionar Categoria</h2>
 <form method="post">
+    <h2>Adicionar Categoria</h2>
     <label for="category_title">Título da Categoria:</label><br>
     <input type="text" id="category_title" name="category_title" required><br>
     <button type="submit" name="add_category">Adicionar Categoria</button>
 </form>
 
-<!-- Tabela de Categorias Existentes -->
-<h2>Categorias Existentes</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Título</th>
-            <th>N° de perguntas</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $question = new Question();
-
-        foreach ($categories as $category): ?>
+<div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 30px; background-color: white;">
+    <h2 style="font-size: 28px; font-weight: 600; color: #222;">Categorias Existentes</h2>
+    <table>
+        <thead>
             <tr>
-                <td><?php echo esc_html($category['title']); ?></td>
-                <td><?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?></td>
-                <td class="actions">
-                    <a href="javascript:void(0);"
-                        onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
-                </td>
+                <th>Título</th>
+                <th>N° de perguntas</th>
+                <th>Ações</th>
             </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
-
-<!-- Tabela de Perguntas Existentes -->
-<h2>Perguntas Existentes</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Título</th>
-            <th>Frase de treinamento</th>
-            <th>Tipo de campo</th>
-            <th>Opções</th>
-            <th>Categoria</th>
-            <th>Obrigatório?</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($questions as $question): ?>
-            <?php if ($question['categories'] !== 'Regras Gerais'): ?>
-                <tr data-question-id="<?php echo esc_attr($question['id']); ?>">
-                    <td class="title"><?php echo esc_html($question['title']); ?></td>
-                    <td class="training-phrase"><?php echo esc_html($question['training_phrase']); ?></td>
-                    <td class="field-type"><?php echo esc_html($question['field_type']); ?></td>
-                    <td class="options-select"><?php echo esc_html($question['options']); ?></td>
-                    <td class="categories"><?php echo esc_html($question['categories']); ?></td>
-                    <td class="requiredFields"><?php echo esc_html($question['required_field']); ?></td>
+        </thead>
+        <tbody>
+            <?php
+            $question = new Question();
+    
+            foreach ($categories as $category): ?>
+                <tr>
+                    <td><?php echo esc_html($category['title']); ?></td>
+                    <td><?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?></td>
                     <td class="actions">
-                        <div style="display: flex; gap: 20px;">
-                            <a href="javascript:void(0);" class="edit-btn">Editar</a>
-                            <a href="javascript:void(0);" class="delete-btn"
-                                onclick="deleteQuestion(<?php echo esc_attr($question['id']); ?>)">Excluir</a>
-                        </div>
+                        <a href="javascript:void(0);"
+                            onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
                     </td>
                 </tr>
-            <?php endif ?>
-        <?php endforeach; ?>
-        <?php if (empty($questions)): ?>
-            <tr>
-                <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
-            </tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
+<!-- Tabela de Perguntas Existentes -->
+<div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 30px; background-color: white;">
+    <h2 style="font-size: 28px; font-weight: 600; color: #222;">Perguntas Existentes</h2>
+
+    <?php
+    $quests = new Question();
+    $questoes = $quests->getAllQuestions();
+
+    $questions_by_category = [];
+    
+    foreach ($questoes as $question) {
+        $categories = !empty($question['categories']) ? explode(',', $question['categories']) : [];
+        foreach ($categories as $category) {
+            $category = trim($category);
+            if ($category !== 'Regras Gerais') {
+                $questions_by_category[$category][] = $question;
+            }
+        }
+    }
+    
+    if (!empty($questions_by_category)) {
+        foreach ($questions_by_category as $category => $category_questions) {
+            echo "<h4 style='font-size: 18px; font-weight: 500; color: #222;'>{$category}</h4>";
+            echo "<table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Frase de treinamento</th>
+                        <th>Tipo de campo</th>
+                        <th>Opções</th>
+                        <th>Categoria</th>
+                        <th>Obrigatório?</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>";
+                
+            foreach ($category_questions as $question) {
+                echo "<tr data-question-id='" . esc_attr($question['id']) . "'>
+                        <td class='title'>" . esc_html($question['title']) . "</td>
+                        <td class='training-phrase'>" . esc_html($question['training_phrase']) . "</td>
+                        <td class='field-type'>" . esc_html($question['field_type']) . "</td>
+                        <td class='options-select'>" . esc_html($question['options']) . "</td>
+                        <td class='categories'>" . esc_html($question['categories']) . "</td>
+                        <td class='requiredFields'>" . esc_html($question['required_field']) . "</td>
+                        <td class='actions'>
+                            <div style='display: flex; gap: 20px;'>
+                                <a href='javascript:void(0);' class='edit-btn'>Editar</a>
+                                <a href='javascript:void(0);' class='delete-btn' onclick='deleteQuestion(" . esc_attr($question['id']) . ")'>Excluir</a>
+                            </div>
+                        </td>
+                    </tr>";
+            }
+            
+            echo "</tbody>
+            </table>";
+        }
+    } else {
+        echo "<p style='text-align: center;'>Nenhuma Resposta cadastrada</p>";
+    }
+    ?>
+</div>
 
 <!-- Formulário de Adicionar Pergunta -->
 <h2>Adicionar Pergunta à Categoria: Regras Gerais</h2>

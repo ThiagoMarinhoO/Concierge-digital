@@ -128,7 +128,7 @@ add_shortcode('concierge_chatbot', 'concierge_display_chatbot_form');
 add_action('admin_menu', function () {
     add_menu_page(
         'Gerenciar Perguntas',           // Título da página
-        'Perguntas Chatbot',             // Título do menu
+        'Perguntas Assistente Virtual',  // Título do menu
         'manage_options',                // Capacidade necessária
         'question-manager',              // Slug do menu
         'render_question_manager_page',  // Função de callback para renderizar a página
