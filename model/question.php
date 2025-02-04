@@ -22,6 +22,7 @@ class Question
             training_phrase TEXT NOT NULL,
             field_type VARCHAR(50) NOT NULL,
             response TEXT DEFAULT NULL,
+            prioridade INT DEFAULT NULL,
             required_field TEXT DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
@@ -36,7 +37,7 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.required_field , q.created_at,
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.prioridade, q.required_field , q.created_at,
                GROUP_CONCAT(c.title) AS categories
         FROM {$this->table} q
         LEFT JOIN {$relation_table} r ON q.id = r.question_id
@@ -57,14 +58,14 @@ class Question
                 'training_phrase' => $training_phrase,
                 'field_type' => $field_type,
                 'response' => $response,
-                'required_field' => $required_field
+                'required_field' => $required_field,
             ],
             [
                 '%s',
                 '%s',
                 '%s',
                 '%s',
-                '%s'
+                '%d'
             ]
         );
 
@@ -152,57 +153,58 @@ class Question
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
     }
 
-    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type, $question_response , $required_field): bool
-{
-    $updated = $this->wpdb->update(
-        $this->table,
-        [
-            'title' => $title,
-            'options' => json_encode($options),
-            'training_phrase' => $training_phrase,
-            'field_type' => $field_type,
-            'response' => $question_response,
-            'required_field' => $required_field
-        ],
-        ['id' => $id],
-        ['%s', '%s', '%s', '%s'],
-        ['%d']
-    );
-
-    if ($updated === false) {
-        return false;
-    }
-
-    $relation_table = $this->getRelationTable();
-
-    $this->wpdb->delete($relation_table, ['question_id' => $id], ['%d']);
-
-    $category_table = $this->wpdb->prefix . 'question_categories';
-    $category_id = $this->wpdb->get_var(
-        $this->wpdb->prepare("SELECT id FROM {$category_table} WHERE title = %s", $category)
-    );
-
-    if (!$category_id) {
-        $this->wpdb->insert(
-            $category_table,
-            ['title' => $category],
-            ['%s']
+    public function updateQuestion($id, $title, $training_phrase, $options, $category, $field_type, $question_response, $required_field, $prioridade): bool
+    {
+        $updated = $this->wpdb->update(
+            $this->table,
+            [
+                'title' => $title,
+                'options' => json_encode($options),
+                'training_phrase' => $training_phrase,
+                'field_type' => $field_type,
+                'response' => $question_response,
+                'required_field' => $required_field,
+                'prioridade' => $prioridade
+            ],
+            ['id' => $id],
+            ['%s', '%s', '%s', '%s', '%s', '%s', '%d'],
+            ['%d']
         );
 
-        $category_id = $this->wpdb->insert_id;
+        if ($updated === false) {
+            return false;
+        }
+
+        $relation_table = $this->getRelationTable();
+
+        $this->wpdb->delete($relation_table, ['question_id' => $id], ['%d']);
+
+        $category_table = $this->wpdb->prefix . 'question_categories';
+        $category_id = $this->wpdb->get_var(
+            $this->wpdb->prepare("SELECT id FROM {$category_table} WHERE title = %s", $category)
+        );
+
+        if (!$category_id) {
+            $this->wpdb->insert(
+                $category_table,
+                ['title' => $category],
+                ['%s']
+            );
+
+            $category_id = $this->wpdb->insert_id;
+        }
+
+        $this->wpdb->insert(
+            $relation_table,
+            [
+                'question_id' => $id,
+                'category_id' => $category_id
+            ],
+            ['%d', '%d']
+        );
+
+        return true;
     }
-
-    $this->wpdb->insert(
-        $relation_table,
-        [
-            'question_id' => $id,
-            'category_id' => $category_id
-        ],
-        ['%d', '%d']
-    );
-
-    return true;
-}
 
 
     private function getRelationTable(): string
@@ -216,7 +218,7 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response , q.required_field
+        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response, q.prioridade , q.required_field
         FROM {$this->table} q
         INNER JOIN {$relation_table} r ON q.id = r.question_id
         INNER JOIN {$category_table} c ON r.category_id = c.id

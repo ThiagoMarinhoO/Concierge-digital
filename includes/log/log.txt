@@ -1,0 +1,8 @@
+2025-02-04 13:58:55 - Arquivos enviados para a biblioteca de mídia
+2025-02-04 13:59:24 - Array
+2025-02-04 13:59:41 - 1
+
+
+[x] campo de prioridade no model
+[] Editar perguntas permite alterar a prioridade no model
+[] index.php dentro do array das perguntas ordenar de forma decrescente as perguntas antes de renderizar no foreach

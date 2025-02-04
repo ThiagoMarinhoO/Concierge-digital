@@ -9,16 +9,22 @@ $baseDeConhecimentoQuestions = $question->getQuestionsByCategory('Base de Conhec
 $aparenciaQuestions = $question->getQuestionsByCategory('Aparência');
 $integracoesQuestions = $question->getQuestionsByCategory('Integrações');
 
-$comportamentoPromptQuestions = [];
-$comportamentoOtherQuestions = [];
 
-foreach ($comportamentoQuestions as $question) {
-	if ($question['title'] === 'Escreva aqui seu prompt:') {
-		$comportamentoPromptQuestions[] = $question;
-	} else {
-		$comportamentoOtherQuestions[] = $question;
-	}
-}
+usort($configQuestions, function($a, $b) {
+	return $b['prioridade'] - $a['prioridade'];
+});
+usort($comportamentoQuestions, function($a, $b) {
+	return $b['prioridade'] - $a['prioridade'];
+});
+usort($baseDeConhecimentoQuestions, function($a, $b) {
+	return $b['prioridade'] - $a['prioridade'];
+});
+usort($perguntasQuestions, function($a, $b) {
+	return $b['prioridade'] - $a['prioridade'];
+});
+usort($integracoesQuestions, function($a, $b) {
+	return $b['prioridade'] - $a['prioridade'];
+});
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 	<!-- Botões das abas -->
@@ -149,8 +155,8 @@ foreach ($comportamentoQuestions as $question) {
 						class="px-4 py-2 rounded-md">Personalizada</button>
 
 					<div x-show="tab === 'rapida'" class="mt-4">
-						<?php if (!empty($comportamentoOtherQuestions)): ?>
-							<?php foreach ($comportamentoOtherQuestions as $index => $question): ?>
+						<?php if (!empty($comportamentoQuestions)): ?>
+							<?php foreach ($comportamentoQuestions as $index => $question): ?>
 								<div class="question-block">
 									<label for="question-<?php echo esc_attr($index); ?>"
 										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
