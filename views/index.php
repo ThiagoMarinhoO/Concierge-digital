@@ -1,6 +1,8 @@
 <?php
 
 $question = new Question();
+$chatbot = new Chatbot();
+$user_id = get_current_user_id();
 
 $configQuestions = $question->getQuestionsByCategory('Configuração');
 $comportamentoQuestions = $question->getQuestionsByCategory('Comportamento');
@@ -10,21 +12,26 @@ $aparenciaQuestions = $question->getQuestionsByCategory('Aparência');
 $integracoesQuestions = $question->getQuestionsByCategory('Integrações');
 
 
-usort($configQuestions, function($a, $b) {
+usort($configQuestions, function ($a, $b) {
 	return $b['prioridade'] - $a['prioridade'];
 });
-usort($comportamentoQuestions, function($a, $b) {
+usort($comportamentoQuestions, function ($a, $b) {
 	return $b['prioridade'] - $a['prioridade'];
 });
-usort($baseDeConhecimentoQuestions, function($a, $b) {
+usort($baseDeConhecimentoQuestions, function ($a, $b) {
 	return $b['prioridade'] - $a['prioridade'];
 });
-usort($perguntasQuestions, function($a, $b) {
+usort($perguntasQuestions, function ($a, $b) {
 	return $b['prioridade'] - $a['prioridade'];
 });
-usort($integracoesQuestions, function($a, $b) {
+usort($integracoesQuestions, function ($a, $b) {
 	return $b['prioridade'] - $a['prioridade'];
 });
+
+if (!empty($user_id)) {
+	$userchatbot_id = $chatbot->getChatbotIdByUser($user_id);
+}
+$user_has_chatbot = $chatbot->userHasChatbot($user_id);
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 	<!-- Botões das abas -->
@@ -76,6 +83,8 @@ usort($integracoesQuestions, function($a, $b) {
 						<input type="text" name="chatbot_name" placeholde="Qual o nome do chatbot ?"
 							class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" required>
 					</div>
+					<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
+					<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 				</div>
 				<div class="question-block">
 					<div id="welcome_message_container" class="" style="display: flex;">
@@ -404,15 +413,8 @@ usort($integracoesQuestions, function($a, $b) {
 	<div id="Teste-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<?php
-		$chatbot = new Chatbot();
-		$user_id = get_current_user_id();
 
-		$user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		$chatbots = $chatbot->getAllChatbots();
-
-		if (!empty($user_id)) {
-			$userchatbot_id = $chatbot->getChatbotIdByUser($user_id);
-		}
 
 		if ($user_has_chatbot): ?>
 			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
@@ -431,9 +433,6 @@ usort($integracoesQuestions, function($a, $b) {
 							<?php endforeach; ?>
 						</select>
 					</div>
-
-					<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
-					<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
@@ -554,6 +553,7 @@ usort($integracoesQuestions, function($a, $b) {
 		}
 
 		async function updateChatbot(chatbotOptions) {
+			console.log('oi')
 			const chatbotId = document.getElementById("chatbotID").value;
 			const chatbotName = document.querySelector("input[name='chatbot_name']").value;
 			const welcomeMessage = document.querySelector("input[name='chatbot_welcome_message']").value;
@@ -736,8 +736,11 @@ usort($integracoesQuestions, function($a, $b) {
 				saveData(chatbotOptions);
 				const hasChatbot = document.getElementById("hasChatbot").value;
 
+				console.log(hasChatbot)
+
 				// Se o usuário já tem um chatbot, atualize as informações
 				if (hasChatbot === '1') {
+					console.log('tem')
 					updateChatbot(chatbotOptions);
 				} else {
 					console.log("Usuário não tem chatbot, não atualizar.");
@@ -860,8 +863,11 @@ usort($integracoesQuestions, function($a, $b) {
 				saveData(chatbotOptions);
 				const hasChatbot = document.getElementById("hasChatbot").value;
 
+				console.log(hasChatbot)
+
 				// Se o usuário já tem um chatbot, atualize as informações
 				if (hasChatbot === '1') {
+					console.log('tem')
 					updateChatbot(chatbotOptions);
 				} else {
 					console.log("Usuário não tem chatbot, não atualizar.");
@@ -971,7 +977,11 @@ usort($integracoesQuestions, function($a, $b) {
 				const hasChatbot = document.getElementById("hasChatbot").value;
 
 				// Se o usuário já tem um chatbot, atualize as informações
+				console.log(hasChatbot)
+
+				// Se o usuário já tem um chatbot, atualize as informações
 				if (hasChatbot === '1') {
+					console.log('tem')
 					updateChatbot(chatbotOptions);
 				} else {
 					console.log("Usuário não tem chatbot, não atualizar.");
@@ -1079,8 +1089,11 @@ usort($integracoesQuestions, function($a, $b) {
 				saveData(chatbotOptions);
 				const hasChatbot = document.getElementById("hasChatbot").value;
 
+				console.log(hasChatbot)
+
 				// Se o usuário já tem um chatbot, atualize as informações
 				if (hasChatbot === '1') {
+					console.log('tem')
 					updateChatbot(chatbotOptions);
 				} else {
 					console.log("Usuário não tem chatbot, não atualizar.");
@@ -1188,8 +1201,11 @@ usort($integracoesQuestions, function($a, $b) {
 				saveData(chatbotOptions);
 				const hasChatbot = document.getElementById("hasChatbot").value;
 
+				console.log(hasChatbot)
+
 				// Se o usuário já tem um chatbot, atualize as informações
 				if (hasChatbot === '1') {
+					console.log('tem')
 					updateChatbot(chatbotOptions);
 				} else {
 					console.log("Usuário não tem chatbot, não atualizar.");
@@ -1271,8 +1287,11 @@ usort($integracoesQuestions, function($a, $b) {
 
 			const hasChatbot = document.getElementById("hasChatbot").value;
 
+			console.log(hasChatbot)
+
 			// Se o usuário já tem um chatbot, atualize as informações
 			if (hasChatbot === '1') {
+				console.log('tem')
 				updateChatbot(chatbotOptions);
 			} else {
 				console.log("Usuário não tem chatbot, não atualizar.");
