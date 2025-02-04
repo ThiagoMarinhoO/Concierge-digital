@@ -166,7 +166,7 @@
         <tbody>
             <?php
             $question = new Question();
-    
+
             foreach ($categories as $category): ?>
                 <tr>
                     <td><?php echo esc_html($category['title']); ?></td>
@@ -190,7 +190,7 @@
     $questoes = $quests->getAllQuestions();
 
     $questions_by_category = [];
-    
+
     foreach ($questoes as $question) {
         $categories = !empty($question['categories']) ? explode(',', $question['categories']) : [];
         foreach ($categories as $category) {
@@ -200,7 +200,7 @@
             }
         }
     }
-    
+
     if (!empty($questions_by_category)) {
         foreach ($questions_by_category as $category => $category_questions) {
             echo "<h4 style='font-size: 18px; font-weight: 500; color: #222;'>{$category}</h4>";
@@ -213,11 +213,12 @@
                         <th>Opções</th>
                         <th>Categoria</th>
                         <th>Obrigatório?</th>
+                        <th>Prioridade</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>";
-                
+
             foreach ($category_questions as $question) {
                 echo "<tr data-question-id='" . esc_attr($question['id']) . "'>
                         <td class='title'>" . esc_html($question['title']) . "</td>
@@ -226,6 +227,7 @@
                         <td class='options-select'>" . esc_html($question['options']) . "</td>
                         <td class='categories'>" . esc_html($question['categories']) . "</td>
                         <td class='requiredFields'>" . esc_html($question['required_field']) . "</td>
+                        <td class='priorityFields'>" . esc_html($question['prioridade']) . "</td>
                         <td class='actions'>
                             <div style='display: flex; gap: 20px;'>
                                 <a href='javascript:void(0);' class='edit-btn'>Editar</a>
@@ -234,7 +236,7 @@
                         </td>
                     </tr>";
             }
-            
+
             echo "</tbody>
             </table>";
         }
@@ -245,47 +247,48 @@
 </div>
 
 <!-- Formulário de Adicionar Pergunta -->
-<h2>Adicionar Pergunta à Categoria: Regras Gerais</h2>
-<form id="fixed-question-form">
-    <label for="response">Resposta</label>
-    <input type="text" id="response" name="response" required>
-    <button type="submit">Adicionar Pergunta</button>
-</form>
+<form id="fixed-question-form" style="margin-top: 24px;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #222;">Adicionar Pergunta à Categoria: Regras Gerais</h2>
+        <label for="response">Resposta</label>
+        <input type="text" id="response" name="response" required>
+        <button type="submit">Adicionar Pergunta</button>
+    </form>
 
 <!-- Tabela de Regras Gerais Existentes -->
-<h2>Regras Gerais Existentes</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Resposta</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $question = new Question();
-        $questions = $question->getQuestionsByCategory('Regras Gerais');
-
-        foreach ($questions as $q): ?>
-            <tr data-question-id="<?php echo esc_attr($q['id']); ?>">
-                <td class="question-response"><?php echo esc_html($q['response'] ?? 'Não definida'); ?></td>
-                <td class="actions">
-                    <div style="display: flex; gap: 20px;">
-                        <a href="javascript:void(0);" class="edit-btn">Editar</a>
-                        <a href="javascript:void(0);"
-                            onclick="deleteQuestion(<?php echo esc_attr($q['id']); ?>)">Excluir</a>
-                    </div>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        <?php if (empty($questions)): ?>
+<div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 30px; background-color: white;">
+    <h2 style="font-size: 20px; font-weight: 600; color: #222;">Regras Gerais Existentes</h2>
+    <table>
+        <thead>
             <tr>
-                <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
+                <th>Resposta</th>
+                <th>Ações</th>
             </tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <?php
+            $question = new Question();
+            $questions = $question->getQuestionsByCategory('Regras Gerais');
 
+            foreach ($questions as $q): ?>
+                <tr data-question-id="<?php echo esc_attr($q['id']); ?>">
+                    <td class="question-response"><?php echo esc_html($q['response'] ?? 'Não definida'); ?></td>
+                    <td class="actions">
+                        <div style="display: flex; gap: 20px;">
+                            <a href="javascript:void(0);" class="edit-btn">Editar</a>
+                            <a href="javascript:void(0);"
+                                onclick="deleteQuestion(<?php echo esc_attr($q['id']); ?>)">Excluir</a>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            <?php if (empty($questions)): ?>
+                <tr>
+                    <td colspan="2" style="text-align: center;">Nenhuma Resposta cadastrada</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
 
 <!-- Script para Excluir Pergunta -->
 <script>
@@ -294,15 +297,15 @@
     function deleteQuestion(questionId) {
         if (confirm('Tem certeza que deseja excluir esta pergunta?')) {
             fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: 'delete_question',
-                    question_id: questionId
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'delete_question',
+                        question_id: questionId
+                    })
                 })
-            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -321,6 +324,7 @@
                 });
         }
     }
+
     function editQuestion(row) {
         const questionId = row.dataset.questionId;
         const titleCell = row.querySelector('.title');
@@ -331,6 +335,7 @@
         const actionsCell = row.querySelector('.actions');
         const questionResponseCell = row.querySelector('.question-response');
         const requiredFieldCell = row.querySelector('.requiredFields');
+        const priorityFieldCell = row.querySelector('.priorityFields');
 
         const title = titleCell ? titleCell.innerText : null;
         const training = trainingPhraseCell ? trainingPhraseCell.innerText : null;
@@ -338,6 +343,7 @@
         const categories = categoriesCell ? categoriesCell.innerText : 'Regras Gerais';
         const questionResponse = questionResponseCell ? questionResponseCell.innerText : null;
         const requiredField = requiredFieldCell ? requiredFieldCell.innerText : null;
+        const priorityField = priorityFieldCell ? priorityFieldCell.innerText : null;
         const options = optionsCell ? optionsCell.innerText : null;
 
         const originalData = {
@@ -347,7 +353,8 @@
             categories: categories,
             questionResponse: questionResponse,
             options: options ? JSON.parse(options) : [],
-            requiredField: requiredField
+            requiredField: requiredField,
+            priorityField: priorityField
         };
 
         if (titleCell) titleCell.innerHTML = `<input type="text" value="${originalData.title || ''}" />`;
@@ -356,7 +363,7 @@
         if (categoriesCell) categoriesCell.innerHTML = `<input type="text" value="${originalData.categories || ''}" />`;
         if (questionResponseCell) questionResponseCell.innerHTML = `<input type="text" value="${originalData.questionResponse || ''}" />`;
         if (requiredFieldCell) requiredFieldCell.innerHTML = `<input type="text" value="${originalData.requiredField || ''}" />`;
-
+        if (priorityFieldCell) priorityFieldCell.innerHTML = `<input type="number" value="${originalData.priorityField || ''}" />`;
         if (optionsCell) optionsCell.innerHTML = `<input type="text" value='${JSON.stringify(originalData.options)}' />`;
 
         actionsCell.innerHTML = `
@@ -375,16 +382,17 @@
                 questionResponse: questionResponseCell ? questionResponseCell.querySelector('input').value : null,
                 options: optionsCell ? JSON.parse(optionsCell.querySelector('input').value || '[]') : [],
                 requiredField: requiredFieldCell ? requiredFieldCell.querySelector('input').value : null,
+                priorityField: priorityFieldCell ? priorityFieldCell.querySelector('input').value : null,
             };
 
-            const bodyData = newData.categories == "Regras Gerais"
-                ? new URLSearchParams({
+            const bodyData = newData.categories == "Regras Gerais" ?
+                new URLSearchParams({
                     action: 'edit_question',
                     question_id: newData.question_id,
                     responseQuestion: newData.questionResponse,
                     categories: newData.categories
-                })
-                : new URLSearchParams({
+                }) :
+                new URLSearchParams({
                     action: 'edit_question',
                     question_id: newData.question_id,
                     title: newData.title,
@@ -393,14 +401,17 @@
                     categories: newData.categories,
                     options: JSON.stringify(newData.options),
                     responseQuestion: newData.questionResponse,
-                    requiredField: newData.requiredField
+                    requiredField: newData.requiredField,
+                    priorityField: newData.priorityField
                 });
 
             fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: bodyData
-            })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: bodyData
+                })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -410,6 +421,7 @@
                         if (categoriesCell) categoriesCell.innerText = newData.categories;
                         if (questionResponseCell) questionResponseCell.innerText = newData.questionResponse;
                         if (requiredFieldCell) requiredFieldCell.innerText = newData.requiredField;
+                        if (priorityFieldCell) priorityFieldCell.innerText = newData.priorityField;
                         if (optionsCell) optionsCell.innerText = JSON.stringify(newData.options);
 
                         actionsCell.innerHTML = `
@@ -432,6 +444,7 @@
             if (categoriesCell) categoriesCell.innerText = originalData.categories;
             if (questionResponseCell) questionResponseCell.innerText = originalData.questionResponse;
             if (requiredFieldCell) requiredFieldCell.innerText = originalData.requiredField;
+            if (priorityFieldCell) priorityFieldCell.innerText = originalData.priorityField;
             if (optionsCell) optionsCell.innerText = JSON.stringify(originalData.options);
             actionsCell.innerHTML = `
             <a href="javascript:void(0);" class="edit-btn">Editar</a>
@@ -439,7 +452,7 @@
         `;
 
             // Reanexar o evento ao botão Editar
-            actionsCell.querySelector('.edit-btn').addEventListener('click', function () {
+            actionsCell.querySelector('.edit-btn').addEventListener('click', function() {
                 const row = this.closest('tr');
                 editQuestion(row);
             });
@@ -449,7 +462,7 @@
 
     // Listener para o botão Editar
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function() {
             const row = this.closest('tr');
             editQuestion(row);
         });
@@ -459,12 +472,12 @@
     function deleteCategory(categoryId) {
         if (confirm('Tem certeza que deseja excluir esta categoria?')) {
             fetch(conciergeAjax.ajax_url, {
-                method: 'POST',
-                body: new URLSearchParams({
-                    action: 'delete_category',
-                    category_id: categoryId
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        action: 'delete_category',
+                        category_id: categoryId
+                    })
                 })
-            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -484,7 +497,7 @@
         }
     }
 
-    document.getElementById('fixed-question-form').addEventListener('submit', function (e) {
+    document.getElementById('fixed-question-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const responseInput = document.getElementById('response').value;
@@ -503,12 +516,12 @@
 
         // Fazendo o fetch
         fetch(ajaxUrl, {
-            method: 'POST',
-            body: new URLSearchParams({
-                action: 'add_fixed_question',
-                response: responseInput
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'add_fixed_question',
+                    response: responseInput
+                })
             })
-        })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

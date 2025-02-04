@@ -243,6 +243,7 @@ function edit_question()
     $categories = isset($_POST['categories']) ? sanitize_text_field($_POST['categories']) : '';
     $responseQuestion = isset($_POST['responseQuestion']) ? sanitize_text_field($_POST['responseQuestion']) : '';
     $required_field = isset($_POST['requiredField']) ? sanitize_text_field($_POST['requiredField']) : '';
+    $priority_field = isset($_POST['priorityField']) ? sanitize_text_field($_POST['priorityField']) : '';
     $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : '';
 
     $options = isset($_POST['options']) ? json_decode(stripslashes($_POST['options']), true) : [];
@@ -257,7 +258,7 @@ function edit_question()
     $question = new Question();
 
     if ($categories == 'Regras Gerais') {
-        $updated = $question->updateQuestion($question_id, '', '', $options, 'Regras Gerais', '', $responseQuestion, $required_field);
+        $updated = $question->updateQuestion($question_id, '', '', $options, 'Regras Gerais', '', $responseQuestion, $priority_field, null);
 
         if ($updated) {
             wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
@@ -265,7 +266,7 @@ function edit_question()
             wp_send_json_error(['message' => 'Erro ao atualizar a resposta da pergunta']);
         }
     } else {
-        $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type, $responseQuestion, $required_field);
+        $updated = $question->updateQuestion($question_id, $title, $training_phrase, $options, $categories, $field_type, $responseQuestion, $required_field, $priority_field);
 
         if ($updated) {
             wp_send_json_success(['message' => 'Pergunta atualizada com sucesso!']);
