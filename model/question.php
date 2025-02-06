@@ -53,7 +53,7 @@ class Question
     {
         $category_table = $this->wpdb->prefix . 'question_categories';
 
-        $sql = "SELECT id, title 
+        $sql = "SELECT id, title , video_url
             FROM {$category_table}
             WHERE display_frontend   = 1 
             ORDER BY position ASC";
@@ -84,8 +84,6 @@ class Question
                 '%s'
             ]
         );
-
-        plugin_log($objective);
 
         $question_id = $this->wpdb->insert_id;
 
