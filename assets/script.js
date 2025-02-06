@@ -252,6 +252,8 @@ jQuery(document).ready(function ($) {
                 innerText: activeContent.attr("id").replace("-content", ""),
             };
 
+            console.log(categoryNameElement)
+
             const categoryName = categoryNameElement instanceof HTMLElement
                 ? categoryNameElement.innerText
                 : categoryNameElement.innerText;
@@ -417,6 +419,7 @@ jQuery(document).ready(function ($) {
 
             // Exibe o conteúdo da aba ativa
             const tabName = $(button).data("tab");
+            console.log(tabName)
             showTabContent(tabName);
         });
     });

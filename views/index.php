@@ -22,27 +22,28 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<?php $i = 1;?>
 	<?php foreach ($categories as $index => $category): ?>
 		<?php
-		$tabName = $category['title'];
+		$tabName = str_replace(' ', '-', remover_acentos($category['title']));
+		$tabNameText = $category['title'];
 		$isLocked = !$firstUnlocked;
 
 		$firstUnlocked = false;
 		?>
 		<button data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
 			class="tab-btn rounded-md <?= $isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'?> p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent <?= $isLocked ? '' : 'hover:border-gray-800' ?> focus:outline-none" data-tab-num="<?php echo $i ?>">
-			<?= esc_html($tabName) ?>
+			<?= esc_html($tabNameText) ?>
 		</button>
 		<?php $i++?>
 	<?php endforeach; ?>
 
-	<button data-tab="Aparência" data-locked="true"
+	<button data-tab="aparencia" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
 	</button>
-	<button data-tab="Teste" data-locked="true"
+	<button data-tab="teste" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Teste
 	</button>
-	<button data-tab="Download" data-locked="true"
+	<button data-tab="download" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Download
 	</button>
@@ -53,7 +54,8 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
 	<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 	<?php foreach ($categories as $category): ?>
-		<div id="<?php echo $category['title'] ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
+		<?php $tabName = str_replace(' ', '-', remover_acentos($category['title'])); ?>
+		<div id="<?php echo $tabName ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 			<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 			<p>Conteúdo da aba <?php echo $category['title'] ?></p>
 			<div class="flex items-center justify-center gap-12">
@@ -248,3 +250,10 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 	</div>
 </div>
+
+<?php
+function remover_acentos($string) {
+    $string = strtolower($string); // Opcional: converte para minúsculas
+    $string = preg_replace('/[^a-z0-9 ]/i', '', iconv('UTF-8', 'ASCII//TRANSLIT', $string));
+    return $string;
+}
