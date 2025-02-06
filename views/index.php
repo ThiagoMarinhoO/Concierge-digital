@@ -39,11 +39,11 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
 	</button>
-	<button data-tab="teste" data-locked="true"
+	<button data-tab="Teste" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Teste
 	</button>
-	<button data-tab="download" data-locked="true"
+	<button data-tab="Download" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Download
 	</button>
