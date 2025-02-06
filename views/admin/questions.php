@@ -173,7 +173,7 @@ $max_position = count($categories) + 1;
 
 ?>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <h2>Adicionar Categoria</h2>
     <label for="category_title">Título da Categoria:</label><br>
     <input type="text" id="category_title" name="category_title" required><br>
@@ -183,10 +183,15 @@ $max_position = count($categories) + 1;
     <input type="radio" id="display_no" name="display_frontend" value="no">
     <label for="display_no">Não</label><br>
 
-    <div id="position_field" style="display: block;">
+    <div id="position_field" style="display: block; margin-bottom: 20px;">
         <label for="category_position">Posição da Categoria:</label><br>
         <input type="number" id="category_position" name="category_position" min="1" max="<?php echo $max_position; ?>"
             value="<?php echo $max_position; ?>"><br>
+    </div>
+
+    <div style="display: flex; flex-direction:column; margin-bottom: 20px;">
+        <label>Vídoe da categoria</label>
+        <input type="file" name="video_cat">
     </div>
     <button type="submit" name="add_category">Adicionar Categoria</button>
 </form>
@@ -198,6 +203,7 @@ $max_position = count($categories) + 1;
             <tr>
                 <th>Título</th>
                 <th>N° de perguntas</th>
+                <th>Vídeo url</th>
                 <th>Posição</th>
                 <th>Ações</th>
             </tr>
@@ -212,6 +218,7 @@ $max_position = count($categories) + 1;
                     <td class="cat-num">
                         <?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?>
                     </td>
+                    <td class="cat-video"><?php echo $category['video_url'] ?></td>
                     <td class="cat-position"><?php echo $category['position'] ?></td>
                     <td class="actions">
                         <div style='display: flex; gap: 20px;'>
@@ -374,18 +381,22 @@ $max_position = count($categories) + 1;
         const catId = row.dataset.catId;
         const titleCell = row.querySelector('.cat-name');
         const positionCell = row.querySelector('.cat-position');
+        const videoCell = row.querySelector('.cat-video');
         const actionsCell = row.querySelector('.actions');
 
         const title = titleCell ? titleCell.innerText : null;
         const position = positionCell ? positionCell.innerText : null;
+        const video = videoCell ? videoCell.innerText : null;
 
         const originalData = {
             title: title,
             position: position,
+            video: video,
         };
 
         if (titleCell) titleCell.innerHTML = `<input type="text" value="${originalData.title || ''}" />`;
         if (positionCell) positionCell.innerHTML = `<input type="text" value="${originalData.position || ''}" />`;
+        if (videoCell) videoCell.innerHTML = `<input type="text" value="${originalData.video || ''}" />`;
 
         actionsCell.innerHTML = `
         <a href="javascript:void(0);" class="save-cat-btn">Salvar</a>
@@ -398,12 +409,14 @@ $max_position = count($categories) + 1;
                 cat_id: catId,
                 title: titleCell ? titleCell.querySelector('input').value : null,
                 position: positionCell ? positionCell.querySelector('input').value : null,
+                video: videoCell ? videoCell.querySelector('input').value : null,
             };
             const bodyData = new URLSearchParams({
                 action: 'edit_cat',
                 cat_id: newData.cat_id,
                 title: newData.title,
                 position: newData.position,
+                video_url: newData.video
             });
 
             fetch(conciergeAjax.ajax_url, {
@@ -418,6 +431,7 @@ $max_position = count($categories) + 1;
                     if (data.success) {
                         if (titleCell) titleCell.innerText = newData.title;
                         if (positionCell) positionCell.innerText = newData.position;
+                        if (videoCell) videoCell.innerText = newData.video;
 
                         actionsCell.innerHTML = `
                         <a href="javascript:void(0);" class="edit-cat-btn">Editar</a>
@@ -436,6 +450,7 @@ $max_position = count($categories) + 1;
         actionsCell.querySelector('.cancel-cat-btn').addEventListener('click', () => {
             if (titleCell) titleCell.innerText = originalData.title;
             if (positionCell) positionCell.innerText = originalData.position;
+            if (videoCell) videoCell.innerText = originalData.video;
             actionsCell.innerHTML = `
         <a href="javascript:void(0);" class="edit-cat-btn">Editar</a>
         <a href="javascript:void(0);"

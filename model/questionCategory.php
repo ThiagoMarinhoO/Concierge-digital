@@ -20,23 +20,25 @@ class QuestionCategory
         title TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         position INT(11) DEFAULT 0 NOT NULL,
-        display_frontend TINYINT(1) DEFAULT 1 NOT NULL
+        display_frontend TINYINT(1) DEFAULT 1 NOT NULL,
+        video_url TEXT DEFAULT NULL
     ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
 
-    public function addCategory(string $title, int $position = 0, int $display_frontend = 1): void
+    public function addCategory(string $title, int $position = 0, int $display_frontend = 1 , string $video_url = null): void
     {
         $this->wpdb->insert(
             $this->table,
             [
                 'title' => $title,
                 'position' => $position,
-                'display_frontend' => $display_frontend
+                'display_frontend' => $display_frontend,
+                'video_url' => $video_url
             ],
-            ['%s', '%d', '%d']
+            ['%s', '%d', '%d' , '%s']
         );
     }
 
@@ -66,16 +68,17 @@ class QuestionCategory
         $this->wpdb->delete($this->table, ['id' => $id], ['%d']);
     }
 
-    public function updateCategory($id, $title, $position): bool
+    public function updateCategory($id, $title, $position , $video_url): bool
     {
         $updated = $this->wpdb->update(
             $this->table,
             [
                 'title' => $title,
                 'position' => $position,
+                'video_url' => $video_url
             ],
             ['id' => $id],
-            ['%s', '%d'],
+        ['%s', '%d' , '%s'],
             ['%d']
         );
 

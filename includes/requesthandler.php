@@ -188,6 +188,7 @@ function edit_cat()
     $cat_id = isset($_POST['cat_id']) ? intval($_POST['cat_id']) : null;
     $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
     $position = isset($_POST['position']) ? sanitize_text_field($_POST['position']) : '';
+    $video_url = isset($_POST['video_url']) ? sanitize_text_field($_POST['video_url']) : '';
 
     if (empty($cat_id)) {
         wp_send_json_error(['message' => 'ID da pergunta inválido']);
@@ -195,7 +196,7 @@ function edit_cat()
 
     $categories = new QuestionCategory();
 
-    $updated = $categories->updateCategory($cat_id, $title, $position);
+    $updated = $categories->updateCategory($cat_id, $title, $position , $video_url);
 
     if ($updated) {
         wp_send_json_success(['message' => 'Categoria atualizada com sucesso!']);

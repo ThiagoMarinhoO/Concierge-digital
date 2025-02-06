@@ -53,7 +53,6 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
 	<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 	<?php foreach ($categories as $category): ?>
-		<?php plugin_log(print_r($questionsByCategory, true)) ?>
 		<div id="<?php echo $category['title'] ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 			<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 			<p>Conteúdo da aba <?php echo $category['title'] ?></p>
@@ -106,7 +105,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 					<div class="video-container mb-4">
 						<video controls class="w-full rounded-lg size-64">
 							<source
-								src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/configuracoes.mp4'); ?>"
+								src="<?php echo $category['video_url'] ?>"
 								type="video/mp4">
 						</video>
 					</div>

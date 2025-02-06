@@ -148,32 +148,63 @@ function render_question_manager_page()
         $title = sanitize_text_field($_POST['question_title']);
         $field_type = sanitize_text_field($_POST['field_type']); // Captura o tipo de campo do input radio
         $options = [];
-    
+
         if ($field_type === 'selection') {
             $options_input = sanitize_text_field($_POST['selection_options_input']);
             $options = !empty($options_input) ? explode(',', $options_input) : [];
         }
-    
+
         $training_phrase = sanitize_text_field($_POST['training_phrase']);
         $categories = !empty($_POST['question_categories']) ? array_map('intval', $_POST['question_categories']) : [];
 
         $objective = sanitize_text_field($_POST['objective']);
         $required_field = sanitize_text_field($_POST['required-field']);
 
-        plugin_log($objective);
-    
-        $questionManager->addQuestion($title, $training_phrase, $options, $categories, $field_type , null , $required_field ,  $objective);
+        $questionManager->addQuestion($title, $training_phrase, $options, $categories, $field_type, null, $required_field, $objective);
         echo "<div class='updated'><p>Pergunta adicionada com sucesso!</p></div>";
     }
 
     // Adicionar uma categoria
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
+        // Dados básicos do formulário
         $categoryTitle = sanitize_text_field($_POST['category_title']);
         $categoryPosition = isset($_POST['category_position']) ? (int) $_POST['category_position'] : 0;
         $display_frontend = isset($_POST['display_frontend']) && $_POST['display_frontend'] === 'yes' ? 1 : 0;
-        $categoryManager->addCategory($categoryTitle , $categoryPosition , $display_frontend);
+
+        $video_url = '';
+
+        // Verifica se há um vídeo enviado
+        if (!empty($_FILES['video_cat']['name'])) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+            $uploaded_file = $_FILES['video_cat'];
+
+            // Validação do tipo MIME para garantir que é um vídeo
+            $allowed_mime_types = ['video/mp4', 'video/quicktime', 'video/webm'];
+            $file_type = wp_check_filetype($uploaded_file['name']);
+
+            if (in_array($file_type['type'], $allowed_mime_types)) {
+                $upload_overrides = ['test_form' => false];
+                $movefile = wp_handle_upload($uploaded_file, $upload_overrides);
+
+                if ($movefile && !isset($movefile['error'])) {
+                    $video_url = $movefile['url'];
+                } else {
+                    echo "<div class='error'><p>Erro ao fazer upload do vídeo: " . esc_html($movefile['error']) . "</p></div>";
+                }
+            } else {
+                echo "<div class='error'><p>Formato de vídeo não suportado.</p></div>";
+            }
+        }
+
+        // Adiciona a categoria usando o gerenciador existente
+        $categoryManager->addCategory($categoryTitle, $categoryPosition, $display_frontend, $video_url);
+
         echo "<div class='updated'><p>Categoria adicionada com sucesso!</p></div>";
     }
+
 
     // Obter dados
     $questions = $questionManager->getAllQuestions();
