@@ -125,6 +125,7 @@ jQuery(document).ready(function ($) {
                         contentType: false,
                         success: function () {
                             localStorage.removeItem('chatbotRespostas');
+                            localStorage.removeItem('chatbot_script');
                             window.location.reload();
                         },
                         error: function (error) {
