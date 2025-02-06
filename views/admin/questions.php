@@ -74,7 +74,8 @@
         font-weight: bold;
     }
 
-    .edit-btn {
+    .edit-btn,
+    .edit-cat-btn {
         color: rgb(6, 54, 212) !important;
     }
 
@@ -143,13 +144,50 @@
             <?php endif; ?>
         <?php endforeach; ?>
     </select><br>
+
+    <div style="display: flex; flex-direction: column; justify-content: center; margin-bottom: 20px;">
+        <label>Esse campo é referente ao nome ou mensagem de boas vindas do assistente? (Caso não seja, mantenha marcado
+            nenhuma)</label>
+        <div style="display: flex; gap: 20px;">
+            <label>
+                <input type="radio" name="objective" value="nome"> Nome
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="objective" value="boas-vindas"> Boas-Vindas
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="objective" value="nenhuma" checked> Nenhuma
+            </label>
+        </div>
+    </div>
     <button type="submit" name="add_question">Adicionar Pergunta</button>
 </form>
+
+<?php
+
+$category = new QuestionCategory();
+$categories = $category->getAllCategories();
+$max_position = count($categories) + 1;
+
+?>
 
 <form method="post">
     <h2>Adicionar Categoria</h2>
     <label for="category_title">Título da Categoria:</label><br>
     <input type="text" id="category_title" name="category_title" required><br>
+    <label>Exibir no frontend?</label><br>
+    <input type="radio" id="display_yes" name="display_frontend" value="yes" checked>
+    <label for="display_yes">Sim</label>
+    <input type="radio" id="display_no" name="display_frontend" value="no">
+    <label for="display_no">Não</label><br>
+
+    <div id="position_field" style="display: block;">
+        <label for="category_position">Posição da Categoria:</label><br>
+        <input type="number" id="category_position" name="category_position" min="1" max="<?php echo $max_position; ?>"
+            value="<?php echo $max_position; ?>"><br>
+    </div>
     <button type="submit" name="add_category">Adicionar Categoria</button>
 </form>
 
@@ -160,6 +198,7 @@
             <tr>
                 <th>Título</th>
                 <th>N° de perguntas</th>
+                <th>Posição</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -168,12 +207,18 @@
             $question = new Question();
 
             foreach ($categories as $category): ?>
-                <tr>
-                    <td><?php echo esc_html($category['title']); ?></td>
-                    <td><?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?></td>
+                <tr data-cat-id="<?php echo $category['id'] ?>">
+                    <td class="cat-name"><?php echo esc_html($category['title']); ?></td>
+                    <td class="cat-num">
+                        <?php echo esc_html(count($question->getQuestionsByCategory($category['title']))); ?>
+                    </td>
+                    <td class="cat-position"><?php echo $category['position'] ?></td>
                     <td class="actions">
-                        <a href="javascript:void(0);"
-                            onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
+                        <div style='display: flex; gap: 20px;'>
+                            <a href='javascript:void(0);' class='edit-cat-btn'>Editar</a>
+                            <a href="javascript:void(0);"
+                                onclick="deleteCategory(<?php echo esc_attr($category['id']); ?>)">Excluir</a>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -248,11 +293,11 @@
 
 <!-- Formulário de Adicionar Pergunta -->
 <form id="fixed-question-form" style="margin-top: 24px;">
-        <h2 style="font-size: 20px; font-weight: 600; color: #222;">Adicionar Pergunta à Categoria: Regras Gerais</h2>
-        <label for="response">Resposta</label>
-        <input type="text" id="response" name="response" required>
-        <button type="submit">Adicionar Pergunta</button>
-    </form>
+    <h2 style="font-size: 20px; font-weight: 600; color: #222;">Adicionar Pergunta à Categoria: Regras Gerais</h2>
+    <label for="response">Resposta</label>
+    <input type="text" id="response" name="response" required>
+    <button type="submit">Adicionar Pergunta</button>
+</form>
 
 <!-- Tabela de Regras Gerais Existentes -->
 <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 30px; background-color: white;">
@@ -297,15 +342,15 @@
     function deleteQuestion(questionId) {
         if (confirm('Tem certeza que deseja excluir esta pergunta?')) {
             fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({
-                        action: 'delete_question',
-                        question_id: questionId
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'delete_question',
+                    question_id: questionId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -323,6 +368,86 @@
                     alert('Erro ao excluir a pergunta.');
                 });
         }
+    }
+
+    function editCat(row) {
+        const catId = row.dataset.catId;
+        const titleCell = row.querySelector('.cat-name');
+        const positionCell = row.querySelector('.cat-position');
+        const actionsCell = row.querySelector('.actions');
+
+        const title = titleCell ? titleCell.innerText : null;
+        const position = positionCell ? positionCell.innerText : null;
+
+        const originalData = {
+            title: title,
+            position: position,
+        };
+
+        if (titleCell) titleCell.innerHTML = `<input type="text" value="${originalData.title || ''}" />`;
+        if (positionCell) positionCell.innerHTML = `<input type="text" value="${originalData.position || ''}" />`;
+
+        actionsCell.innerHTML = `
+        <a href="javascript:void(0);" class="save-cat-btn">Salvar</a>
+        <a href="javascript:void(0);" class="cancel-cat-btn">Cancelar</a>
+    `;
+
+        // Botão Salvar
+        actionsCell.querySelector('.save-cat-btn').addEventListener('click', () => {
+            const newData = {
+                cat_id: catId,
+                title: titleCell ? titleCell.querySelector('input').value : null,
+                position: positionCell ? positionCell.querySelector('input').value : null,
+            };
+            const bodyData = new URLSearchParams({
+                action: 'edit_cat',
+                cat_id: newData.cat_id,
+                title: newData.title,
+                position: newData.position,
+            });
+
+            fetch(conciergeAjax.ajax_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: bodyData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (titleCell) titleCell.innerText = newData.title;
+                        if (positionCell) positionCell.innerText = newData.position;
+
+                        actionsCell.innerHTML = `
+                        <a href="javascript:void(0);" class="edit-cat-btn">Editar</a>
+                        <a href="javascript:void(0);"
+                                onclick="deleteCategory(${catId})">Excluir</a>
+                    `;
+                        location.reload();
+                    } else {
+                        console.error(data);
+                    }
+                })
+                .catch(error => console.error('Erro ao salvar:', error));
+        });
+
+        // Botão Cancelar
+        actionsCell.querySelector('.cancel-cat-btn').addEventListener('click', () => {
+            if (titleCell) titleCell.innerText = originalData.title;
+            if (positionCell) positionCell.innerText = originalData.position;
+            actionsCell.innerHTML = `
+        <a href="javascript:void(0);" class="edit-cat-btn">Editar</a>
+        <a href="javascript:void(0);"
+            onclick="deleteCategory(${catId})">Excluir</a>
+    `;
+
+            // Reanexar o evento ao botão Editar
+            actionsCell.querySelector('.edit-cat-btn').addEventListener('click', function () {
+                const row = this.closest('tr');
+                editCat(row);  // Alterar para editCat aqui
+            });
+        });
     }
 
     function editQuestion(row) {
@@ -406,12 +531,12 @@
                 });
 
             fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: bodyData
-                })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: bodyData
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -452,7 +577,7 @@
         `;
 
             // Reanexar o evento ao botão Editar
-            actionsCell.querySelector('.edit-btn').addEventListener('click', function() {
+            actionsCell.querySelector('.edit-btn').addEventListener('click', function () {
                 const row = this.closest('tr');
                 editQuestion(row);
             });
@@ -462,9 +587,15 @@
 
     // Listener para o botão Editar
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const row = this.closest('tr');
             editQuestion(row);
+        });
+    });
+    document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const row = this.closest('tr');
+            editCat(row);
         });
     });
 
@@ -472,12 +603,12 @@
     function deleteCategory(categoryId) {
         if (confirm('Tem certeza que deseja excluir esta categoria?')) {
             fetch(conciergeAjax.ajax_url, {
-                    method: 'POST',
-                    body: new URLSearchParams({
-                        action: 'delete_category',
-                        category_id: categoryId
-                    })
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'delete_category',
+                    category_id: categoryId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -497,7 +628,7 @@
         }
     }
 
-    document.getElementById('fixed-question-form').addEventListener('submit', function(e) {
+    document.getElementById('fixed-question-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
         const responseInput = document.getElementById('response').value;
@@ -516,12 +647,12 @@
 
         // Fazendo o fetch
         fetch(ajaxUrl, {
-                method: 'POST',
-                body: new URLSearchParams({
-                    action: 'add_fixed_question',
-                    response: responseInput
-                })
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'add_fixed_question',
+                response: responseInput
             })
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
