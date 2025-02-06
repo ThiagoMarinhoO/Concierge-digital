@@ -156,15 +156,22 @@ function render_question_manager_page()
     
         $training_phrase = sanitize_text_field($_POST['training_phrase']);
         $categories = !empty($_POST['question_categories']) ? array_map('intval', $_POST['question_categories']) : [];
+
+        $objective = sanitize_text_field($_POST['objective']);
+        $required_field = sanitize_text_field($_POST['required-field']);
+
+        plugin_log($objective);
     
-        $questionManager->addQuestion($title, $training_phrase, $options, $categories, $field_type);
+        $questionManager->addQuestion($title, $training_phrase, $options, $categories, $field_type , null , $required_field ,  $objective);
         echo "<div class='updated'><p>Pergunta adicionada com sucesso!</p></div>";
     }
 
     // Adicionar uma categoria
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
         $categoryTitle = sanitize_text_field($_POST['category_title']);
-        $categoryManager->addCategory($categoryTitle);
+        $categoryPosition = isset($_POST['category_position']) ? (int) $_POST['category_position'] : 0;
+        $display_frontend = isset($_POST['display_frontend']) && $_POST['display_frontend'] === 'yes' ? 1 : 0;
+        $categoryManager->addCategory($categoryTitle , $categoryPosition , $display_frontend);
         echo "<div class='updated'><p>Categoria adicionada com sucesso!</p></div>";
     }
 

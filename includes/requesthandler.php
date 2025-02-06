@@ -97,7 +97,7 @@ function create_chatbot()
         }
 
         $chatbot = new Chatbot();
-        $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image,  $chatbot_welcome_message);
+        $chatbot->createChatbot($chatbot_name, $chatbot_options, $chatbot_image, $chatbot_welcome_message);
 
         wp_send_json_success(['chatbotName' => $chatbot_name]);
     } else {
@@ -183,6 +183,30 @@ add_action('wp_ajax_edit_question', 'edit_question');
 add_action('wp_ajax_nopriv_edit_question', 'edit_question');
 
 
+function edit_cat()
+{
+    $cat_id = isset($_POST['cat_id']) ? intval($_POST['cat_id']) : null;
+    $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $position = isset($_POST['position']) ? sanitize_text_field($_POST['position']) : '';
+
+    if (empty($cat_id)) {
+        wp_send_json_error(['message' => 'ID da pergunta inválido']);
+    }
+
+    $categories = new QuestionCategory();
+
+    $updated = $categories->updateCategory($cat_id, $title, $position);
+
+    if ($updated) {
+        wp_send_json_success(['message' => 'Categoria atualizada com sucesso!']);
+    } else {
+        wp_send_json_error(['message' => 'Erro ao atualizar a categoria']);
+    }
+}
+
+add_action('wp_ajax_edit_cat', 'edit_cat');
+add_action('wp_ajax_nopriv_edit_cat', 'edit_cat');
+
 function delete_category()
 {
     $category_id = isset($_POST['category_id']) ? $_POST['category_id'] : null;
@@ -215,7 +239,7 @@ function add_fixed_question()
 {
     try {
         $response = sanitize_text_field($_POST['response']);
-        
+
         if (empty($response)) {
             wp_send_json_error(['message' => 'O campo de resposta é obrigatório.']);
         }

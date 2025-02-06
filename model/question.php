@@ -24,6 +24,7 @@ class Question
             response TEXT DEFAULT NULL,
             prioridade INT DEFAULT NULL,
             required_field TEXT DEFAULT NULL,
+            objective ENUM('nome', 'boas-vindas', 'nenhuma') DEFAULT 'nenhuma',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
@@ -37,7 +38,7 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.prioridade, q.required_field , q.created_at,
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.prioridade, q.required_field , q.objective , q.created_at,
                GROUP_CONCAT(c.title) AS categories
         FROM {$this->table} q
         LEFT JOIN {$relation_table} r ON q.id = r.question_id
@@ -48,7 +49,19 @@ class Question
         return $this->wpdb->get_results($sql, ARRAY_A);
     }
 
-    public function addQuestion(string $title = null, string $training_phrase = null, array $options = null, array $categories, string $field_type = null, ?string $response = null , string $required_field = 'Sim'): int
+    public function getAllCategories(): array
+    {
+        $category_table = $this->wpdb->prefix . 'question_categories';
+
+        $sql = "SELECT id, title 
+            FROM {$category_table}
+            WHERE display_frontend   = 1 
+            ORDER BY position ASC";
+
+        return $this->wpdb->get_results($sql, ARRAY_A);
+    }
+
+    public function addQuestion(string $title = null, string $training_phrase = null, array $options = null, array $categories, string $field_type = null, ?string $response = null, string $required_field = 'Sim' , string $objective = 'nenhuma'): int
     {
         $this->wpdb->insert(
             $this->table,
@@ -59,15 +72,20 @@ class Question
                 'field_type' => $field_type,
                 'response' => $response,
                 'required_field' => $required_field,
+                'objective' => $objective
             ],
             [
                 '%s',
                 '%s',
                 '%s',
                 '%s',
-                '%d'
+                '%d',
+                '%s',
+                '%s'
             ]
         );
+
+        plugin_log($objective);
 
         $question_id = $this->wpdb->insert_id;
 
@@ -218,12 +236,13 @@ class Question
         $category_table = $this->wpdb->prefix . 'question_categories';
 
         $sql = "
-        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response, q.prioridade , q.required_field
+        SELECT q.id, q.title, q.training_phrase, q.options, q.field_type, q.response, q.prioridade, q.required_field, q.objective
         FROM {$this->table} q
         INNER JOIN {$relation_table} r ON q.id = r.question_id
         INNER JOIN {$category_table} c ON r.category_id = c.id
         WHERE c.title = %s
-        ";
+        ORDER BY q.prioridade ASC
+    ";
 
         return $this->wpdb->get_results($this->wpdb->prepare($sql, $category_title), ARRAY_A);
     }
