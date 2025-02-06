@@ -103,6 +103,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</div>
+				<?php if($category['video_url'] != ''):?>
 				<div class="">
 					<div class="video-container mb-4">
 						<video controls class="w-full rounded-lg size-64">
@@ -112,6 +113,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 						</video>
 					</div>
 				</div>
+				<?php endif ?>
 			</div>
 			<div class="flex justify-center mt-10">
 				<button class="saveButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
