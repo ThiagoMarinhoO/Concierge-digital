@@ -521,16 +521,16 @@ jQuery(document).ready(function ($) {
                         contentType: false
                     })
                         .done(function (data) {
-                            // Do something with the response if needed
+                            // unlockNextTab();
+                            // window.location.reload();
                         })
+                        // .complete(function() {
+                        //     unlockNextTab();
+                        //     window.location.reload();
+                        // })
                         .fail(function (error) {
                             console.error("Erro:", error);
                         })
-                        .always(function () {
-                            unlockNextTab();
-                            stopAllVideos();
-                            window.location.reload();
-                        });
                 }
             });
         });

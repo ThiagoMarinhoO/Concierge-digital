@@ -4,7 +4,10 @@ $question = new Question();
 $chatbot = new Chatbot();
 $user_id = get_current_user_id();
 
-$categories = $question->getAllCategories();
+$categories = array_filter($question->getAllCategories(), function($category) {
+	return $category['title'] !== 'Regras gerais';
+});
+
 
 $questionsByCategory = [];
 foreach ($categories as $category) {
@@ -35,7 +38,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		<?php $i++?>
 	<?php endforeach; ?>
 
-	<button data-tab="aparencia" data-locked="true"
+	<button data-tab="Aparência" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
 	</button>

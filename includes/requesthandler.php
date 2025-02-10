@@ -35,7 +35,7 @@ function create_chatbot()
             $file = $_FILES['chatbot_image'];
 
             $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-            $max_size = 2 * 1024 * 1024;
+            $max_size = 5 * 1024 * 1024;
 
             if (!in_array($file['type'], $allowed_types)) {
                 wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
