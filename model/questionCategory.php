@@ -21,6 +21,7 @@ class QuestionCategory
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         position INT(11) DEFAULT 0 NOT NULL,
         display_frontend TINYINT(1) DEFAULT 1 NOT NULL,
+        has_tabs TINYINT(1) DEFAULT 0 NOT NULL,
         video_url TEXT DEFAULT NULL
     ) $charset_collate;";
 
@@ -28,7 +29,7 @@ class QuestionCategory
         dbDelta($sql);
     }
 
-    public function addCategory(string $title, int $position = 0, int $display_frontend = 1 , string $video_url = null): void
+    public function addCategory(string $title, int $position = 0, int $display_frontend = 1 , string $video_url = null, bool $has_tab = null): void
     {
         $this->wpdb->insert(
             $this->table,
@@ -36,9 +37,10 @@ class QuestionCategory
                 'title' => $title,
                 'position' => $position,
                 'display_frontend' => $display_frontend,
+                'has_tab' => $has_tab,
                 'video_url' => $video_url
             ],
-            ['%s', '%d', '%d' , '%s']
+            ['%s', '%d', '%d', '%d' , '%s']
         );
     }
 

@@ -4,7 +4,7 @@ $question = new Question();
 $chatbot = new Chatbot();
 $user_id = get_current_user_id();
 
-$categories = array_filter($question->getAllCategories(), function($category) {
+$categories = array_filter($question->getAllCategories(), function ($category) {
 	return $category['title'] !== 'Regras gerais';
 });
 
@@ -22,7 +22,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 	<?php $firstUnlocked = true; ?>
-	<?php $i = 1;?>
+	<?php $i = 1; ?>
 	<?php foreach ($categories as $index => $category): ?>
 		<?php
 		$tabName = str_replace(' ', '_', remover_acentos($category['title']));
@@ -32,10 +32,10 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		$firstUnlocked = false;
 		?>
 		<button data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
-			class="tab-btn rounded-md <?= $isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'?> p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent <?= $isLocked ? '' : 'hover:border-gray-800' ?> focus:outline-none" data-tab-num="<?php echo $i ?>">
+			class="tab-btn rounded-md <?= $isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' ?> p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent <?= $isLocked ? '' : 'hover:border-gray-800' ?> focus:outline-none" data-tab-num="<?php echo $i ?>">
 			<?= esc_html($tabNameText) ?>
 		</button>
-		<?php $i++?>
+		<?php $i++ ?>
 	<?php endforeach; ?>
 
 	<button data-tab="Aparência" data-locked="true"
@@ -57,67 +57,131 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
 	<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 	<?php foreach ($categories as $category): ?>
+		<?php var_dump($category) ?>
 		<?php $tabName = str_replace(' ', '_', remover_acentos($category['title'])); ?>
 		<div id="<?php echo $tabName ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 			<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 			<p>Conteúdo da aba <?php echo $category['title'] ?></p>
-			<div class="flex items-center justify-center gap-12">
-				<div>
-					<?php foreach ($questionsByCategory[$category['title']] as $index => $question): ?>
-						<?php if (!empty($questionsByCategory)): ?>
-							<div class="question-block">
-								<label for="question-<?php echo esc_attr($index); ?>"
-									data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
-									<?php echo esc_html($question['title']); ?>
-								</label>
-								<?php
-								$options = json_decode($question['options'], true);
-								$field_type = $question['field_type']; // Verifica o tipo de campo
-								$required = $question['required_field'] == 'Sim' ? 'required' : '';
-								$name = $question['objective'] == 'nome' ? 'assistent-name' : '';
-								$wellcome_message = $question['objective'] == 'boas-vindas' ? 'assistent-message' : '';
-								?>
-								<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
-									<!-- Campo do tipo seleção -->
-									<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message?>"
-										id="question-<?php echo esc_attr($index); ?>"
-										name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
-										<?php foreach ($options as $option): ?>
-											<option value="<?php echo esc_attr($option); ?>">
-												<?php echo esc_html($option); ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								<?php elseif ($field_type === 'file'): ?>
-									<!-- Campo do tipo arquivo -->
-									<input type="file" id="question-<?php echo esc_attr($index); ?>"
-										name="question_<?php echo esc_attr($question['id']); ?>"
-										class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message?>" <?php echo $required ?>>
-								<?php else: ?>
-									<!-- Campo do tipo texto (padrão) -->
-									<input type="text" id="question-<?php echo esc_attr($index); ?>"
-										name="question_<?php echo esc_attr($question['id']); ?>"
-										class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . $wellcome_message?>"
-										placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
-								<?php endif; ?>
+			<?php if ($category['has_tabs']) : ?>
+				<div x-data="{ selectedTab: 'fast' }" class="w-full">
+					<div x-on:keydown.right.prevent="$focus.wrap().next()" x-on:keydown.left.prevent="$focus.wrap().previous()" class="flex gap-2" role="tablist" aria-label="tab options">
+						<button x-on:click="selectedTab = 'fast'" x-bind:aria-selected="selectedTab === 'fast'" x-bind:tabindex="selectedTab === 'fast' ? '0' : '-1'" x-bind:class="selectedTab === 'fast' ? 'font-bold text-black border-b-2 border-black dark:border-white dark:text-white' : 'text-neutral-600 font-medium dark:text-neutral-300 dark:hover:border-b-neutral-300 dark:hover:text-white hover:border-b-2 hover:border-b-neutral-800 hover:text-neutral-900'" class="h-min px-4 py-2 text-sm" type="button" role="tab" aria-controls="tabpanelFast">Rápida</button>
+						<button x-on:click="selectedTab = 'custom'" x-bind:aria-selected="selectedTab === 'custom'" x-bind:tabindex="selectedTab === 'custom' ? '0' : '-1'" x-bind:class="selectedTab === 'custom' ? 'font-bold text-black border-b-2 border-black dark:border-white dark:text-white' : 'text-neutral-600 font-medium dark:text-neutral-300 dark:hover:border-b-neutral-300 dark:hover:text-white hover:border-b-2 hover:border-b-neutral-800 hover:text-neutral-900'" class="h-min px-4 py-2 text-sm" type="button" role="tab" aria-controls="tabpanelCustom">Personalizada</button>
+					</div>
+					<div class="px-2 py-4 text-neutral-600 dark:text-neutral-300">
+						<div x-cloak x-show="selectedTab === 'fast'" id="tabpanelfast" role="tabpanel" aria-label="fast">
+							<div>
+								<?php foreach ($questionsByCategory[$category['title']] as $index => $question): ?>
+									<?php if (!empty($questionsByCategory)): ?>
+										<div class="question-block">
+											<label for="question-<?php echo esc_attr($index); ?>"
+												data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+												<?php echo esc_html($question['title']); ?>
+											</label>
+											<?php
+											$options = json_decode($question['options'], true);
+											$field_type = $question['field_type']; // Verifica o tipo de campo
+											$required = $question['required_field'] == 'Sim' ? 'required' : '';
+											$name = $question['objective'] == 'nome' ? 'assistent-name' : '';
+											$wellcome_message = $question['objective'] == 'boas-vindas' ? 'assistent-message' : '';
+											?>
+											<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+												<!-- Campo do tipo seleção -->
+												<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>"
+													id="question-<?php echo esc_attr($index); ?>"
+													name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
+													<?php foreach ($options as $option): ?>
+														<option value="<?php echo esc_attr($option); ?>">
+															<?php echo esc_html($option); ?>
+														</option>
+													<?php endforeach; ?>
+												</select>
+											<?php elseif ($field_type === 'file'): ?>
+												<!-- Campo do tipo arquivo -->
+												<input type="file" id="question-<?php echo esc_attr($index); ?>"
+													name="question_<?php echo esc_attr($question['id']); ?>"
+													class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>" <?php echo $required ?>>
+											<?php else: ?>
+												<!-- Campo do tipo texto (padrão) -->
+												<input type="text" id="question-<?php echo esc_attr($index); ?>"
+													name="question_<?php echo esc_attr($question['id']); ?>"
+													class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . $wellcome_message ?>"
+													placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
+											<?php endif; ?>
+										</div>
+									<?php else: ?>
+										<p>Nenhuma pergunta cadastrada no momento.</p>
+									<?php endif; ?>
+								<?php endforeach; ?>
 							</div>
-						<?php else: ?>
-							<p>Nenhuma pergunta cadastrada no momento.</p>
-						<?php endif; ?>
-					<?php endforeach; ?>
-				</div>
-				<?php if($category['video_url'] != ''):?>
-				<div class="">
-					<div class="video-container mb-4">
-						<video controls class="w-full rounded-lg size-64">
-							<source
-								src="<?php echo $category['video_url'] ?>"
-								type="video/mp4">
-						</video>
+						</div>
+						<div x-cloak x-show="selectedTab === 'custom'" id="tabpanelcustom" role="tabpanel" aria-label="custom">
+							<div class="question-block flex flex-col gap-2">
+								<label for="prompt">Escreva aqui seu prompt:</label>
+								<textarea name="" id="prompt"></textarea>
+							</div>
+						</div>
 					</div>
 				</div>
-				<?php endif ?>
-			</div>
+			<?php else : ?>
+				<div class="flex items-center justify-center gap-12">
+					<div>
+						<?php foreach ($questionsByCategory[$category['title']] as $index => $question): ?>
+							<?php if (!empty($questionsByCategory)): ?>
+								<div class="question-block">
+									<label for="question-<?php echo esc_attr($index); ?>"
+										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+										<?php echo esc_html($question['title']); ?>
+									</label>
+									<?php
+									$options = json_decode($question['options'], true);
+									$field_type = $question['field_type']; // Verifica o tipo de campo
+									$required = $question['required_field'] == 'Sim' ? 'required' : '';
+									$name = $question['objective'] == 'nome' ? 'assistent-name' : '';
+									$wellcome_message = $question['objective'] == 'boas-vindas' ? 'assistent-message' : '';
+									?>
+									<?php if ($field_type === 'selection' && !empty($options) && is_array($options)): ?>
+										<!-- Campo do tipo seleção -->
+										<select class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>"
+											id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>" <?php echo $required ?>>
+											<?php foreach ($options as $option): ?>
+												<option value="<?php echo esc_attr($option); ?>">
+													<?php echo esc_html($option); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									<?php elseif ($field_type === 'file'): ?>
+										<!-- Campo do tipo arquivo -->
+										<input type="file" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>" <?php echo $required ?>>
+									<?php else: ?>
+										<!-- Campo do tipo texto (padrão) -->
+										<input type="text" id="question-<?php echo esc_attr($index); ?>"
+											name="question_<?php echo esc_attr($question['id']); ?>"
+											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . $wellcome_message ?>"
+											placeholde="<?php echo esc_attr($question['training_phrase']); ?>" <?php echo $required ?>>
+									<?php endif; ?>
+								</div>
+							<?php else: ?>
+								<p>Nenhuma pergunta cadastrada no momento.</p>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</div>
+					<?php if ($category['video_url'] != ''): ?>
+						<div class="">
+							<div class="video-container mb-4">
+								<video controls class="w-full rounded-lg size-64">
+									<source
+										src="<?php echo $category['video_url'] ?>"
+										type="video/mp4">
+								</video>
+							</div>
+						</div>
+					<?php endif ?>
+				</div>
+			<?php endif; ?>
 			<div class="flex justify-center mt-10">
 				<button class="saveButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 			</div>

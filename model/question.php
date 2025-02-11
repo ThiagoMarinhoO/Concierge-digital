@@ -53,7 +53,7 @@ class Question
     {
         $category_table = $this->wpdb->prefix . 'question_categories';
 
-        $sql = "SELECT id, title , video_url
+        $sql = "SELECT id, title , video_url , has_tabs
             FROM {$category_table}
             WHERE display_frontend   = 1 
             ORDER BY position ASC";

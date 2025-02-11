@@ -224,7 +224,7 @@ jQuery(document).ready(function ($) {
             const nextTabName = $(buttons[currentTabIndex]).data("tab");
             $($(buttons[currentTabIndex])).data("locked", "false");
             $($(buttons[currentTabIndex])).removeClass("opacity-50 cursor-not-allowed");
-            showTabContent(nextTabName);
+            // showTabContent(nextTabName);
         }
     }
 
@@ -280,29 +280,63 @@ jQuery(document).ready(function ($) {
 
         // Função para processar blocos de perguntas
         const processQuestionBlocks = (fileUrls = []) => {
-            activeContent.find(".question-block").each((index, questionBlock) => {
-                const inputElement = $(questionBlock).find("input:not([type='checkbox']), select").get(0);
-                if (inputElement) {
-                    const perguntaLabel = $(questionBlock).find("label").text().trim();
-                    let resposta = $(inputElement).val().trim();
 
-                    // Verifica se o input é de arquivo e atribui a URL correta
-                    if ($(inputElement).attr("type") === "file" && fileUrls.length > 0) {
-                        resposta = fileUrls.shift();
+            const isBehaviorTab = activeContent.attr("id") === "comportamento-content";
+            if (isBehaviorTab) {
+                const activeTab = activeContent.find("[x-show]:not([style*='display: none'])");
+
+                activeTab.find(".question-block").each((index, questionBlock) => {
+                    const inputElement = $(questionBlock).find("input:not([type='checkbox']), select, textarea").get(0);
+
+                    if (inputElement) {
+                        const perguntaLabel = $(questionBlock).find("label").text().trim();
+                        let resposta = $(inputElement).val().trim();
+
+                        // Verifica se o input é de arquivo e atribui a URL correta
+                        if ($(inputElement).attr("type") === "file" && fileUrls.length > 0) {
+                            resposta = fileUrls.shift();
+                        }
+
+                        const trainingPhrase = $(questionBlock).find("label").data("questionBase");
+                        const fieldType = $(inputElement).prop("tagName").toLowerCase() === "select" ? "select" : $(inputElement).attr("type");
+
+                        chatbotOptions.push({
+                            pergunta: perguntaLabel,
+                            field_name: $(inputElement).attr("name"),
+                            resposta: resposta,
+                            training_phrase: trainingPhrase,
+                            field_type: fieldType,
+                        });
                     }
+                });
+            }
 
-                    const trainingPhrase = $(questionBlock).find("label").data("questionBase");
-                    const fieldType = $(inputElement).prop("tagName").toLowerCase() === "select" ? "select" : $(inputElement).attr("type");
+            if (!isBehaviorTab) {
+                activeContent.find(".question-block").each((index, questionBlock) => {
+                    const inputElement = $(questionBlock).find("input:not([type='checkbox']), select, textarea").get(0);
 
-                    chatbotOptions.push({
-                        pergunta: perguntaLabel,
-                        field_name: $(inputElement).attr("name"),
-                        resposta: resposta,
-                        training_phrase: trainingPhrase,
-                        field_type: fieldType,
-                    });
-                }
-            });
+                    if (inputElement) {
+                        const perguntaLabel = $(questionBlock).find("label").text().trim();
+                        let resposta = $(inputElement).val().trim();
+
+                        // Verifica se o input é de arquivo e atribui a URL correta
+                        if ($(inputElement).attr("type") === "file" && fileUrls.length > 0) {
+                            resposta = fileUrls.shift();
+                        }
+
+                        const trainingPhrase = $(questionBlock).find("label").data("questionBase");
+                        const fieldType = $(inputElement).prop("tagName").toLowerCase() === "select" ? "select" : $(inputElement).attr("type");
+
+                        chatbotOptions.push({
+                            pergunta: perguntaLabel,
+                            field_name: $(inputElement).attr("name"),
+                            resposta: resposta,
+                            training_phrase: trainingPhrase,
+                            field_type: fieldType,
+                        });
+                    }
+                });
+            }
 
             saveData(chatbotOptions);
 
@@ -352,6 +386,7 @@ jQuery(document).ready(function ($) {
             processQuestionBlocks();
         }
     }
+
     function saveStyles() {
         const activeContent = $(".tab-content:not(.hidden)");
         const chatbotOptions = [];
@@ -524,10 +559,10 @@ jQuery(document).ready(function ($) {
                             // unlockNextTab();
                             // window.location.reload();
                         })
-                        // .complete(function() {
-                        //     unlockNextTab();
-                        //     window.location.reload();
-                        // })
+                        .complete(function () {
+                            unlockNextTab();
+                            window.location.reload();
+                        })
                         .fail(function (error) {
                             console.error("Erro:", error);
                         })
