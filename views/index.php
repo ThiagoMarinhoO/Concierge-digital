@@ -57,7 +57,6 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<input type="hidden" name="chatbotId" id="chatbotID" value="<?php echo $userchatbot_id ?>">
 	<input type="hidden" name="hasChat" id="hasChatbot" value="<?php echo $user_has_chatbot ?>">
 	<?php foreach ($categories as $category): ?>
-		<?php var_dump($category) ?>
 		<?php $tabName = str_replace(' ', '_', remover_acentos($category['title'])); ?>
 		<div id="<?php echo $tabName ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 			<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
