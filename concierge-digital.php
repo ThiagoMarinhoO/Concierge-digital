@@ -24,8 +24,10 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/webhook.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/generate-token.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/fileHandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/save-responses.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/assistant.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
@@ -230,4 +232,7 @@ register_activation_hook(__FILE__, function () {
 
     $initialQuestionCategoryRelationships = new QuestionCategoryRelationships();
     $initialQuestionCategoryRelationships->createTable();
+
+    $initialAssistants = new Assistant();
+    $initialAssistants->createTable();
 });

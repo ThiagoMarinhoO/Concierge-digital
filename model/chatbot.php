@@ -12,7 +12,12 @@ class Chatbot
 
     private $table;
 
+    private $id;
+    private $name;
+    private $welcome_message;
+    private $instructions;
     private $user_id;
+    private $image;
 
     public function __construct()
     {
@@ -30,19 +35,35 @@ class Chatbot
         // $users_table = $this->wpdb->prefix . 'users';
 
         $sql = "CREATE TABLE {$this->table} (
-        id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        chatbot_name TEXT NOT NULL,
-        chatbot_welcome_message TEXT NOT NULL,
-        chatbot_options TEXT NOT NULL,
-        chatbot_image TEXT,
-        user_id BIGINT UNSIGNED NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) $charset_collate;";
+            id VARCHAR(255) PRIMARY KEY,
+            chatbot_name TEXT NOT NULL,
+            chatbot_welcome_message TEXT NOT NULL,
+            chatbot_options TEXT NOT NULL,
+            chatbot_image TEXT,
+            user_id BIGINT UNSIGNED NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
 
+    public function save()
+    {
+        $data = [
+            'id' => $this->id,
+            'chatbot_name' => $this->name,
+            'chatbot_welcome_message' => $this->welcome_message,
+            'chatbot_options' => $this->instructions,
+            'chatbot_image' => $this->image,
+            'user_id' => $this->user_id,
+            'created_at' => current_time('mysql')
+        ];
+
+        $format = ['%s', '%s', '%s', '%s', '%s', '%d', '%s'];
+
+        $this->wpdb->insert($this->table, $data, $format);
+    }
     public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null, $chatbot_welcome_message = null)
     {
         $data = [
@@ -123,7 +144,6 @@ class Chatbot
         return $result !== false;
     }
 
-
     public function getAllChatbots()
     {
         $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE user_id = %d", $this->user_id);
@@ -131,17 +151,26 @@ class Chatbot
     }
 
     public function getChatbotById($id, $user_id)
-    {
-        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table} WHERE id = $id AND user_id = $user_id", $id, $this->user_id);
+{
+    
+    $sql = $this->wpdb->prepare(
+        "SELECT * FROM {$this->table} WHERE id = %d AND user_id = %d",
+        $id,
+        $user_id
+    );
 
-        $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
+    $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
 
-        if ($chatbot) {
-            $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
-        }
-
-        return $chatbot;
+    if (!$chatbot) {
+        global $wpdb;
+        plugin_log("Nenhum chatbot encontrado. Erro: " . $wpdb->last_error);
+    } else {
+        $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
     }
+
+    return $chatbot;
+}
+
 
     public function deleteChatbot($id)
     {
@@ -387,4 +416,66 @@ class Chatbot
     }
 
 
+    
+    // Getters
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getWelcomeMessage()
+    {
+        return $this->welcome_message;
+    }
+
+    public function getInstructions()
+    {
+        return $this->instructions;
+    }
+
+    public function getUserId()
+    {
+        return $this->user_id;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    // Setters
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function setWelcomeMessage($welcome_message)
+    {
+        $this->welcome_message = $welcome_message;
+    }
+
+    public function setInstructions($instructions)
+    {
+        $this->instructions = $instructions;
+    }
+
+    public function setUserId($user_id)
+    {
+        $this->user_id = $user_id;
+    }
+
+    public function setImage($image)
+    {
+        $this->image = $image;
+    }
 }
