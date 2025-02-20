@@ -17,7 +17,9 @@ foreach ($categories as $category) {
 
 if (!empty($user_id)) {
 	$userchatbot_id = $chatbot->getChatbotIdByUser($user_id);
+	$assistant = $chatbot->getChatbotById($userchatbot_id, $user_id);
 }
+
 $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
@@ -60,7 +62,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		<?php $tabName = str_replace(' ', '_', remover_acentos($category['title'])); ?>
 		<div id="<?php echo $tabName ?>-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 			<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
-			<p>Conteúdo da aba <?php echo $category['title'] ?></p>
+			<p><?php echo $category['title'] ?></p>
 			<?php if ($category['has_tabs']) : ?>
 				<div x-data="{ selectedTab: 'fast' }" class="w-full">
 					<div x-on:keydown.right.prevent="$focus.wrap().next()" x-on:keydown.left.prevent="$focus.wrap().previous()" class="flex gap-2" role="tablist" aria-label="tab options">
@@ -188,7 +190,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<?php endforeach ?>
 	<div id="Aparência-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
-		<p>Conteúdo da aba Aparência</p>
+		<p>Aparência</p>
 		<div class="input-container mb-4">
 			<div class="question-block">
 				<label for="appearance_image" class="block font-medium text-gray-700 mb-2">
@@ -203,8 +205,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<div id="Teste-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<?php
-
-		$chatbots = $chatbot->getAllChatbots();
+		$existing_assistant = new Chatbot();
+		$assistants = $existing_assistant->getAllChatbots();
+		// var_dump($assistant);
 
 		if ($user_has_chatbot): ?>
 			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
@@ -216,7 +219,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 							assistente virtual:</label>
 						<select id="chatbot-selector"
 							class="block w-full py-2 mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-							<?php foreach ($chatbots as $bot): ?>
+							<?php foreach ($assistants as $bot): ?>
 								<option value="<?php echo esc_attr($bot->id); ?>">
 									<?php echo esc_html($bot->chatbot_name); ?>
 								</option>
@@ -226,15 +229,15 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
-						data-chatbot-id="<?php echo esc_attr($chatbots[0]->id); ?>">
-						<?php if ($chatbots[0]->chatbot_welcome_message): ?>
+						data-assistant-id="<?php echo esc_attr($assistants[0]->id); ?>" data-session-id="">
+						<?php if ($assistants[0]->chatbot_welcome_message): ?>
 							<div class="flex w-full mt-2 space-x-3 max-w-xs">
 								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-									<img src="<?php echo $chatbots[0]->chatbot_image; ?>" alt="">
+									<img src="<?php echo $assistants[0]->chatbot_image; ?>" alt="">
 								</div>
 								<div>
 									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
-										<?php echo $chatbots[0]->chatbot_welcome_message; ?>
+										<?php echo $assistants[0]->chatbot_welcome_message; ?>
 									</div>
 								</div>
 							</div>
@@ -258,9 +261,15 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 				</div>
 
 				<div class="flex justify-center gap-10">
+					<!-- <form action="" method="POST" id="deleteChatbotForm">
+						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
+							assistente virtual</button>
+							
+					</form> -->
 					<form action="" method="POST" id="deleteChatbotForm">
 						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
 							assistente virtual</button>
+							
 					</form>
 					<!-- <form action="" method="" id="">
 						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
@@ -273,7 +282,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	</div>
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
-		<p>Conteúdo da aba Download</p>
+		<p>Download</p>
 		<div class="flex items-center justify-center gap-12">
 			<div class="w-1/2">
 				<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar

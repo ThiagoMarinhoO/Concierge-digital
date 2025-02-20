@@ -1,90 +1,362 @@
 jQuery(document).ready(function ($) {
-    var sendButton = $('#enviarMensagem');
-    if (sendButton.length) {
-        sendButton.on('click', function (event) {
-            event.preventDefault();
+    const chatBox = $(".chatContainer");
+    const sendButton = $('#enviarMensagem');
+    const messageField = $(".mensagem");
 
-            const assistantId = $('.chatContainer').data('chatbot-id');
-            let currHour = new Date();
+    let sessionId = localStorage.getItem('sessionID') || "";
 
-            const userMsgTemplate = `
-                <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
-                    <div>
-                        <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
-                            ${$(".mensagem").val()}
-                        </div>
-                        <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
-                    </div>
-                    <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
-                        <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
-                    </div>
-                </div>`;
+    if (sessionId) {
+        chatBox.attr('data-session-id', sessionId);
+    }
 
-            let chatBox = $(".chatContainer");
-            chatBox.append(userMsgTemplate);
-            chatBox.scrollTop(chatBox.prop("scrollHeight"));
-
+    async function apiRequest(action, data = {}) {
+        try {
             const formData = new FormData();
-            formData.append('action', 'concierge_chat');
-            formData.append('assistantId', assistantId);
-            formData.append('mensagem', $(".mensagem").val());
+            formData.append('action', action);
+            Object.keys(data).forEach(key => formData.append(key, data[key]));
 
-            $(".mensagem").val("");
-            sendButton.prop('disabled', true).addClass('opacity-90');
-            $("#enviarMensagem svg").addClass('animate-spin');
-
-            $.ajax({
+            const response = await $.ajax({
                 url: conciergeAjax.ajax_url,
                 method: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function (data) {
-                    let currHour = new Date();
-                    let responseData = JSON.parse(data.data);
-
-                    function transformarLinks(texto) {
-                        return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
-                    }
-
-                    let mensagemFormatada = transformarLinks(responseData.message);
-
-                    let aiMsgTemplate = `
-                        <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
-                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-                                <img src="${responseData.image}" class="size-10 rounded-full" alt="">
-                            </div>
-                            <div>
-                                <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
-                                    ${mensagemFormatada}
-                                </div>
-                                <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
-                            </div>
-                        </div>`;
-
-                    chatBox.append(aiMsgTemplate);
-                    chatBox.scrollTop(chatBox.prop("scrollHeight"));
-                },
-                error: function (error) {
-                    console.error('Error:', error);
-                },
-                complete: function () {
-                    $("#enviarMensagem svg").removeClass('animate-spin');
-                    sendButton.removeClass('opacity-90').prop('disabled', false);
-                }
             });
+
+            console.log(response);
+
+            return response.data;
+        } catch (error) {
+            console.error(`Erro na ação "${action}":`, error);
+            return null;
+        }
+    }
+
+    async function createThreadIfNeeded() {
+        if (!sessionId) {
+            const response = await apiRequest('create_thread');
+            if (response) {
+                sessionId = response.thread_id;
+                localStorage.setItem('sessionID', sessionId);
+                chatBox.attr('data-session-id', sessionId);
+            }
+        }
+    }
+
+    async function sendMessage() {
+        const assistantId = $('.chatContainer').attr('data-assistant-id');
+        const message = messageField.val().trim();
+        if (!message) return;
+
+        const currHour = new Date();
+        messageField.val("");
+
+        const userMsgTemplate = `
+            <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
+                <div>
+                    <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
+                        ${message}
+                    </div>
+                    <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+                </div>
+                <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
+                    <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+                </div>
+            </div>`;
+
+        chatBox.append(userMsgTemplate);
+        chatBox.scrollTop(chatBox.prop("scrollHeight"));
+
+        sendButton.prop('disabled', true).addClass('opacity-90');
+        $("#enviarMensagem svg").addClass('animate-spin');
+
+        await createThreadIfNeeded();
+
+        const response = await apiRequest('add_message_to_thread', {
+            sessionId,
+            mensagem: message,
+        });
+
+        if (response) {
+            const runResponse = await apiRequest('create_run', { sessionId, assistantId });
+            if (runResponse) {
+                await checkRunStatus(runResponse.run_id);
+            }
+        }
+
+        sendButton.removeClass('opacity-90').prop('disabled', false);
+        $("#enviarMensagem svg").removeClass('animate-spin');
+    }
+
+    async function checkRunStatus(runId) {
+        let status = '';
+
+        while (status !== 'completed') {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const response = await apiRequest('retrieve_run', { runId, sessionId });
+            status = response ? response.run.status : '';
+
+            if (status === 'incomplete') {
+                alert(response.run.incomplete_details.reason);
+                return;
+            }
+
+            if (status === 'failed') {
+                alert('Deu ruim');
+                return;
+            }
+        }
+
+        listMessages();
+    }
+
+    async function listMessages() {
+        const response = await apiRequest('list_messages', { sessionId });
+
+        if (response) {
+
+            aiAnswer = response[0].content[0].text.value;
+
+            function transformarLinks(texto) {
+                return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+            }
+
+            const mensagemFormatada = transformarLinks(aiAnswer);
+
+            addMessageToChat(null, mensagemFormatada)
+        }
+    }
+
+    function addMessageToChat(image, message) {
+        const currHour = new Date();
+
+        const aiMsgTemplate = `
+                <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+                        <img src="" class="size-10 rounded-full" alt="">
+                    </div>
+                    <div>
+                        <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+                            ${message}
+                        </div>
+                        <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+                    </div>
+                </div>`;
+
+        chatBox.append(aiMsgTemplate);
+        chatBox.scrollTop(chatBox.prop("scrollHeight"));
+    }
+
+    function checkCharacters(mensagem) {
+        const maxCharacters = 1000;
+        const remainingCharacters = maxCharacters - mensagem.length;
+
+        if (remainingCharacters < 0) {
+            addMessageToChat(null, `Desculpe ! Sua mensagem é muito grande. Você excedeu o limite de tokens.`);
+            return false;
+        }
+        return true;
+    }
+
+    function handleSendMessage() {
+        const mensagem = messageField.val().trim();
+        if (checkCharacters(mensagem)) {
+            sendMessage();
+        }
+        messageField.val("");
+    }
+
+    // Adiciona eventos apenas se os elementos existirem
+    if (sendButton.length) {
+        sendButton.on('click', function (event) {
+            event.preventDefault();
+            handleSendMessage();
         });
     }
 
-    const messageField = $(".mensagem");
     if (messageField.length) {
         messageField.on('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                sendButton.click();
+                handleSendMessage();
             }
         });
     }
+
+    // var currentSessionID = localStorage.getItem('sessionID') || "";
+
+    // $(".chatContainer").attr('data-session-id', currentSessionID);
+
+    // var sendButton = $('#enviarMensagem');
+    // if (sendButton.length) {
+    //     sendButton.on('click', function (event) {
+    //         event.preventDefault();
+
+    //         const assistantId = $('.chatContainer').data('assistant-id');
+    //         const sessionId = $('.chatContainer').data('session-id');
+    //         let currHour = new Date();
+
+    //         const userMsgTemplate = `
+    //             <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
+    //                 <div>
+    //                     <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
+    //                         ${$(".mensagem").val()}
+    //                     </div>
+    //                     <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+    //                 </div>
+    //                 <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
+    //                     <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+    //                 </div>
+    //             </div>`;
+
+    //         let chatBox = $(".chatContainer");
+    //         chatBox.append(userMsgTemplate);
+    //         chatBox.scrollTop(chatBox.prop("scrollHeight"));
+
+    //         const formData = new FormData();
+    //         formData.append('action', 'add_message_to_thread');
+    //         formData.append('assistantId', assistantId);
+    //         formData.append('sessionId', sessionId);
+    //         formData.append('mensagem', $(".mensagem").val());
+
+    //         $(".mensagem").val("");
+    //         sendButton.prop('disabled', true).addClass('opacity-90');
+    //         $("#enviarMensagem svg").addClass('animate-spin');
+
+    //         $.ajax({
+    //             url: conciergeAjax.ajax_url,
+    //             method: 'POST',
+    //             data: formData,
+    //             processData: false,
+    //             contentType: false,
+    //             success: function(data) {
+    //                 // console.log(data);
+
+    //                 localStorage.setItem('sessionID', data.data.thread_id);
+    //                 $(".chatContainer").attr('data-session-id', data.data.thread_id);
+
+    //                 setTimeout(() => {
+    //                     retriveRun( data.data.run_id, data.data.thread_id )
+    //                 }, 2000);
+    //             },
+    //             // success: function (data) {
+    //             //     let currHour = new Date();
+    //             //     let responseData = JSON.parse(data.data);
+
+    //             //     function transformarLinks(texto) {
+    //             //         return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+    //             //     }
+
+    //             //     let mensagemFormatada = transformarLinks(responseData.message);
+
+    //             //     let aiMsgTemplate = `
+    //             //         <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
+    //             //             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+    //             //                 <img src="${responseData.image}" class="size-10 rounded-full" alt="">
+    //             //             </div>
+    //             //             <div>
+    //             //                 <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+    //             //                     ${mensagemFormatada}
+    //             //                 </div>
+    //             //                 <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+    //             //             </div>
+    //             //         </div>`;
+
+    //             //     chatBox.append(aiMsgTemplate);
+    //             //     chatBox.scrollTop(chatBox.prop("scrollHeight"));
+    //             // },
+    //             // error: function (error) {
+    //             //     console.error('Error:', error);
+    //             // },
+    //             complete: function () {
+    //                 $("#enviarMensagem svg").removeClass('animate-spin');
+    //                 sendButton.removeClass('opacity-90').prop('disabled', false);
+    //             }
+    //         });
+    //     });
+    // }
+
+    // function retriveRun(runId, threadId) {
+
+    //     const formData = new FormData();
+    //     formData.append('action', 'retrieve_run');
+    //     formData.append('runId', runId);
+    //     formData.append('sessionId', threadId);
+
+    //     $.ajax({
+    //         url: conciergeAjax.ajax_url,
+    //         method: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+    //         success: function(data) {
+    //             response = data.data;
+
+    //             if( response == 'completed' ) {
+    //                 listMessages(threadId);
+    //             }
+    //         }
+    //     });
+    // }
+
+    // function listMessages( threadId ) {
+    //     let chatBox = $(".chatContainer");
+
+
+    //     const formData = new FormData();
+    //     formData.append('action', 'list_messages');
+    //     formData.append('sessionId', threadId);
+
+    //     $.ajax({
+    //         url: conciergeAjax.ajax_url,
+    //         method: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+    //         success: function (data) {
+    //                 let currHour = new Date();
+    //                 let response = data.data;
+
+    //                 // console.log(response);
+
+    //                 function transformarLinks(texto) {
+    //                     return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+    //                 }
+
+    //                 let mensagemFormatada = transformarLinks(response);
+
+    //                 let aiMsgTemplate = `
+    //                     <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
+    //                         <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+    //                             <img src="" class="size-10 rounded-full" alt="">
+    //                         </div>
+    //                         <div>
+    //                             <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+    //                                 ${mensagemFormatada}
+    //                             </div>
+    //                             <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+    //                         </div>
+    //                     </div>`;
+
+    //                 chatBox.append(aiMsgTemplate);
+    //                 chatBox.scrollTop(chatBox.prop("scrollHeight"));
+    //             },
+    //             error: function (error) {
+    //                 console.error('Error:', error);
+    //             },
+    //     });
+    // }
+
+    // const messageField = $(".mensagem");
+    // if (messageField.length) {
+    //     messageField.on('keydown', function (event) {
+    //         if (event.key === 'Enter') {
+    //             event.preventDefault();
+    //             sendButton.click();
+    //         }
+    //     });
+    // }
 
     const chatbotSelector = $('#chatbot-selector');
     const chatContainer = $('.chatContainer');
@@ -454,7 +726,7 @@ jQuery(document).ready(function ($) {
 
             // Exibe o conteúdo da aba ativa
             const tabName = $(button).data("tab");
-            console.log(tabName)
+            // console.log(tabName)
             showTabContent(tabName);
         });
     });
@@ -487,6 +759,11 @@ jQuery(document).ready(function ($) {
 
     const storedData = JSON.parse(localStorage.getItem('chatbotRespostas'));
     if (storedData) {
+        populateField(storedData)
+    }
+
+
+    function populateField(storedData) {
         Object.keys(storedData).forEach((tab, index) => {
             const tabData = storedData[tab];
             const $tabContent = $(`#${tab}-content`);
@@ -529,7 +806,7 @@ jQuery(document).ready(function ($) {
             const $appearanceImageInput = $("#appearance_image");
             const formData = new FormData();
 
-            formData.append("action", "create_chatbot");
+            formData.append("action", "create_assistant");
             formData.append("chatbot_name", chatbotName);
             formData.append("chatbot_welcome_message", chatbotWelcomeMessage);
             formData.append("chatbot_options", JSON.stringify(chatbotOptions));
@@ -558,6 +835,7 @@ jQuery(document).ready(function ($) {
                         .done(function (data) {
                             // unlockNextTab();
                             // window.location.reload();
+                            console.log(data);
                         })
                         .complete(function () {
                             unlockNextTab();
