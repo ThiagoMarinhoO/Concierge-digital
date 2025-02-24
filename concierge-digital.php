@@ -29,7 +29,9 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistant.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/assistantUsage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
 
@@ -235,4 +237,6 @@ register_activation_hook(__FILE__, function () {
 
     $initialAssistants = new Assistant();
     $initialAssistants->createTable();
+
+    AssistantUsage::createTable();
 });

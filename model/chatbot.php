@@ -391,7 +391,7 @@ class Chatbot
             "--$delimiter--\r\n";
 
         $headers = [
-            "Authorization: Bearer " . $this->api_key,
+            "Authorization: Bearer " . OPENAI_API_KEY,
             "Content-Type: multipart/form-data; boundary=$delimiter",
         ];
 

@@ -1,4 +1,5 @@
 <?php
+
 use Smalot\PdfParser\Parser;
 
 add_action('wp_ajax_create_assistant', 'create_assistant');
@@ -10,6 +11,17 @@ function create_assistant()
     $chatbot_options = $_POST['chatbot_options'] ?? '';
     $chatbot_name = $_POST['chatbot_name'] ?? '';
     $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
+
+    $question = new Question();
+    $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
+
+    $chatbot_trainning = [];
+
+    foreach ($chatbotFixedQuestions as $question) {
+        $chatbot_trainning[] = $question['response'];
+    }
+
+    $training_context = implode("\n", $chatbot_trainning);
 
     if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['chatbot_image'];
@@ -77,7 +89,8 @@ function create_assistant()
     }
 
     $data = [
-        "instructions" => 'Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.',
+        "instructions" => $training_context,
+        // "instructions" => "Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer",
         "name" => $chatbot_name,
         "tools" => [["type" => "code_interpreter"]],
         "model" => "gpt-3.5-turbo"
@@ -177,6 +190,12 @@ function create_thread()
 add_action('wp_ajax_add_message_to_thread', 'add_message_to_thread');
 function add_message_to_thread()
 {
+    if (!UsageService::usageControl()) {
+        wp_send_json_error(['message' => 'Limite de tokens atingido.']);
+        return;
+    }
+
+
     $message = $_POST['mensagem'] ?? null;
     $thread_id = $_POST['sessionId'] ?? null;
     $assistant_id = $_POST['assistantId'] ?? null;
@@ -264,8 +283,8 @@ function create_run()
     }
     // se a thread tiver mais de uma mensagem (ou não enviar as instruções novamente);
 
-    // plugin_log('------- Assistente instructions ------');
-    // plugin_log(print_r($instructions, true));
+    plugin_log('------- Assistente instructions ------');
+    plugin_log(print_r($instructions, true));
 
     $api_url = "https://api.openai.com/v1/threads/". $thread_id . "/runs";
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;;
@@ -299,8 +318,8 @@ function create_run()
 
     $response = json_decode($response, true);
 
-    plugin_log('------- Prompt tokens ------');
-    plugin_log(print_r($response, true));
+    // plugin_log('------- Prompt tokens ------');
+    // plugin_log(print_r($response, true));
 
     if (!$response || !isset($response['id'])) {
         wp_send_json_error(['message' => 'Erro ao criar run', 'response' => $response]);
@@ -344,6 +363,8 @@ function retrieve_run()
     curl_close($ch);
 
     $response_data = json_decode($response, true);
+    
+    UsageService::updateUsage($response_data);
 
     plugin_log('------- Retrive runnn ------');
     plugin_log(print_r($response_data, true));
@@ -411,8 +432,8 @@ function treat_assistant_instructions($assistant) {
 
     $as = new Chatbot();
 
-    $question = new Question();
-    $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
+    // $question = new Question();
+    // $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
     
     $chatbot_trainning = [];
 
@@ -451,9 +472,9 @@ function treat_assistant_instructions($assistant) {
         }
     }
 
-    foreach ($chatbotFixedQuestions as $question) {
-        $chatbot_trainning[] = $question['response'];
-    }
+    // foreach ($chatbotFixedQuestions as $question) {
+    //     $chatbot_trainning[] = $question['response'];
+    // }
 
     $chatbot_trainning[] = 'seu nome é ' . $assistant['chatbot_name'];
 

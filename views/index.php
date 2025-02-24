@@ -33,22 +33,22 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 		$firstUnlocked = false;
 		?>
-		<button data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
+		<button data-current="<?php $i === 1 ? 'true' : 'false' ?>" data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
 			class="tab-btn rounded-md <?= $isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' ?> p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent <?= $isLocked ? '' : 'hover:border-gray-800' ?> focus:outline-none" data-tab-num="<?php echo $i ?>">
 			<?= esc_html($tabNameText) ?>
 		</button>
 		<?php $i++ ?>
 	<?php endforeach; ?>
 
-	<button data-tab="Aparência" data-locked="true"
+	<button data-current="false" data-tab="Aparência" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
 	</button>
-	<button data-tab="Teste" data-locked="true"
+	<button data-current="false" data-tab="Teste" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Teste
 	</button>
-	<button data-tab="Download" data-locked="true"
+	<button data-current="false" data-tab="Download" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Download
 	</button>
@@ -207,10 +207,25 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		<?php
 		$existing_assistant = new Chatbot();
 		$assistants = $existing_assistant->getAllChatbots();
-		// var_dump($assistant);
+
+		$usage = UsageService::usagePercentages();
+		$total_usage = $usage['total'];
 
 		if ($user_has_chatbot): ?>
-			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
+			<div class="relative flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
+
+				<div class="absolute -top-20 right-0 p-4 w-[400px]">
+
+					<div class="flex justify-between mb-1">
+						<span class="text-base font-medium text-[#13072E]">Limite de Token</span>
+						<span class="text-sm font-medium text-[#13072E]"><?php echo intval($total_usage) . '%'; ?></span>
+					</div>
+					<div class="flex w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+						<div class="h-2.5 rounded-full" style="width: <?php echo intval($total_usage) . '%'; ?>; background: linear-gradient(90deg, #ffbee6, #b3aaff);"></div>
+					</div>
+
+				</div>
+
 				<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
 
 					<!-- Select para selecionar o chatbot -->
@@ -262,19 +277,12 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 				<div class="flex justify-center gap-10">
 					<!-- <form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-							assistente virtual</button>
-							
+						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar assistente virtual</button>
 					</form> -->
-					<form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-							assistente virtual</button>
-							
-					</form>
-					<!-- <form action="" method="" id="">
-						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
-					</form> -->
+					<button class="back-btn bg-red-600 text-white p-2 mt-4 rounded">Editar assistente virtual</button>
 				</div>
+
+
 			</div>
 		<?php else: ?>
 			<button class="generateChatbot px-4 py-2.5 bg-green-400">Gerar chatbot</button>
