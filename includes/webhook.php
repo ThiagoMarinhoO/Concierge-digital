@@ -119,8 +119,6 @@ function handle_chatbot_message(WP_REST_Request $request)
     $user_id = intval($request->get_param('user_id'));
     $chatbot_id = intval($request->get_param('chatbot_id'));
 
-    error_log($chatbot_id);
-
     $chatbot = new Chatbot();
     $response = $chatbot->enviarMensagem($message, $chatbot_id , $user_id);
 

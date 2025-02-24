@@ -207,7 +207,6 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		<?php
 		$existing_assistant = new Chatbot();
 		$assistants = $existing_assistant->getAllChatbots();
-		// var_dump($assistant);
 
 		$usage = UsageService::usagePercentages();
 		$total_usage = $usage['total'];
@@ -282,6 +281,8 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 					</form> -->
 					<button class="back-btn bg-red-600 text-white p-2 mt-4 rounded">Editar assistente virtual</button>
 				</div>
+
+
 			</div>
 		<?php else: ?>
 			<button class="generateChatbot px-4 py-2.5 bg-green-400">Gerar chatbot</button>

@@ -89,12 +89,8 @@ function create_assistant()
     }
 
     $data = [
-        // "instructions" => $training_context,
-        // 
-        // NOTAS:
-        //  PARAR DE PASSAR INFORMAÇÕES QUE VÃO COMPROMETER O INTELECTO DO ASSISTENTE. PARAR DE DITAR COMO VAI SE COMPORTAR, COMO FALAR, QUE TRABALHA PRA PLATAFORMA TAL. INFORMAÇÕES DESNECESSSÁRIAS
-        //   
-        "instructions" => "Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer",
+        "instructions" => $training_context,
+        // "instructions" => "Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer",
         "name" => $chatbot_name,
         "tools" => [["type" => "code_interpreter"]],
         "model" => "gpt-3.5-turbo"
