@@ -1,74 +1,23 @@
-2025-02-19 19:34:53 - ------- Prompt tokens ------
-2025-02-19 19:34:53 - Array
+2025-02-23 20:25:56 - ------- Assistente instructions ------
+2025-02-23 20:25:56 - 
+2025-02-23 20:26:04 - ------- Retrive runnn ------
+2025-02-23 20:26:04 - Array
 (
-    [id] => run_57dnIfkxlkaUZUWj1p82OqF7
+    [id] => run_6ACwlYKz992MdjD3e3nP3JXw
     [object] => thread.run
-    [created_at] => 1739993693
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994293
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:34:58 - ------- Retrive runnn ------
-2025-02-19 19:34:58 - Array
-(
-    [id] => run_57dnIfkxlkaUZUWj1p82OqF7
-    [object] => thread.run
-    [created_at] => 1739993693
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740342359
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => completed
-    [started_at] => 1739993694
+    [started_at] => 1740342360
     [expires_at] => 
     [cancelled_at] => 
     [failed_at] => 
-    [completed_at] => 1739993695
+    [completed_at] => 1740342360
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -100,9 +49,9 @@
     [incomplete_details] => 
     [usage] => Array
         (
-            [prompt_tokens] => 260
-            [completion_tokens] => 13
-            [total_tokens] => 273
+            [prompt_tokens] => 3008
+            [completion_tokens] => 49
+            [total_tokens] => 3057
             [prompt_token_details] => Array
                 (
                     [cached_tokens] => 0
@@ -120,77 +69,26 @@
     [parallel_tool_calls] => 1
 )
 
-2025-02-19 19:35:34 - ------- Prompt tokens ------
-2025-02-19 19:35:34 - Array
+2025-02-23 20:34:23 - ------- Assistente instructions ------
+2025-02-23 20:34:23 - 
+2025-02-23 20:34:33 - ------- Retrive runnn ------
+2025-02-23 20:34:33 - Array
 (
-    [id] => run_DOkEbLGY1AFIagqBRRyEdzCW
+    [id] => run_6tUgjNgbAQbeddqQrrXWHlAJ
     [object] => thread.run
-    [created_at] => 1739993730
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994330
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:35:38 - ------- Retrive runnn ------
-2025-02-19 19:35:38 - Array
-(
-    [id] => run_DOkEbLGY1AFIagqBRRyEdzCW
-    [object] => thread.run
-    [created_at] => 1739993730
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740342866
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => completed
-    [started_at] => 1739993735
+    [started_at] => 1740342867
     [expires_at] => 
     [cancelled_at] => 
     [failed_at] => 
-    [completed_at] => 1739993736
+    [completed_at] => 1740342868
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -211,7 +109,7 @@
     [temperature] => 1
     [top_p] => 1
     [reasoning_effort] => 
-    [max_completion_tokens] => 300
+    [max_completion_tokens] => 
     [max_prompt_tokens] => 
     [truncation_strategy] => Array
         (
@@ -222,9 +120,9 @@
     [incomplete_details] => 
     [usage] => Array
         (
-            [prompt_tokens] => 281
-            [completion_tokens] => 13
-            [total_tokens] => 294
+            [prompt_tokens] => 3059
+            [completion_tokens] => 53
+            [total_tokens] => 3112
             [prompt_token_details] => Array
                 (
                     [cached_tokens] => 0
@@ -242,77 +140,26 @@
     [parallel_tool_calls] => 1
 )
 
-2025-02-19 19:36:24 - ------- Prompt tokens ------
-2025-02-19 19:36:24 - Array
+2025-02-23 20:35:30 - ------- Assistente instructions ------
+2025-02-23 20:35:30 - 
+2025-02-23 20:35:47 - ------- Retrive runnn ------
+2025-02-23 20:35:47 - Array
 (
-    [id] => run_swHqyq8NL2Gqt2WQt9bpIQpY
+    [id] => run_dAZIOp93kyDvO5kXwmHpZwu8
     [object] => thread.run
-    [created_at] => 1739993784
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994384
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:36:30 - ------- Retrive runnn ------
-2025-02-19 19:36:30 - Array
-(
-    [id] => run_swHqyq8NL2Gqt2WQt9bpIQpY
-    [object] => thread.run
-    [created_at] => 1739993784
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740342934
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => completed
-    [started_at] => 1739993785
+    [started_at] => 1740342939
     [expires_at] => 
     [cancelled_at] => 
     [failed_at] => 
-    [completed_at] => 1739993785
+    [completed_at] => 1740342940
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -333,7 +180,7 @@
     [temperature] => 1
     [top_p] => 1
     [reasoning_effort] => 
-    [max_completion_tokens] => 300
+    [max_completion_tokens] => 
     [max_prompt_tokens] => 
     [truncation_strategy] => Array
         (
@@ -344,9 +191,9 @@
     [incomplete_details] => 
     [usage] => Array
         (
-            [prompt_tokens] => 302
-            [completion_tokens] => 13
-            [total_tokens] => 315
+            [prompt_tokens] => 3114
+            [completion_tokens] => 54
+            [total_tokens] => 3168
             [prompt_token_details] => Array
                 (
                     [cached_tokens] => 0
@@ -364,695 +211,27 @@
     [parallel_tool_calls] => 1
 )
 
-2025-02-19 19:38:30 - ------- Prompt tokens ------
-2025-02-19 19:38:30 - Array
+2025-02-23 20:37:06 - ------- Assistente instructions ------
+2025-02-23 20:37:06 - 
+2025-02-23 20:37:20 - Erro no INSERT: Column 'total_tokens' cannot be null
+2025-02-23 20:37:20 - ------- Retrive runnn ------
+2025-02-23 20:37:20 - Array
 (
-    [id] => run_FViHKCp9ALsJPnImUErJFf2R
+    [id] => run_TUVfj0fO4QJ5ttIThWYiQ4LT
     [object] => thread.run
-    [created_at] => 1739993907
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994507
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:38:37 - ------- Retrive runnn ------
-2025-02-19 19:38:37 - Array
-(
-    [id] => run_FViHKCp9ALsJPnImUErJFf2R
-    [object] => thread.run
-    [created_at] => 1739993907
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740343030
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => in_progress
-    [started_at] => 1739993911
-    [expires_at] => 1739994507
+    [started_at] => 1740343038
+    [expires_at] => 1740343630
     [cancelled_at] => 
     [failed_at] => 
     [completed_at] => 
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:38:41 - ------- Retrive runnn ------
-2025-02-19 19:38:41 - Array
-(
-    [id] => run_FViHKCp9ALsJPnImUErJFf2R
-    [object] => thread.run
-    [created_at] => 1739993907
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => incomplete
-    [started_at] => 1739993911
-    [expires_at] => 
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 1739993915
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => Array
-        (
-            [reason] => max_completion_tokens
-        )
-
-    [usage] => Array
-        (
-            [prompt_tokens] => 702
-            [completion_tokens] => 300
-            [total_tokens] => 1002
-            [prompt_token_details] => Array
-                (
-                    [cached_tokens] => 0
-                )
-
-            [completion_tokens_details] => Array
-                (
-                    [reasoning_tokens] => 0
-                )
-
-        )
-
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:38:53 - ------- Prompt tokens ------
-2025-02-19 19:38:53 - Array
-(
-    [id] => run_vnMwoWeD3CnZqRNl2KavkJP1
-    [object] => thread.run
-    [created_at] => 1739993934
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994534
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:38:57 - ------- Retrive runnn ------
-2025-02-19 19:38:57 - Array
-(
-    [id] => run_vnMwoWeD3CnZqRNl2KavkJP1
-    [object] => thread.run
-    [created_at] => 1739993934
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => completed
-    [started_at] => 1739993934
-    [expires_at] => 
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 1739993935
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => Array
-        (
-            [prompt_tokens] => 601
-            [completion_tokens] => 13
-            [total_tokens] => 614
-            [prompt_token_details] => Array
-                (
-                    [cached_tokens] => 0
-                )
-
-            [completion_tokens_details] => Array
-                (
-                    [reasoning_tokens] => 0
-                )
-
-        )
-
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:39:13 - ------- Prompt tokens ------
-2025-02-19 19:39:13 - Array
-(
-    [id] => run_v1ZBHUNpWUGlB1uFlhcL0u8J
-    [object] => thread.run
-    [created_at] => 1739993953
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994553
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:39:17 - ------- Retrive runnn ------
-2025-02-19 19:39:17 - Array
-(
-    [id] => run_v1ZBHUNpWUGlB1uFlhcL0u8J
-    [object] => thread.run
-    [created_at] => 1739993953
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => completed
-    [started_at] => 1739993954
-    [expires_at] => 
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 1739993955
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => Array
-        (
-            [prompt_tokens] => 628
-            [completion_tokens] => 40
-            [total_tokens] => 668
-            [prompt_token_details] => Array
-                (
-                    [cached_tokens] => 0
-                )
-
-            [completion_tokens_details] => Array
-                (
-                    [reasoning_tokens] => 0
-                )
-
-        )
-
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:39:44 - ------- Prompt tokens ------
-2025-02-19 19:39:44 - Array
-(
-    [id] => run_RFKpkAvN6qbjimixZzNxLIOK
-    [object] => thread.run
-    [created_at] => 1739993984
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1739994584
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 19:39:48 - ------- Retrive runnn ------
-2025-02-19 19:39:48 - Array
-(
-    [id] => run_RFKpkAvN6qbjimixZzNxLIOK
-    [object] => thread.run
-    [created_at] => 1739993984
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => completed
-    [started_at] => 1739993985
-    [expires_at] => 
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 1739993987
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 300
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => Array
-        (
-            [prompt_tokens] => 678
-            [completion_tokens] => 76
-            [total_tokens] => 754
-            [prompt_token_details] => Array
-                (
-                    [cached_tokens] => 0
-                )
-
-            [completion_tokens_details] => Array
-                (
-                    [reasoning_tokens] => 0
-                )
-
-        )
-
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 23:53:06 - ------- Prompt tokens ------
-2025-02-19 23:53:06 - Array
-(
-    [id] => run_n0lEPChN5hoGSPyHmJQjhL9u
-    [object] => thread.run
-    [created_at] => 1740009187
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1740009787
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 25
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-19 23:53:10 - ------- Retrive runnn ------
-2025-02-19 23:53:10 - Array
-(
-    [id] => run_n0lEPChN5hoGSPyHmJQjhL9u
-    [object] => thread.run
-    [created_at] => 1740009187
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => incomplete
-    [started_at] => 1740009187
-    [expires_at] => 
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 1740009188
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 25
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => Array
-        (
-            [reason] => max_completion_tokens
-        )
-
-    [usage] => Array
-        (
-            [prompt_tokens] => 762
-            [completion_tokens] => 13
-            [total_tokens] => 775
-            [prompt_token_details] => Array
-                (
-                    [cached_tokens] => 0
-                )
-
-            [completion_tokens_details] => Array
-                (
-                    [reasoning_tokens] => 0
-                )
-
-        )
-
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-20 00:00:26 - ------- Prompt tokens ------
-2025-02-20 00:00:26 - Array
-(
-    [id] => run_WCgtOH9eUZiz9g0ADG9ffdmR
-    [object] => thread.run
-    [created_at] => 1740009626
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1740010226
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -1088,24 +267,24 @@
     [parallel_tool_calls] => 1
 )
 
-2025-02-20 00:00:29 - ------- Retrive runnn ------
-2025-02-20 00:00:29 - Array
+2025-02-23 20:37:28 - ------- Retrive runnn ------
+2025-02-23 20:37:28 - Array
 (
-    [id] => run_WCgtOH9eUZiz9g0ADG9ffdmR
+    [id] => run_TUVfj0fO4QJ5ttIThWYiQ4LT
     [object] => thread.run
-    [created_at] => 1740009626
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740343030
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => completed
-    [started_at] => 1740009627
+    [started_at] => 1740343038
     [expires_at] => 
     [cancelled_at] => 
     [failed_at] => 
-    [completed_at] => 1740009629
+    [completed_at] => 1740343048
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -1137,9 +316,9 @@
     [incomplete_details] => 
     [usage] => Array
         (
-            [prompt_tokens] => 783
-            [completion_tokens] => 13
-            [total_tokens] => 796
+            [prompt_tokens] => 3170
+            [completion_tokens] => 196
+            [total_tokens] => 3366
             [prompt_token_details] => Array
                 (
                     [cached_tokens] => 0
@@ -1157,77 +336,26 @@
     [parallel_tool_calls] => 1
 )
 
-2025-02-20 00:04:02 - ------- Prompt tokens ------
-2025-02-20 00:04:02 - Array
+2025-02-23 23:57:16 - ------- Assistente instructions ------
+2025-02-23 23:57:16 - 
+2025-02-23 23:57:26 - ------- Retrive runnn ------
+2025-02-23 23:57:26 - Array
 (
-    [id] => run_EUoU6WAtLbfno7Uy2fTRKO5A
+    [id] => run_DfgtiGmiV9Mn5oJIoHklfJ3Q
     [object] => thread.run
-    [created_at] => 1740009843
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
-    [status] => queued
-    [started_at] => 
-    [expires_at] => 1740010443
-    [cancelled_at] => 
-    [failed_at] => 
-    [completed_at] => 
-    [required_action] => 
-    [last_error] => 
-    [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => code_interpreter
-                )
-
-        )
-
-    [tool_resources] => Array
-        (
-        )
-
-    [metadata] => Array
-        (
-        )
-
-    [temperature] => 1
-    [top_p] => 1
-    [reasoning_effort] => 
-    [max_completion_tokens] => 
-    [max_prompt_tokens] => 
-    [truncation_strategy] => Array
-        (
-            [type] => auto
-            [last_messages] => 
-        )
-
-    [incomplete_details] => 
-    [usage] => 
-    [response_format] => auto
-    [tool_choice] => auto
-    [parallel_tool_calls] => 1
-)
-
-2025-02-20 00:04:05 - ------- Retrive runnn ------
-2025-02-20 00:04:05 - Array
-(
-    [id] => run_EUoU6WAtLbfno7Uy2fTRKO5A
-    [object] => thread.run
-    [created_at] => 1740009843
-    [assistant_id] => asst_B9TURFno8WMM2oQksUGPhChj
-    [thread_id] => thread_syphb6d9yKFnmUcKZqqbz3R2
+    [created_at] => 1740355039
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
     [status] => completed
-    [started_at] => 1740009844
+    [started_at] => 1740355041
     [expires_at] => 
     [cancelled_at] => 
     [failed_at] => 
-    [completed_at] => 1740009844
+    [completed_at] => 1740355044
     [required_action] => 
     [last_error] => 
     [model] => gpt-3.5-turbo
-    [instructions] => Você é um assistente virtual desenvolvido pela Charlie humans Land uma empresa de geração de assistentes virtuais. Sua função é prestar serviço para os clientes da Charlie.
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
     [tools] => Array
         (
             [0] => Array
@@ -1259,9 +387,80 @@
     [incomplete_details] => 
     [usage] => Array
         (
-            [prompt_tokens] => 804
-            [completion_tokens] => 13
-            [total_tokens] => 817
+            [prompt_tokens] => 3368
+            [completion_tokens] => 210
+            [total_tokens] => 3578
+            [prompt_token_details] => Array
+                (
+                    [cached_tokens] => 0
+                )
+
+            [completion_tokens_details] => Array
+                (
+                    [reasoning_tokens] => 0
+                )
+
+        )
+
+    [response_format] => auto
+    [tool_choice] => auto
+    [parallel_tool_calls] => 1
+)
+
+2025-02-23 23:58:17 - ------- Assistente instructions ------
+2025-02-23 23:58:17 - 
+2025-02-23 23:58:27 - ------- Retrive runnn ------
+2025-02-23 23:58:27 - Array
+(
+    [id] => run_YFj9UmH7hhsy9SCIRvzgXRuh
+    [object] => thread.run
+    [created_at] => 1740355100
+    [assistant_id] => asst_fR0XYbV7r1ozSL2DRhx8RQum
+    [thread_id] => thread_skH5PTKuuOOBE3X9sgyjd0aw
+    [status] => completed
+    [started_at] => 1740355101
+    [expires_at] => 
+    [cancelled_at] => 
+    [failed_at] => 
+    [completed_at] => 1740355104
+    [required_action] => 
+    [last_error] => 
+    [model] => gpt-3.5-turbo
+    [instructions] => Você é o oncobot. Um assistente da plataforma https://clinicaoncologica.com.br.br. Você deve auxiliar os usuários e retirar suas dúvidas acerca do Câncer
+    [tools] => Array
+        (
+            [0] => Array
+                (
+                    [type] => code_interpreter
+                )
+
+        )
+
+    [tool_resources] => Array
+        (
+        )
+
+    [metadata] => Array
+        (
+        )
+
+    [temperature] => 1
+    [top_p] => 1
+    [reasoning_effort] => 
+    [max_completion_tokens] => 
+    [max_prompt_tokens] => 
+    [truncation_strategy] => Array
+        (
+            [type] => auto
+            [last_messages] => 
+        )
+
+    [incomplete_details] => 
+    [usage] => Array
+        (
+            [prompt_tokens] => 3580
+            [completion_tokens] => 202
+            [total_tokens] => 3782
             [prompt_token_details] => Array
                 (
                     [cached_tokens] => 0

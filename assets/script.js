@@ -43,6 +43,51 @@ jQuery(document).ready(function ($) {
         }
     }
 
+    // async function sendMessage() {
+    //     const assistantId = $('.chatContainer').attr('data-assistant-id');
+    //     const message = messageField.val().trim();
+    //     if (!message) return;
+
+    //     const currHour = new Date();
+    //     messageField.val("");
+
+    //     const userMsgTemplate = `
+    //         <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
+    //             <div>
+    //                 <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
+    //                     ${message}
+    //                 </div>
+    //                 <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+    //             </div>
+    //             <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
+    //                 <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+    //             </div>
+    //         </div>`;
+
+    //     chatBox.append(userMsgTemplate);
+    //     chatBox.scrollTop(chatBox.prop("scrollHeight"));
+
+    //     sendButton.prop('disabled', true).addClass('opacity-90');
+    //     $("#enviarMensagem svg").addClass('animate-spin');
+
+    //     await createThreadIfNeeded();
+
+    //     const response = await apiRequest('add_message_to_thread', {
+    //         sessionId,
+    //         mensagem: message,
+    //     });
+
+    //     if (response) {
+    //         const runResponse = await apiRequest('create_run', { sessionId, assistantId });
+    //         if (runResponse) {
+    //             await checkRunStatus(runResponse.run_id);
+    //         }
+    //     }
+
+    //     sendButton.removeClass('opacity-90').prop('disabled', false);
+    //     $("#enviarMensagem svg").removeClass('animate-spin');
+    // }
+
     async function sendMessage() {
         const assistantId = $('.chatContainer').attr('data-assistant-id');
         const message = messageField.val().trim();
@@ -51,13 +96,14 @@ jQuery(document).ready(function ($) {
         const currHour = new Date();
         messageField.val("");
 
+        const minutes = currHour.getMinutes().toString().padStart(2, '0');
         const userMsgTemplate = `
             <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
                 <div>
                     <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
                         ${message}
                     </div>
-                    <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
+                    <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${minutes}</span>
                 </div>
                 <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
                     <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
@@ -78,6 +124,33 @@ jQuery(document).ready(function ($) {
         });
 
         if (response) {
+            if (response.type === 'limit') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Plano atingiu o limite!',
+                    text: response.message,
+                    confirmButtonText: 'Ok',
+                    showConfirmButton: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        sendButton.removeClass('opacity-90').prop('disabled', false);
+                        $("#enviarMensagem svg").removeClass('animate-spin');
+                    }
+                });
+                return;
+            }
+
+            if (response.type === 'warning') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atenção!',
+                    text: response.message,
+                    confirmButtonText: 'Entendido',
+                    showConfirmButton: true
+                });
+            }
+            
+
             const runResponse = await apiRequest('create_run', { sessionId, assistantId });
             if (runResponse) {
                 await checkRunStatus(runResponse.run_id);
@@ -127,6 +200,10 @@ jQuery(document).ready(function ($) {
             addMessageToChat(null, mensagemFormatada)
         }
     }
+
+    // async function tokenControl() {
+    //     const response = await apiRequest('token_control', { sessionId });
+    // }
 
     function addMessageToChat(image, message) {
         const currHour = new Date();
@@ -494,7 +571,8 @@ jQuery(document).ready(function ($) {
         if (currentTabIndex < buttons.length - 1) {
             currentTabIndex++;
             const nextTabName = $(buttons[currentTabIndex]).data("tab");
-            $($(buttons[currentTabIndex])).data("locked", "false");
+            console.log(`AAAAAAAAAAA ${nextTabName}`)
+            $($(buttons[currentTabIndex])).attr("data-locked", "false");
             $($(buttons[currentTabIndex])).removeClass("opacity-50 cursor-not-allowed");
             // showTabContent(nextTabName);
         }
@@ -710,7 +788,7 @@ jQuery(document).ready(function ($) {
         }
 
         $(button).on("click", function () {
-            if ($(button).data("locked") === "true") {
+            if ($(button).attr("data-locked") === "true") {
                 alert("Complete a aba atual antes de prosseguir.");
                 return;
             }
@@ -786,7 +864,7 @@ jQuery(document).ready(function ($) {
                 });
                 if (index < buttons.length - 1) {
                     const $nextTabButton = $(buttons[index + 1]);
-                    $nextTabButton.data('locked', false);
+                    $nextTabButton.attr("data-locked", "false");
                     $nextTabButton.removeClass("opacity-50 cursor-not-allowed");
                 }
             }
@@ -835,7 +913,7 @@ jQuery(document).ready(function ($) {
                         .done(function (data) {
                             // unlockNextTab();
                             // window.location.reload();
-                            console.log(data);
+                            // console.log(data);
                         })
                         .complete(function () {
                             unlockNextTab();
@@ -854,7 +932,7 @@ jQuery(document).ready(function ($) {
     function checkAllTabsUnlocked() {
         let allUnlocked = true;
         $.each(buttons, function (index, button) {
-            if (index < buttons.length - 1 && $(button).data('locked') === "true") {
+            if (index < buttons.length - 1 && $(button).attr('data-locked') === "true") {
                 allUnlocked = false;
             }
         });
@@ -862,7 +940,7 @@ jQuery(document).ready(function ($) {
     }
 
     if (checkAllTabsUnlocked()) {
-        $('[data-tab="Download"]').data('locked', 'false').removeClass('opacity-50 cursor-not-allowed');
+        $('[data-tab="Download"]').attr('data-locked', 'false').removeClass('opacity-50 cursor-not-allowed');
     }
 
     const $clipboardSection = $('#clipboardSection');

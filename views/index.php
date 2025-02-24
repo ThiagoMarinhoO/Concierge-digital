@@ -209,8 +209,24 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		$assistants = $existing_assistant->getAllChatbots();
 		// var_dump($assistant);
 
+		$usage = UsageService::usagePercentages();
+		$total_usage = $usage['total'];
+
 		if ($user_has_chatbot): ?>
-			<div class="flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
+			<div class="relative flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
+
+				<div class="absolute -top-20 right-0 p-4 w-[400px]">
+
+					<div class="flex justify-between mb-1">
+						<span class="text-base font-medium text-[#13072E]">Limite de Token</span>
+						<span class="text-sm font-medium text-[#13072E]"><?php echo intval($total_usage) . '%'; ?></span>
+					</div>
+					<div class="flex w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+						<div class="h-2.5 rounded-full" style="width: <?php echo intval($total_usage) . '%'; ?>; background: linear-gradient(90deg, #ffbee6, #b3aaff);"></div>
+					</div>
+
+				</div>
+
 				<div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
 
 					<!-- Select para selecionar o chatbot -->
@@ -262,18 +278,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 				<div class="flex justify-center gap-10">
 					<!-- <form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-							assistente virtual</button>
-							
+						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar assistente virtual</button>
 					</form> -->
-					<form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar
-							assistente virtual</button>
-							
-					</form>
-					<!-- <form action="" method="" id="">
-						<button type="submit" name="" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar link</button>
-					</form> -->
+					<button class="back-btn bg-red-600 text-white p-2 mt-4 rounded">Editar assistente virtual</button>
 				</div>
 			</div>
 		<?php else: ?>
