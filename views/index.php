@@ -38,8 +38,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 			<?= esc_html($tabNameText) ?>
 		</button>
 		<?php $i++ ?>
+	<!-- teste de branch -->
 	<?php endforeach; ?>
-
+	
 	<button data-current="false" data-tab="Aparência" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
