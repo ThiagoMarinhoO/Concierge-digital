@@ -192,7 +192,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<div id="Aparência-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Aparência</p>
-		<div class="input-container mb-4">
+		<div class="input-container mb-4 flex items-center justify-center gap-12">
 			<div class="question-block">
 				<label for="appearance_image" class="block font-medium text-gray-700 mb-2">
 					Adicione a foto do seu assistente virtual:
@@ -201,7 +201,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 					class="py-2 px-2.5 border border-gray-100 rounded-lg w-full" accept="image/*">
 			</div>
 		</div>
-		<button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
+		<div class="flex justify-center mt-10">
+		    <button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
+		</div>
 	</div>
 	<div id="Teste-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
@@ -215,7 +217,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 		if ($user_has_chatbot): ?>
 			<div class="relative flex flex-col items-center justify-center min-h-screen text-gray-800 p-10">
 
-				<div class="absolute -top-20 right-0 p-4 w-[400px]">
+				<div class="limit_token p-4 w-[400px]">
 
 					<div class="flex justify-between mb-1">
 						<span class="text-base font-medium text-[#13072E]">Limite de Token</span>
@@ -292,10 +294,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">
 		<button class="back-btn bg-gray-300 text-gray-700 py-2 px-4 rounded mb-4">Voltar</button>
 		<p>Download</p>
+		<button type="button" name="" id="gerar-link" class="mb-4 rounded">Gerar link</button>
 		<div class="flex items-center justify-center gap-12">
 			<div class="w-1/2">
-				<button type="button" name="" id="gerar-link" class="bg-green-600 text-white p-2 mt-4 rounded">Gerar
-					link</button>
 				<div id="clipboardSection"
 					class="clipboardScript hidden mt-10 flex flex-col gap-4 border border-neutral-300 rounded-md bg-neutral-50 p-6 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
 					<span class="font-bold text-sm text-green-600">Adicione este código ao head do seu site</span>
