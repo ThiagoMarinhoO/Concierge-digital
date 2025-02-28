@@ -248,18 +248,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-assistant-id="<?php echo esc_attr($assistants[0]->id); ?>" data-session-id="">
-						<?php if ($assistants[0]->chatbot_welcome_message): ?>
-							<div class="flex w-full mt-2 space-x-3 max-w-xs">
-								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-									<img src="<?php echo $assistants[0]->chatbot_image; ?>" alt="">
-								</div>
-								<div>
-									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
-										<?php echo $assistants[0]->chatbot_welcome_message; ?>
-									</div>
-								</div>
-							</div>
-						<?php endif; ?>
+						
 					</div>
 
 					<!-- Input para mensagem -->

@@ -3,92 +3,268 @@ jQuery(document).ready(function ($) {
     const sendButton = $('#enviarMensagem');
     const messageField = $(".mensagem");
 
+    // XXXXXXXXXXXXXXXXXX ASSISTENTES XXXXXXXXXXXXX
+
+    function prepareAssistantData() {
+        const assistantName = $('.assistent-name').val();
+        const assistantImage = $('#appearance_image')[0].files[0];
+        const assistantInstructions = treatInstructions(JSON.parse(localStorage.getItem('chatbotRespostas')));
+
+        // let assistantFile = null;
+
+        const assistantFiles = $('input[type="file"]').map(function () {
+            const file = this.files[0];
+            if (file && ['application/pdf', 'application/msword', 'text/plain'].includes(file.type)) {
+                return file;
+            }
+        }).get().filter(file => file !== undefined);
+
+        return {
+            assistantName,
+            assistantImage,
+            assistantInstructions,
+            assistantFiles
+        }
+    }
+
+
+    async function getAssistantById(assistantId) {
+        const response = await fetch(`https://api.openai.com/v1/assistants/${assistantId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+        });
+
+        const data = await response.json();
+
+        localStorage.setItem('assistant', JSON.stringify(data));
+    }
+
+    async function createAssistant(assistantDTO) {
+        const assistantDto = prepareAssistantData();
+
+        // let imageURL = null;
+        // let vectorStoreId = null;
+
+        // if (assistantDto.assistantImage) {
+        //     imageURL = await uploadImage(assistantDto.assistantImage);
+        // }
+
+        // if(assistantDto.assistantFiles) {
+        //     const uploadedFileId = await uploadFiles(assistantDto.assistantFiles);
+        //     console.log(`File id: ${uploadedFileId}`);
+        //     vectorStoreId = await vectorStore(uploadedFileId);
+        //     console.log(`Vector id: ${vectorStoreId}`);
+        //     // const completed = await checkCompletedVectorStore(vectorStoreId.id);
+        // }
+
+        const response = await fetch(`https://api.openai.com/v1/assistants`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({
+                "instructions": assistantDTO.assistant_instructions,
+                "name": assistantDTO.assistant_name,
+                "tools": [
+                    { "type": "code_interpreter" },
+                    { "type": "file_search" }
+                ],
+                "tool_resources": {
+                    "file_search": {
+                        "vector_store_ids": []
+                    }
+                },
+                "model": "gpt-3.5-turbo",
+                "metadata": {
+                    "assistant_image": assistantDTO.assistant_image,
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        localStorage.setItem('assistant', JSON.stringify(data));
+
+        await $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'create_assistant',
+                assistantId: data.id
+            },
+            success: function (response) {
+                console.log('Assistant created successfully:', response);
+                location.reload();
+            },
+            error: function (error) {
+                console.error('Error creating assistant:', error);
+            }
+        });
+    }
+
+    async function updateAssistant(assistantId, data = {}) {
+
+        // const currentAssistant = JSON.parse(localStorage.getItem('assistant')) || {};
+
+        // Object.assign(currentAssistant, data);
+
+        // const response = await fetch(`https://api.openai.com/v1/assistants/${assistant_id}`, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+        //         'OpenAI-Beta': 'assistants=v2'
+        //     },
+        //     body: JSON.stringify(data)
+        // });
+
+        // const assistant = await response.json();
+
+        // localStorage.setItem('assistant', JSON.stringify(data));
+        // location.reload();
+    }
+
+    // XXXXXXXXXXXXXXXXXX UPLOAD DE FILES XXXXXXXXXXXXX
+    async function uploadFiles(file) {
+
+        const response = await fetch(`https://api.openai.com/v1/files`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({
+                "file": file,
+                "purpose": "assistants",
+            })
+        });
+
+        const data = await response.json();
+
+        return data;
+    }
+
+    async function vectorStore(uploadedFile) {
+        const response = await fetch(`https://api.openai.com/v1/vector_stores`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({
+                "file_ids": [
+                    uploadedFile.id
+                ],
+                "name": uploadedFile.filename,
+            })
+        });
+
+        const data = await response.json();
+
+        return data;
+    }
+
+    async function checkCompletedVectorStore(vectorStoreId) {
+        const response = await fetch(`https://api.openai.com/v1/vector_stores/${vectorStoreId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'completed') {
+            return true;
+        }
+
+        return false;
+    }
+
+    async function uploadImage(image) {
+        const formData = new FormData();
+        formData.append('file', image);
+        formData.append('action', 'upload_image');
+
+        try {
+            const response = await $.ajax({
+                url: conciergeAjax.ajax_url,
+                method: 'POST',
+                data: formData,
+                processData: false, // Evita que o jQuery transforme o FormData em string
+                contentType: false, // Deixa o navegador definir automaticamente o Content-Type
+            });
+
+            if (response.success) {
+                return response.data.url; // Retorna a URL da imagem
+            } else {
+                throw new Error('Erro no upload da imagem.');
+            }
+        } catch (error) {
+            console.error('Erro no upload da imagem:', error);
+            return null;
+        }
+    }
+
+    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     let sessionId = localStorage.getItem('sessionID') || "";
 
     if (sessionId) {
         chatBox.attr('data-session-id', sessionId);
     }
 
-    async function apiRequest(action, data = {}) {
-        try {
-            const formData = new FormData();
-            formData.append('action', action);
-            Object.keys(data).forEach(key => formData.append(key, data[key]));
+    const data = JSON.parse(localStorage.getItem('chatbotRespostas'));
 
-            const response = await $.ajax({
-                url: conciergeAjax.ajax_url,
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-            });
+    function treatInstructions(hardInstructions) {
+        let instructions = "";
 
-            console.log(response);
+        Object.keys(hardInstructions).forEach((tab) => {
+            const tabData = hardInstructions[tab];
 
-            return response.data;
-        } catch (error) {
-            console.error(`Erro na ação "${action}":`, error);
-            return null;
-        }
+            if (tabData.length) {
+                tabData.forEach(item => {
+                    instructions += `${item.training_phrase} ${item.resposta};\n`;
+                });
+            }
+        });
+
+        return instructions;
     }
 
     async function createThreadIfNeeded() {
         if (!sessionId) {
-            const response = await apiRequest('create_thread');
-            if (response) {
-                sessionId = response.thread_id;
+            const response = await fetch(`https://api.openai.com/v1/threads`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                    'OpenAI-Beta': 'assistants=v2'
+                },
+            });
+
+            const responseData = await response.json(); // Converte para JSON
+            console.log(responseData); // Debug para verificar a resposta
+
+            if (responseData && responseData.id) {
+                sessionId = responseData.id; // Corrigido para acessar a ID corretamente
                 localStorage.setItem('sessionID', sessionId);
                 chatBox.attr('data-session-id', sessionId);
             }
         }
     }
 
-    // async function sendMessage() {
-    //     const assistantId = $('.chatContainer').attr('data-assistant-id');
-    //     const message = messageField.val().trim();
-    //     if (!message) return;
-
-    //     const currHour = new Date();
-    //     messageField.val("");
-
-    //     const userMsgTemplate = `
-    //         <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end messageInput">
-    //             <div>
-    //                 <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm text-black">
-    //                     ${message}
-    //                 </div>
-    //                 <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${currHour.getMinutes()}</span>
-    //             </div>
-    //             <div class="flex-shrink-0 flex justify-center items-center h-10 w-10 rounded-full bg-gray-300">
-    //                 <svg class="size-6 text-blue-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
-    //             </div>
-    //         </div>`;
-
-    //     chatBox.append(userMsgTemplate);
-    //     chatBox.scrollTop(chatBox.prop("scrollHeight"));
-
-    //     sendButton.prop('disabled', true).addClass('opacity-90');
-    //     $("#enviarMensagem svg").addClass('animate-spin');
-
-    //     await createThreadIfNeeded();
-
-    //     const response = await apiRequest('add_message_to_thread', {
-    //         sessionId,
-    //         mensagem: message,
-    //     });
-
-    //     if (response) {
-    //         const runResponse = await apiRequest('create_run', { sessionId, assistantId });
-    //         if (runResponse) {
-    //             await checkRunStatus(runResponse.run_id);
-    //         }
-    //     }
-
-    //     sendButton.removeClass('opacity-90').prop('disabled', false);
-    //     $("#enviarMensagem svg").removeClass('animate-spin');
-    // }
-
     async function sendMessage() {
+        // const sessionId = localStorage.getItem('sessionID') || "";
         const assistantId = $('.chatContainer').attr('data-assistant-id');
         const message = messageField.val().trim();
         if (!message) return;
@@ -118,92 +294,151 @@ jQuery(document).ready(function ($) {
 
         await createThreadIfNeeded();
 
-        const response = await apiRequest('add_message_to_thread', {
-            sessionId,
-            mensagem: message,
+        console.log(sessionId);
+
+        if (!assistantId) return;
+
+        // Envia a mensagem para a API
+        await fetch(`https://api.openai.com/v1/threads/${sessionId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({ "role": "user", "content": message })
         });
 
-        if (response) {
-            if (response.type === 'limit') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Plano atingiu o limite!',
-                    text: response.message,
-                    confirmButtonText: 'Ok',
-                    showConfirmButton: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        sendButton.removeClass('opacity-90').prop('disabled', false);
-                        $("#enviarMensagem svg").removeClass('animate-spin');
-                    }
-                });
-                return;
-            }
+        // Inicia o streaming da resposta
+        const runResponse = await fetch(`https://api.openai.com/v1/threads/${sessionId}/runs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({
+                "assistant_id": assistantId,
+                "stream": true
+            })
+        });
 
-            if (response.type === 'warning') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Atenção!',
-                    text: response.message,
-                    confirmButtonText: 'Entendido',
-                    showConfirmButton: true
-                });
-            }
+        const assistantImage = JSON.parse(localStorage.getItem('assistant')).metadata.assistant_image;
 
+        const aiMsgTemplate = $(`
+            <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
+                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+                    <img src="${assistantImage}" class="size-10 rounded-full" alt="">
+                </div>
+                <div>
+                    <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm ai-message">
+                        <span class="stream-text animate-ping">...</span>
+                    </div>
+                    <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${minutes}</span>
+                </div>
+            </div>`);
 
-            const runResponse = await apiRequest('create_run', { sessionId, assistantId });
-            if (runResponse) {
-                await checkRunStatus(runResponse.run_id);
+        chatBox.append(aiMsgTemplate);
+        chatBox.scrollTop(chatBox.prop("scrollHeight"));
+
+        const reader = runResponse.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let done = false;
+        let aiMessage = "";
+
+        // while (!done) {
+        //     const { value, done: readerDone } = await reader.read();
+        //     done = readerDone;
+        //     const chunk = decoder.decode(value, { stream: true });
+
+        //     if (chunk) {
+        //         try {
+        //             // Divide em linhas e processa cada uma
+        //             const lines = chunk.trim().split("\n");
+
+        //             lines.forEach((line) => {
+        //                 if (line.startsWith("data:")) {
+        //                     const jsonData = line.replace("data: ", "");
+        //                     if (jsonData !== "[DONE]") {
+
+        //                         const parsed = JSON.parse(jsonData);
+
+        //                         if (parsed?.delta?.content) {
+        //                             parsed.delta.content.forEach((part) => {
+        //                                 if (part.type === "text") {
+        //                                     aiMessage += part.text.value;
+        //                                 }
+        //                             });
+                                    
+        //                             aiMsgTemplate.find(".stream-text").text(aiMessage);
+        //                             aiMsgTemplate.find(".stream-text").removeClass('animate-ping');
+        //                             chatBox.scrollTop(chatBox.prop("scrollHeight"));
+        //                         }
+
+        //                     }
+        //                 }
+        //             });
+        //         } catch (e) {
+        //             console.error("Erro ao processar chunk:", chunk, e);
+        //         }
+        //     }
+        // }
+
+        function transformarLinks(texto) {
+            return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+        }
+        
+        let messageParts = [];
+        
+        while (!done) {
+            const { value, done: readerDone } = await reader.read();
+            done = readerDone;
+            const chunk = decoder.decode(value, { stream: true });
+        
+            if (chunk) {
+                try {
+                    const lines = chunk.trim().split("\n");
+        
+                    lines.forEach((line) => {
+                        if (line.startsWith("data: {")) {
+                            const jsonData = line.replace("data: ", "");
+                            if (jsonData !== "[DONE]") {
+                                const parsed = JSON.parse(jsonData);
+        
+                                if (parsed?.delta?.content) {
+                                    parsed.delta.content.forEach((part) => {
+                                        if (part.type === "text") {
+                                            messageParts.push(part.text.value);
+                                            aiMessage += part.text.value; // Atualiza ao vivo
+                                        }
+                                    });
+        
+                                    // Exibe o texto sem modificar os links ainda
+                                    aiMsgTemplate.find(".stream-text").text(aiMessage);
+                                    chatBox.scrollTop(chatBox.prop("scrollHeight"));
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error("Erro ao processar chunk:", chunk, e);
+                }
             }
         }
+        
+        // Quando o streaming termina:
+        aiMessage = messageParts.join(""); // Monta a mensagem final
+        const formattedMessage = transformarLinks(aiMessage); // Aplica a conversão de links
+        
+        // Substitui a mensagem pelo texto formatado com links clicáveis
+        aiMsgTemplate.find(".stream-text").html(formattedMessage);
+        aiMsgTemplate.find(".stream-text").removeClass('animate-ping');
+        
+        
 
         sendButton.removeClass('opacity-90').prop('disabled', false);
         $("#enviarMensagem svg").removeClass('animate-spin');
     }
-
-    async function checkRunStatus(runId) {
-        let status = '';
-
-        while (status !== 'completed') {
-            // await new Promise(resolve => setTimeout(resolve, 500));
-
-            const response = await apiRequest('retrieve_run', { runId, sessionId });
-            status = response ? response.run.status : '';
-
-            if (status === 'incomplete') {
-                alert(response.run.incomplete_details.reason);
-                return;
-            }
-
-            if (status === 'failed') {
-                alert('Deu ruim');
-                return;
-            }
-        }
-
-        listMessages();
-    }
-
-    async function listMessages() {
-        const response = await apiRequest('list_messages', { sessionId });
-
-        if (response) {
-
-            aiAnswer = response[0].content[0].text.value;
-
-            function transformarLinks(texto) {
-                return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
-            }
-
-            const mensagemFormatada = transformarLinks(aiAnswer);
-
-            addMessageToChat(null, mensagemFormatada)
-        }
-    }
-
-    // async function tokenControl() {
-    //     const response = await apiRequest('token_control', { sessionId });
-    // }
 
     function addMessageToChat(image, message) {
         const currHour = new Date();
@@ -244,7 +479,6 @@ jQuery(document).ready(function ($) {
         messageField.val("");
     }
 
-    // Adiciona eventos apenas se os elementos existirem
     if (sendButton.length) {
         sendButton.on('click', function (event) {
             event.preventDefault();
@@ -330,50 +564,61 @@ jQuery(document).ready(function ($) {
         contentDivs.addClass("hidden");
     }
 
-    async function updateChatbot(chatbotOptions) {
-        const chatbotId = $("#chatbotID").val();
+    async function updateChatbot() {
+        // const chatbotId = $("#chatbotID").val();
+        // const chatbotName = $(".assistent-name").val();
+        // const welcomeMessage = $(".assistent-message").val();
+        // const fileInput = $("#appearance_image")[0];
+        // let file_url = "";
+
+        // if (fileInput && fileInput.files.length > 0) {
+        //     const formData = new FormData();
+        //     formData.append("files[]", fileInput.files[0]);
+        //     formData.append("action", "upload_files_to_media_library");
+
+        //     try {
+
+
+        //         const response = await fetch(conciergeAjax.ajax_url, {
+        //             method: "POST",
+        //             body: formData,
+        //         });
+
+        //         const data = await response.json();
+        //         if (data.success) {
+        //             file_url = data.data.urls;
+        //         } else {
+        //             console.error("Falha ao enviar arquivos:", data.message);
+        //             return;
+        //         }
+        //     } catch (error) {
+        //         console.error("Erro na requisição de upload:", error);
+        //         return;
+        //     }
+        // }
+
+        // chatbotOptions = chatbotOptions.map(option => {
+        //     if (option.field_type === "file" && !option.value) {
+        //         delete option.value;
+        //     }
+        //     return option;
+        // });
+
+        // console.log(chatbotOptions);
+
+        const assistant = JSON.parse(localStorage.getItem('assistant')) || null;
+        let chatbotOptions = JSON.parse(localStorage.getItem('chatbotRespostas')) || {};
+        chatbotOptions = $.map(chatbotOptions, function (val) { return val; }).flat();
+        const image = $("#appearance_image")[0].files[0];
         const chatbotName = $(".assistent-name").val();
         const welcomeMessage = $(".assistent-message").val();
-        const fileInput = $("#appearance_image")[0];
-        let file_url = "";
-
-        if (fileInput && fileInput.files.length > 0) {
-            const formData = new FormData();
-            formData.append("files[]", fileInput.files[0]);
-            formData.append("action", "upload_files_to_media_library");
-
-            try {
-                const response = await fetch(conciergeAjax.ajax_url, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    file_url = data.data.urls;
-                } else {
-                    console.error("Falha ao enviar arquivos:", data.message);
-                    return;
-                }
-            } catch (error) {
-                console.error("Erro na requisição de upload:", error);
-                return;
-            }
-        }
-
-        chatbotOptions = chatbotOptions.map(option => {
-            if (option.field_type === "file" && !option.value) {
-                delete option.value;
-            }
-            return option;
-        });
 
         const chatbotFormData = new FormData();
         chatbotFormData.append("action", "save_responses");
         chatbotFormData.append("chatbot_options", JSON.stringify(chatbotOptions));
-        chatbotFormData.append("chatbot_id", chatbotId);
+        chatbotFormData.append("chatbot_id", assistant.id);
         chatbotFormData.append("chatbot_name", chatbotName);
-        chatbotFormData.append("chatbot_image", file_url);
+        chatbotFormData.append("chatbot_image", image);
         chatbotFormData.append("chatbot_welcome_message", welcomeMessage);
 
         Swal.fire({
@@ -391,7 +636,12 @@ jQuery(document).ready(function ($) {
                 body: chatbotFormData,
             });
 
-            const chatbotData = await chatbotResponse.json();
+            const { data } = await chatbotResponse.json();
+
+            if (chatbotData.assistant) {
+                localStorage.setItem('assistant', JSON.stringify(data.assistant));
+            }
+
             if (chatbotData.success) {
                 Swal.fire({
                     icon: 'success',
@@ -539,7 +789,7 @@ jQuery(document).ready(function ($) {
             const hasChatbot = $("#hasChatbot").val();
 
             if (hasChatbot === '1') {
-                updateChatbot(chatbotOptions);
+                updateChatbot();
             }
         };
 
@@ -556,6 +806,15 @@ jQuery(document).ready(function ($) {
 
             if (hasFiles) {
                 formData.append("action", "upload_files_to_media_library");
+
+                Swal.fire({
+                    title: 'Uploading...',
+                    text: 'Aguarde enquanto fazemos o upload dos documentos.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 // Fazer upload dos arquivos via AJAX
                 $.ajax({
@@ -698,6 +957,8 @@ jQuery(document).ready(function ($) {
                         if ($field.is('input, textarea')) {
                             if ($field.attr('type') !== 'file') {
                                 $field.val(item.resposta);
+                            } else {
+                                $field.siblings('.file-name').text(item.resposta);
                             }
                         } else if ($field.is('select')) {
                             if ($field.find(`option[value="${item.resposta}"]`).length) {
@@ -749,6 +1010,15 @@ jQuery(document).ready(function ($) {
                 confirmButtonText: 'Sim, gerar!'
             }).then(function (result) {
                 if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Criando Assistente...',
+                        text: 'Por favor, aguarde enquanto o assistente é criado.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
                     $.ajax({
                         url: conciergeAjax.ajax_url,
                         method: "POST",
@@ -756,22 +1026,54 @@ jQuery(document).ready(function ($) {
                         processData: false,
                         contentType: false
                     })
-                        .done(function (data) {
-                            // unlockNextTab();
-                            // window.location.reload();
-                            // console.log(data);
-                        })
-                        .complete(function () {
-                            unlockNextTab();
-                            window.location.reload();
+                        .complete(function (data) {
+                            Swal.close(); // Fecha o loading
+
+                            const response = data.data;
+                            console.log(response);
+
+                            localStorage.setItem('assistant', JSON.stringify(response));
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Assistente criado com sucesso!',
+                                text: 'O assistente foi criado e está pronto para uso.',
+                            }).then(() => {
+                                window.location.reload();
+                            });
                         })
                         .fail(function (error) {
+                            Swal.close(); // Fecha o loading
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro ao criar assistente',
+                                text: 'Ocorreu um erro ao tentar criar o assistente. Por favor, tente novamente.',
+                            });
+
                             console.error("Erro:", error);
-                        })
+                        });
                 }
             });
         });
     }
+
+    // const $generateChatbotButton = $(".generateChatbot");
+    // if ($generateChatbotButton.length) {
+    //     $generateChatbotButton.on("click", function (event) {
+
+    //         const assistantName = $(".assistent-name").val();
+
+    //         // const assistantImage = $("#appearance_image")[0].files[0];
+
+    //         const assistantDto = {
+    //             assistantName,
+    //             // assistantImage
+    //         }
+
+    //         createAssistant(assistantDto);
+    //     });
+    // }
 
     const $downloadTabButton = $('button[data-tab="Download"]');
 
@@ -869,4 +1171,26 @@ jQuery(document).ready(function ($) {
             });
         });
     }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const chatContainer = document.querySelector('.chatContainer');
+    const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
+
+    async function getAssistant(assistantId) {
+        const response = await fetch(`https://api.openai.com/v1/assistants/${assistantId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            },
+        });
+
+        const data = await response.json();
+
+        localStorage.setItem('assistant', JSON.stringify(data));
+    }
+
+    if (assistantId) getAssistant(assistantId);
 });
