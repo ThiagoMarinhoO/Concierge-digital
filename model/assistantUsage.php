@@ -69,15 +69,17 @@ class AssistantUsage
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
-            total_tokens int NOT NULL,
-            total_prompt_tokens int NOT NULL,
-            total_completion_tokens int NOT NULL,
-            PRIMARY KEY  (user_id)
-        ) $charset_collate;";
+        user_id INT NOT NULL,
+        total_tokens INT NOT NULL,
+        total_prompt_tokens INT NOT NULL,
+        total_completion_tokens INT NOT NULL,
+        PRIMARY KEY  (user_id)
+    ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
+    
 
     // XXXXXXXXXXXXXXXX BANCO DE DADOS ( COMUNICAÇÃO repositorio? )  XXXXXXXXXXXXXXX
 
