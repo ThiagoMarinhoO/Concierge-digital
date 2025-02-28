@@ -240,8 +240,8 @@ register_activation_hook(__FILE__, function () {
     $initialQuestionCategoryRelationships = new QuestionCategoryRelationships();
     $initialQuestionCategoryRelationships->createTable();
 
-    $initialAssistants = new Assistant();
-    $initialAssistants->createTable();
+    // $initialAssistants = new Assistant();
+    // $initialAssistants->createTable();
 
     AssistantUsage::createTable();
 });

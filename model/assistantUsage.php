@@ -69,17 +69,21 @@ class AssistantUsage
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
-        user_id INT NOT NULL,
-        total_tokens INT NOT NULL,
-        total_prompt_tokens INT NOT NULL,
-        total_completion_tokens INT NOT NULL,
-        PRIMARY KEY  (user_id)
+        user_id BIGINT(20) UNSIGNED NOT NULL,
+        total_tokens INT NOT NULL DEFAULT 0,
+        total_prompt_tokens INT NOT NULL DEFAULT 0,
+        total_completion_tokens INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id)
     ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+
+        // Log do erro caso algo dê errado
+        if (!empty($wpdb->last_error)) {
+            plugin_log('Erro ao criar tabela: ' . $wpdb->last_error);
+        }
     }
-    
 
     // XXXXXXXXXXXXXXXX BANCO DE DADOS ( COMUNICAÇÃO repositorio? )  XXXXXXXXXXXXXXX
 
