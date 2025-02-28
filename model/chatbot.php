@@ -36,9 +36,9 @@ class Chatbot
 
         $sql = "CREATE TABLE {$this->table} (
             id VARCHAR(255) PRIMARY KEY,
-            chatbot_name TEXT NOT NULL,
-            chatbot_welcome_message TEXT NOT NULL,
-            chatbot_options TEXT NOT NULL,
+            chatbot_name TEXT,
+            chatbot_welcome_message TEXT,
+            chatbot_options TEXT,
             chatbot_image TEXT,
             user_id BIGINT UNSIGNED NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -64,6 +64,7 @@ class Chatbot
 
         $this->wpdb->insert($this->table, $data, $format);
     }
+
     public function createChatbot($chatbot_name, $chatbot_options, $chatbot_image = null, $chatbot_welcome_message = null)
     {
         $data = [

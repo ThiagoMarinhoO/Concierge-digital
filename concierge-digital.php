@@ -59,6 +59,11 @@ function concierge_enqueue_assets()
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('concierge_nonce'),
     ]);
+
+    wp_localize_script('concierge-script', 'envVars', [
+        'OPENAI_API_KEY' => OPENAI_API_KEY,
+        'nonce' => wp_create_nonce('concierge_nonce'),
+    ]);
 }
 add_action('wp_enqueue_scripts', 'concierge_enqueue_assets');
 
