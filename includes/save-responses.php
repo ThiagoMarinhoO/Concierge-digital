@@ -87,11 +87,13 @@ function save_responses()
     // Atualizar o chatbot
     $update_success = $chatbot_instance->updateChatbot(
         $chatbot_id,
+        $user_id,
         $chatbot_name,
         $chatbot_options,
         $chatbot_image,
         $chatbot_welcome_message,
-        $user_id
+
+        
     );
 
     if ($update_success) {

@@ -92,7 +92,7 @@ class Chatbot
         return $result !== false;
     }
 
-    public function updateChatbot($id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null, $user_id)
+    public function updateChatbot($id, $user_id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null,)
     {
         if (empty($id)) {
             return false;
