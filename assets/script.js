@@ -346,65 +346,27 @@ jQuery(document).ready(function ($) {
         let done = false;
         let aiMessage = "";
 
-        // while (!done) {
-        //     const { value, done: readerDone } = await reader.read();
-        //     done = readerDone;
-        //     const chunk = decoder.decode(value, { stream: true });
-
-        //     if (chunk) {
-        //         try {
-        //             // Divide em linhas e processa cada uma
-        //             const lines = chunk.trim().split("\n");
-
-        //             lines.forEach((line) => {
-        //                 if (line.startsWith("data:")) {
-        //                     const jsonData = line.replace("data: ", "");
-        //                     if (jsonData !== "[DONE]") {
-
-        //                         const parsed = JSON.parse(jsonData);
-
-        //                         if (parsed?.delta?.content) {
-        //                             parsed.delta.content.forEach((part) => {
-        //                                 if (part.type === "text") {
-        //                                     aiMessage += part.text.value;
-        //                                 }
-        //                             });
-                                    
-        //                             aiMsgTemplate.find(".stream-text").text(aiMessage);
-        //                             aiMsgTemplate.find(".stream-text").removeClass('animate-ping');
-        //                             chatBox.scrollTop(chatBox.prop("scrollHeight"));
-        //                         }
-
-        //                     }
-        //                 }
-        //             });
-        //         } catch (e) {
-        //             console.error("Erro ao processar chunk:", chunk, e);
-        //         }
-        //     }
-        // }
-
         function transformarLinks(texto) {
             return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
         }
-        
+
         let messageParts = [];
-        
+
         while (!done) {
             const { value, done: readerDone } = await reader.read();
             done = readerDone;
             const chunk = decoder.decode(value, { stream: true });
-        
+
             if (chunk) {
                 try {
                     const lines = chunk.trim().split("\n");
-        
+
                     lines.forEach((line) => {
                         if (line.startsWith("data: {")) {
                             const jsonData = line.replace("data: ", "");
                             if (jsonData !== "[DONE]") {
                                 const parsed = JSON.parse(jsonData);
-        
+
                                 if (parsed?.delta?.content) {
                                     parsed.delta.content.forEach((part) => {
                                         if (part.type === "text") {
@@ -412,10 +374,33 @@ jQuery(document).ready(function ($) {
                                             aiMessage += part.text.value; // Atualiza ao vivo
                                         }
                                     });
-        
+
                                     // Exibe o texto sem modificar os links ainda
                                     aiMsgTemplate.find(".stream-text").text(aiMessage);
                                     chatBox.scrollTop(chatBox.prop("scrollHeight"));
+                                }
+
+                                if (parsed?.usage) {
+                                    console.log(parsed.usage)
+                                    $.ajax({
+                                        url: conciergeAjax.ajax_url,
+                                        method: 'POST',
+                                        data: {
+                                            action: 'manage_usage',
+                                            usage: parsed.usage
+                                        },
+                                        success: function (response) {
+
+                                            let usageValue = response.data.usage.total;
+
+                                            $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
+
+                                            $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
+                                        },
+                                        error: function (error) {
+                                            console.error('Error managing usage:', error);
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -425,16 +410,16 @@ jQuery(document).ready(function ($) {
                 }
             }
         }
-        
+
         // Quando o streaming termina:
         aiMessage = messageParts.join(""); // Monta a mensagem final
         const formattedMessage = transformarLinks(aiMessage); // Aplica a conversão de links
-        
+
         // Substitui a mensagem pelo texto formatado com links clicáveis
         aiMsgTemplate.find(".stream-text").html(formattedMessage);
         aiMsgTemplate.find(".stream-text").removeClass('animate-ping');
-        
-        
+
+
 
         sendButton.removeClass('opacity-90').prop('disabled', false);
         $("#enviarMensagem svg").removeClass('animate-spin');
@@ -1171,6 +1156,20 @@ jQuery(document).ready(function ($) {
             });
         });
     }
+
+    $("input[type='file']").on('change', function() {
+        const file = this.files[0];
+        const maxSize = 30 * 1024 * 1024;
+
+        if (file && file.size > maxSize) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Arquivo muito grande!',
+                text: 'O arquivo excede o limite de 30MB.',
+            });
+            $(this).val('');
+        }
+    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {

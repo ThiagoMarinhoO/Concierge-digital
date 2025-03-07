@@ -221,10 +221,10 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 					<div class="flex justify-between mb-1">
 						<span class="text-base font-medium text-[#13072E]">Limite de Token</span>
-						<span class="text-sm font-medium text-[#13072E]"><?php echo intval($total_usage) . '%'; ?></span>
+						<span class="text-sm font-medium text-[#13072E] usage-percentage-number"><?php echo intval($total_usage) . '%'; ?></span>
 					</div>
 					<div class="flex w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-						<div class="h-2.5 rounded-full" style="width: <?php echo intval($total_usage) . '%'; ?>; background: linear-gradient(90deg, #ffbee6, #b3aaff);"></div>
+						<div class="h-2.5 rounded-full transition duration-300 usage-percentage-bar" style="width: <?php echo intval($total_usage) . '%'; ?>; background: linear-gradient(90deg, #ffbee6, #b3aaff);"></div>
 					</div>
 
 				</div>

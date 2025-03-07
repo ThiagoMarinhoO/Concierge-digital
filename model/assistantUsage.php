@@ -138,22 +138,32 @@ class AssistantUsage
         $result = $this->wpdb->get_row($query);
 
         if ($result) {
-            $this->total_tokens = $result->total_tokens;
-            $this->total_prompt_tokens = $result->total_prompt_tokens;
-            $this->total_completion_tokens = $result->total_completion_tokens;
+            $this->total_tokens = intval($result->total_tokens);
+            $this->total_prompt_tokens = intval($result->total_prompt_tokens);
+            $this->total_completion_tokens = intval($result->total_completion_tokens);
+        } else {
+            // Se não houver registro, inicializa os valores como 0
+            $this->total_tokens = 0;
+            $this->total_prompt_tokens = 0;
+            $this->total_completion_tokens = 0;
         }
 
         return $this;
     }
 
+
     public function saveOrUpdate()
     {
-        if ($this->getTotalTokens() >= 1) {
+        $query = $this->wpdb->prepare("SELECT COUNT(*) FROM $this->table WHERE user_id = %d", $this->user_id);
+        $exists = $this->wpdb->get_var($query);
+
+        if ($exists) {
             return $this->update();
         } else {
             return $this->save();
         }
     }
+
 
     // XXXXXXXXXXXXXXXX SERVIÇOS  XXXXXXXXXXXXXXX
 
