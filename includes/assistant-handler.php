@@ -23,8 +23,15 @@ function create_assistant()
         ]
     ];
 
-    plugin_log('-------- REQUEST DATA --------');
-    plugin_log(print_r($data, true));
+    $data = [
+        "instructions" => $assistant_dto['assistant_instructions'],
+        "name" => $assistant_dto['assistant_name'],
+        "tools" => [["type" => "file_search"]],
+        "model" => "gpt-3.5-turbo",
+        "metadata" => !empty($assistant_dto['assistant_image']) ? (object) [
+            "assistant_image" => $assistant_dto['assistant_image']
+        ] : (object) []
+    ];
 
     $headers = [
         "Content-Type: application/json",
@@ -190,6 +197,23 @@ function upload_image()
     wp_send_json_success(['url' => $image_url]);
 }
 
+
+add_action('wp_ajax_manage_usage', 'manage_usage');
+function manage_usage(){
+    $usage = $_POST['usage'] ?? null;
+
+    plugin_log("----Usage----");
+    plugin_log(print_r($usage, true));
+
+    UsageService::updateUsage($usage);
+
+    $updatedUsagePercentages = UsageService::usagePercentages();
+    
+    wp_send_json_success([
+        "usage" => $updatedUsagePercentages,
+    ]);
+
+}
 
 // add_action('wp_ajax_create_thread', 'create_thread');
 // function create_thread()

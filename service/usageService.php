@@ -1,7 +1,7 @@
 <?php
 class UsageService
 {
-    private static $tokenLimit = 500000;
+    private static $tokenLimit = 20000;
 
     public static function usageControl()
     {
@@ -47,11 +47,34 @@ class UsageService
 
     public static function updateUsage($data)
     {
-        $usage = new AssistantUsage();
 
-        $usage->setTotalTokens($data['usage']['total_tokens']);
-        $usage->setTotalPromptTokens($data['usage']['prompt_tokens']);
-        $usage->setTotalCompletionTokens($data['usage']['completion_tokens']);
+        plugin_log("Dados recebidos para atualização:");
+        plugin_log(print_r($data, true));
+
+        $usage = new AssistantUsage();
+        $usage->load();
+
+        $currentTotalTokens = $usage->getTotalTokens();
+        $currentPromptTokens = $usage->getTotalPromptTokens();
+        $currentCompletionTokens = $usage->getTotalCompletionTokens();
+
+        plugin_log("Valores atuais:");
+        plugin_log("Total Tokens: $currentTotalTokens");
+        plugin_log("Prompt Tokens: $currentPromptTokens");
+        plugin_log("Completion Tokens: $currentCompletionTokens");
+
+        $newTotalTokens = $currentTotalTokens + intval($data['total_tokens']);
+        $newPromptTokens = $currentPromptTokens + intval($data['prompt_tokens']);
+        $newCompletionTokens = $currentCompletionTokens + intval($data['completion_tokens']);
+
+        plugin_log("Novos valores:");
+        plugin_log("Total Tokens: $newTotalTokens");
+        plugin_log("Prompt Tokens: $newPromptTokens");
+        plugin_log("Completion Tokens: $newCompletionTokens");
+
+        $usage->setTotalTokens($newTotalTokens);
+        $usage->setTotalPromptTokens($newPromptTokens);
+        $usage->setTotalCompletionTokens($newCompletionTokens);
 
         $usage->saveOrUpdate();
     }
