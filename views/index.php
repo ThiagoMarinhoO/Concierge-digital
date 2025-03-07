@@ -33,7 +33,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 		$firstUnlocked = false;
 		?>
-		<button data-current="<?php $i === 1 ? 'true' : 'false' ?>" data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
+		<button data-current="<?php echo $i === 1 ? 'true' : 'false' ?>" data-tab="<?= esc_attr($tabName) ?>" data-locked="<?= $isLocked ? 'true' : 'false' ?>"
 			class="tab-btn rounded-md <?= $isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' ?> p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent <?= $isLocked ? '' : 'hover:border-gray-800' ?> focus:outline-none" data-tab-num="<?php echo $i ?>">
 			<?= esc_html($tabNameText) ?>
 		</button>
