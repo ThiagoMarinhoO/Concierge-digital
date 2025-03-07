@@ -914,6 +914,7 @@ jQuery(document).ready(function ($) {
     if ($saveBtn.length) {
         $saveBtn.on("click", function () {
             saveResponses();
+            getDataCurrent()
         });
     }
 
@@ -922,6 +923,7 @@ jQuery(document).ready(function ($) {
     if ($saveAparenciaButton.length) {
         $saveAparenciaButton.on("click", function () {
             saveStyles();
+            getDataCurrent()
         });
     }
 
@@ -1157,7 +1159,7 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    $("input[type='file']").on('change', function() {
+    $("input[type='file']").on('change', function () {
         const file = this.files[0];
         const maxSize = 30 * 1024 * 1024;
 
@@ -1170,6 +1172,20 @@ jQuery(document).ready(function ($) {
             $(this).val('');
         }
     });
+
+    function getDataCurrent() {
+        let lastUnlocked = $('.tab-btn[data-locked="false"]').last();
+
+        console.log(lastUnlocked)
+
+        // Remover data-current de todos os botões
+        $('.tab-btn').attr('data-current', 'false');
+
+        // Definir data-current="true" no último botão desbloqueado
+        lastUnlocked.attr('data-current', 'true');
+    }
+
+    getDataCurrent()
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1192,4 +1208,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (assistantId) getAssistant(assistantId);
+
 });
