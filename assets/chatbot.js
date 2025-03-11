@@ -166,6 +166,8 @@
     });
 
     function sendMessage() {
+        //checar se tem threadId.
+
         var message = input.value.trim();
         if (!message) return;
 
@@ -212,11 +214,15 @@
                 message: message,
                 user_id: localStorage.getItem('chatbot_user_id'),
                 chatbot_id: localStorage.getItem('chatbot_id'),
+                //passar threadId se existir
             }),
         })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+
+                    //criar threadId para enviar ou não
+
                     var botResponse = document.createElement('div');
                     botResponse.style.display = 'flex';
                     botResponse.style.alignItems = 'center';

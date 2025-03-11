@@ -1,19 +1,76 @@
 <?php
 
+// add_action('wp_ajax_gerar_script_chatbot', 'gerar_script_chatbot');
+// function gerar_script_chatbot()
+// {
+//     if (!is_user_logged_in()) {
+//         wp_send_json_error('Usuário não autenticado', 403);
+//     }
+//     $chatbot_id = isset($_GET['chatbotID']) ? $_GET['chatbotID'] : 0;
+//     $user_id = get_current_user_id();
+
+//     $chatbot = new Chatbot();
+//     $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
+
+//     $assistant = json_decode($currentChatbot['assistant'], true);
+
+//     // $chatbot_image = isset($currentChatbot['chatbot_image']) ? (string)$currentChatbot['chatbot_image'] : '';
+//     // $chatbot_welcome_message = isset($currentChatbot['chatbot_welcome_message']) ? (string)$currentChatbot['chatbot_welcome_message'] : '';
+
+//     $token = get_user_meta($user_id, 'chatbot_api_token', true);
+//     if (!$token) {
+//         $token = generate_chatbot_api_token($user_id);
+//     }
+
+//     $endpoint = esc_url(site_url('/wp-json/custom/v1/chatbot'));
+
+//     $script = "
+//         <script>
+//         (function(d, s) {
+//             var xhr = new XMLHttpRequest();
+//             xhr.open('GET', '$endpoint?token=$token', true);
+
+//             xhr.onload = function() {
+//                 if (xhr.status === 200) {
+//                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
+//                     localStorage.setItem('chatbot_user_id', ".$user_id.");
+//                     localStorage.setItem('chatbot_id' , '".$chatbot_id."');
+//                     localStorage.setItem('assistant' , '".$currentChatbot['assistant']."');
+//                     var script = document.createElement('script');
+//                     script.async = false;
+//                     script.defer = true;
+//                     script.src = cleanResponseText;
+//                     document.head.appendChild(script);
+//                 } else {
+//                     console.error('Erro ao carregar o chatbot: ', xhr.status, xhr.statusText);
+//                 }
+//             };
+
+//             xhr.onerror = function() {
+//                 console.error('Erro na conexão com o servidor do chatbot.');
+//             };
+
+//             xhr.send();
+//         })(document, 'script');
+//         </script>
+//     ";
+//     wp_send_json_success(['script' => htmlspecialchars_decode($script)]);
+// }
 add_action('wp_ajax_gerar_script_chatbot', 'gerar_script_chatbot');
 function gerar_script_chatbot()
 {
     if (!is_user_logged_in()) {
         wp_send_json_error('Usuário não autenticado', 403);
     }
+
     $chatbot_id = isset($_GET['chatbotID']) ? $_GET['chatbotID'] : 0;
     $user_id = get_current_user_id();
 
     $chatbot = new Chatbot();
     $currentChatbot = $chatbot->getChatbotById($chatbot_id, $user_id);
 
-    $chatbot_image = isset($currentChatbot['chatbot_image']) ? (string)$currentChatbot['chatbot_image'] : '';
-    $chatbot_welcome_message = isset($currentChatbot['chatbot_welcome_message']) ? (string)$currentChatbot['chatbot_welcome_message'] : '';
+    $assistant = json_decode($currentChatbot['assistant'], true);
+    $assistant_json = wp_json_encode($assistant, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
     $token = get_user_meta($user_id, 'chatbot_api_token', true);
     if (!$token) {
@@ -31,10 +88,10 @@ function gerar_script_chatbot()
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
-                    localStorage.setItem('chatbot_user_id', ".$user_id.");
-                    localStorage.setItem('chatbot_id' , ".$chatbot_id.");
-                    localStorage.setItem('chatbot_image' , '".$chatbot_image."');
-                    localStorage.setItem('chatbot_welcome_message' , '".$chatbot_welcome_message."' );
+                    localStorage.setItem('chatbot_user_id', $user_id);
+                    localStorage.setItem('chatbot_id', '$chatbot_id');
+                    localStorage.setItem('assistant', `$assistant_json`);
+                    
                     var script = document.createElement('script');
                     script.async = false;
                     script.defer = true;
@@ -53,8 +110,10 @@ function gerar_script_chatbot()
         })(document, 'script');
         </script>
     ";
-    wp_send_json_success(['script' => htmlspecialchars_decode($script)]);
+
+    wp_send_json_success(['script' => $script]);
 }
+
 
 
 add_action('rest_api_init', function () {

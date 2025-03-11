@@ -621,13 +621,13 @@ jQuery(document).ready(function ($) {
                 body: chatbotFormData,
             });
 
-            const { data } = await chatbotResponse.json();
+            const data = await chatbotResponse.json();
 
-            if (chatbotData.assistant) {
-                localStorage.setItem('assistant', JSON.stringify(data.assistant));
+            if (data.data.assistant) {
+                localStorage.setItem('assistant', JSON.stringify(data.data.assistant));
             }
 
-            if (chatbotData.success) {
+            if (data.success) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Sucesso!',
@@ -637,9 +637,9 @@ jQuery(document).ready(function ($) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro!',
-                    text: `Erro ao atualizar chatbot: ${chatbotData.message}`,
+                    text: `Erro ao atualizar chatbot: ${data.data.message}`,
                 });
-                console.error("Erro ao atualizar chatbot:", chatbotData.message);
+                console.error("Erro ao atualizar chatbot:", data.data.message);
             }
         } catch (error) {
             Swal.fire({
@@ -1124,7 +1124,6 @@ jQuery(document).ready(function ($) {
         // Adiciona evento ao botão para gerar script
         $('#gerar-link').on('click', function () {
             var chatbotID = $('#chatbot-selector').val();
-            console.log(chatbotID);
 
             $.ajax({
                 url: conciergeAjax.ajax_url,
@@ -1136,7 +1135,6 @@ jQuery(document).ready(function ($) {
                 success: function (response) {
                     if (response.success) {
                         const script = response.data.script;
-                        // console.log(script);
 
                         // Salva o script no localStorage
                         localStorage.setItem('chatbot_script', script);
@@ -1175,8 +1173,6 @@ jQuery(document).ready(function ($) {
 
     function getDataCurrent() {
         let lastUnlocked = $('.tab-btn[data-locked="false"]').last();
-
-        console.log(lastUnlocked)
 
         // Remover data-current de todos os botões
         $('.tab-btn').attr('data-current', 'false');

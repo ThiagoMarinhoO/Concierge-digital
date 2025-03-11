@@ -1,459 +1,156 @@
-2025-02-28 18:48:34 - ----Usage----
-2025-02-28 18:48:34 - Array
+93393388a7e6d7db522977d620d299312025-03-10 19:21:53 - ----Current chatbot-----
+2025-03-10 19:21:53 - Array
 (
-    [prompt_tokens] => 1970
-    [completion_tokens] => 27
-    [total_tokens] => 1997
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:48:34 - Dados recebidos para atualização:
-2025-02-28 18:48:34 - Array
-(
-    [prompt_tokens] => 1970
-    [completion_tokens] => 27
-    [total_tokens] => 1997
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:48:34 - ----Usage----
-2025-02-28 18:48:34 - Array
-(
-    [prompt_tokens] => 1970
-    [completion_tokens] => 27
-    [total_tokens] => 1997
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:48:34 - Dados recebidos para atualização:
-2025-02-28 18:48:34 - Array
-(
-    [prompt_tokens] => 1970
-    [completion_tokens] => 27
-    [total_tokens] => 1997
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:48:34 - Valores atuais:
-2025-02-28 18:48:34 - Total Tokens: 0
-2025-02-28 18:48:34 - Prompt Tokens: 0
-2025-02-28 18:48:34 - Completion Tokens: 0
-2025-02-28 18:48:34 - Novos valores:
-2025-02-28 18:48:34 - Total Tokens: 1997
-2025-02-28 18:48:34 - Prompt Tokens: 1970
-2025-02-28 18:48:34 - Total Tokens: 0
-s: 27
-2025-02-28 18:48:34 - Prompt Tokens: 0
-2025-02-28 18:48:34 - Completion Tokens: 0
-2025-02-28 18:48:34 - Novos valores:
-2025-02-28 18:48:34 - Total Tokens: 1997
-2025-02-28 18:48:34 - Prompt Tokens: 1970
-2025-02-28 18:48:34 - Completion Tokens: 27
-2025-02-28 18:50:23 - ----Usage----
-2025-02-28 18:50:23 - Array
-(
-    [prompt_tokens] => 2008
-    [completion_tokens] => 9
-    [total_tokens] => 2017
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:50:23 - Dados recebidos para atualização:
-2025-02-28 18:50:23 - Array
-(
-    [prompt_tokens] => 2008
-    [completion_tokens] => 9
-    [total_tokens] => 2017
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:50:23 - Valores atuais:
-2025-02-28 18:50:23 - Total Tokens: 0
-2025-02-28 18:50:23 - Prompt Tokens: 0
-2025-02-28 18:50:23 - Completion Tokens: 0
-2025-02-28 18:50:23 - Novos valores:
-2025-02-28 18:50:23 - Total Tokens: 2017
-2025-02-28 18:50:23 - Prompt Tokens: 2008
-2025-02-28 18:50:23 - Completion Tokens: 9
-2025-02-28 18:50:24 - ----Usage----
-2025-02-28 18:50:24 - Array
-(
-    [prompt_tokens] => 2008
-    [completion_tokens] => 9
-    [total_tokens] => 2017
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:50:24 - Dados recebidos para atualização:
-2025-02-28 18:50:24 - Array
-(
-    [prompt_tokens] => 2008
-    [completion_tokens] => 9
-    [total_tokens] => 2017
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:50:24 - Valores atuais:
-2025-02-28 18:50:24 - Total Tokens: 2017
-2025-02-28 18:50:24 - Prompt Tokens: 2008
-2025-02-28 18:50:24 - Completion Tokens: 9
-2025-02-28 18:50:24 - Novos valores:
-2025-02-28 18:50:24 - Total Tokens: 4034
-2025-02-28 18:50:24 - Prompt Tokens: 4016
-2025-02-28 18:50:24 - Completion Tokens: 18
-2025-02-28 18:52:51 - ----Usage----
-2025-02-28 18:52:51 - Array
-(
-    [prompt_tokens] => 2027
-    [completion_tokens] => 19
-    [total_tokens] => 2046
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:52:51 - Dados recebidos para atualização:
-2025-02-28 18:52:51 - Array
-(
-    [prompt_tokens] => 2027
-    [completion_tokens] => 19
-    [total_tokens] => 2046
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:52:51 - Valores atuais:
-2025-02-28 18:52:51 - Total Tokens: 4034
-2025-02-28 18:52:51 - Prompt Tokens: 4016
-2025-02-28 18:52:51 - Completion Tokens: 18
-2025-02-28 18:52:51 - Novos valores:
-2025-02-28 18:52:51 - Total Tokens: 6080
-2025-02-28 18:52:51 - Prompt Tokens: 6043
-2025-02-28 18:52:51 - Completion Tokens: 37
-2025-02-28 18:52:51 - ----Usage----
-2025-02-28 18:52:51 - Array
-(
-    [prompt_tokens] => 2027
-    [completion_tokens] => 19
-    [total_tokens] => 2046
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:52:51 - Dados recebidos para atualização:
-2025-02-28 18:52:51 - Array
-(
-    [prompt_tokens] => 2027
-    [completion_tokens] => 19
-    [total_tokens] => 2046
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-02-28 18:52:51 - Valores atuais:
-2025-02-28 18:52:51 - Total Tokens: 6080
-2025-02-28 18:52:51 - Prompt Tokens: 6043
-2025-02-28 18:52:51 - Completion Tokens: 37
-2025-02-28 18:52:51 - Novos valores:
-2025-02-28 18:52:51 - Total Tokens: 8126
-2025-02-28 18:52:51 - Prompt Tokens: 8070
-2025-02-28 18:52:51 - Completion Tokens: 56
-2025-03-06 21:18:15 - Nenhum chatbot encontrado. Erro: 
-2025-03-06 21:18:26 - Nenhum chatbot encontrado. Erro: 
-2025-03-06 21:19:16 - -------- TRAINING CONTEXT --------
-2025-03-06 21:19:16 - Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
-Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
-2025-03-06 21:19:16 - -------- REQUEST DATA --------
-2025-03-06 21:19:16 - Array
-(
-    [instructions] => Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
-Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
-    [name] => Joãoo
-    [tools] => Array
+    [id] => asst_wPzm9WaKoCbrcj1pAT3NzwYv
+    [assistant] => {
+  "id": "asst_wPzm9WaKoCbrcj1pAT3NzwYv",
+  "object": "assistant",
+  "created_at": 1741630697,
+  "name": "Jorge",
+  "description": null,
+  "model": "gpt-3.5-turbo",
+  "instructions": "Seu nome é Jorge\nMensagem de boas vindas Olá meu nome é jorginho\nSua principal função é: Atendimento ao Cliente\nSua função secundária é: Suporte de Vendas\nSempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: https://www.globo.com\nO link de conhecimento que você deverá consultar sempre que necessário é: https://g1.globo.com/?utm_source=globo.com&utm_medium=header\no link do youtube que você deverá consultar sempre que houver necessidade é: https://www.youtube.com/@TNTSportsBR\nLink onde o visitante pode falar com um atendente humano no WhatsApp: https://web.whatsapp.com/\nLink onde o visitante pode agendar uma reunião: https://meet.google.com/",
+  "tools": [
+    {
+      "type": "file_search",
+      "file_search": {
+        "ranking_options": {
+          "ranker": "default_2024_08_21",
+          "score_threshold": 0.0
+        }
+      }
+    }
+  ],
+  "top_p": 1.0,
+  "temperature": 1.0,
+  "reasoning_effort": null,
+  "tool_resources": {
+    "file_search": {
+      "vector_store_ids": []
+    }
+  },
+  "metadata": {},
+  "response_format": "auto"
+}
+    [chatbot_name] => Jorge
+    [chatbot_welcome_message] => Olá meu nome é jorginho
+    [chatbot_options] => Array
         (
             [0] => Array
                 (
-                    [type] => file_search
+                    [pergunta] => Qual o nome do Assistente virtual?
+                    [field_name] => question_137
+                    [resposta] => Jorge
+                    [training_phrase] => Seu nome é
+                    [field_type] => text
+                )
+
+            [1] => Array
+                (
+                    [pergunta] => Mensagem de boas vindas
+                    [field_name] => question_138
+                    [resposta] => Olá meu nome é jorginho
+                    [training_phrase] => Mensagem de boas vindas
+                    [field_type] => text
+                )
+
+            [2] => Array
+                (
+                    [pergunta] => Principal Função do Assistente Virtual:
+                    [field_name] => question_124
+                    [resposta] => Atendimento ao Cliente
+                    [training_phrase] => Sua principal função é:
+                    [field_type] => select
+                )
+
+            [3] => Array
+                (
+                    [pergunta] => Função Secundária do Assistente Virtual:
+                    [field_name] => question_125
+                    [resposta] => Suporte de Vendas
+                    [training_phrase] => Sua função secundária é:
+                    [field_type] => select
+                )
+
+            [4] => Array
+                (
+                    [pergunta] => Qual o link do site?
+                    [field_name] => question_94
+                    [resposta] => https://www.globo.com
+                    [training_phrase] => Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link:
+                    [field_type] => text
+                )
+
+            [5] => Array
+                (
+                    [pergunta] => Adicione Links de conhecimento:
+                    [field_name] => question_69
+                    [resposta] => https://g1.globo.com/?utm_source=globo.com&utm_medium=header
+                    [training_phrase] => O link de conhecimento que você deverá consultar sempre que necessário é:
+                    [field_type] => text
+                )
+
+            [6] => Array
+                (
+                    [pergunta] => Insira Link do Youtube:
+                    [field_name] => question_71
+                    [resposta] => https://www.youtube.com/@TNTSportsBR
+                    [training_phrase] => o link do youtube que você deverá consultar sempre que houver necessidade é:
+                    [field_type] => text
+                )
+
+            [7] => Array
+                (
+                    [pergunta] => Adicione Áudios:
+                    [field_name] => question_72
+                    [resposta] => 
+                    [training_phrase] => Interprete o texto a seguir, incorpore ao seu treinamento e utilize como base para suas respostas:
+                    [field_type] => file
+                )
+
+            [8] => Array
+                (
+                    [pergunta] => Adicione um Documento:
+                    [field_name] => question_127
+                    [resposta] => 
+                    [training_phrase] => Estude o texto a seguir e utilize como base do seu conhecimento
+                    [field_type] => file
+                )
+
+            [9] => Array
+                (
+                    [pergunta] => Integração de Whatsapp
+                    [field_name] => question_65
+                    [resposta] => https://web.whatsapp.com/
+                    [training_phrase] => Link onde o visitante pode falar com um atendente humano no WhatsApp:
+                    [field_type] => text
+                )
+
+            [10] => Array
+                (
+                    [pergunta] => Link para agendamento de reuniões
+                    [field_name] => question_97
+                    [resposta] => https://meet.google.com/
+                    [training_phrase] => Link onde o visitante pode agendar uma reunião:
+                    [field_type] => text
                 )
 
         )
 
-    [model] => gpt-3.5-turbo
-    [metadata] => stdClass Object
-        (
-            [assistant_image] => 
-        )
-
+    [chatbot_image] => undefined
+    [user_id] => 52
+    [created_at] => 2025-03-10 18:18:14
 )
 
-2025-03-07 13:17:56 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 13:17:56 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 13:20:20 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 13:34:27 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 13:34:49 - -------- TRAINING CONTEXT --------
-2025-03-07 13:34:49 - Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
+2025-03-10 19:21:53 - ----Token user-----
+2025-03-10 19:21:53 - a8a310eab9057eb77f1ad292d5a61879
+2025-03-10 19:27:21 - -------- TRAINING CONTEXT --------
+2025-03-10 19:27:21 - Seu nome é Jorge
+Mensagem de boas vindas Olá meu nome é jorge
 Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
-2025-03-07 13:34:49 - -------- REQUEST DATA --------
-2025-03-07 13:34:49 - Array
-(
-    [instructions] => Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
-Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
-    [name] => Joãoo
-    [tools] => Array
-        (
-            [0] => Array
-                (
-                    [type] => file_search
-                )
-
-        )
-
-    [model] => gpt-3.5-turbo
-)
-
-2025-03-07 14:09:22 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:10:41 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:10:51 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:11:07 - -------- TRAINING CONTEXT --------
-2025-03-07 14:11:07 - Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
-Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
-2025-03-07 14:11:44 - ----Usage----
-2025-03-07 14:11:44 - Array
-(
-    [prompt_tokens] => 765
-    [completion_tokens] => 17
-    [total_tokens] => 782
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-03-07 14:11:44 - Dados recebidos para atualização:
-2025-03-07 14:11:44 - Array
-(
-    [prompt_tokens] => 765
-    [completion_tokens] => 17
-    [total_tokens] => 782
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-03-07 14:11:44 - Valores atuais:
-2025-03-07 14:11:44 - Total Tokens: 8126
-2025-03-07 14:11:44 - Prompt Tokens: 8070
-2025-03-07 14:11:44 - Completion Tokens: 56
-2025-03-07 14:11:44 - Novos valores:
-2025-03-07 14:11:44 - Total Tokens: 8908
-2025-03-07 14:11:44 - Prompt Tokens: 8835
-2025-03-07 14:11:44 - Completion Tokens: 73
-2025-03-07 14:11:44 - ----Usage----
-2025-03-07 14:11:44 - Array
-(
-    [prompt_tokens] => 765
-    [completion_tokens] => 17
-    [total_tokens] => 782
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-03-07 14:11:44 - Dados recebidos para atualização:
-2025-03-07 14:11:44 - Array
-(
-    [prompt_tokens] => 765
-    [completion_tokens] => 17
-    [total_tokens] => 782
-    [prompt_token_details] => Array
-        (
-            [cached_tokens] => 0
-        )
-
-    [completion_tokens_details] => Array
-        (
-            [reasoning_tokens] => 0
-        )
-
-)
-
-2025-03-07 14:11:44 - Valores atuais:
-2025-03-07 14:11:44 - Total Tokens: 8908
-2025-03-07 14:11:44 - Prompt Tokens: 8835
-2025-03-07 14:11:44 - Completion Tokens: 73
-2025-03-07 14:11:44 - Novos valores:
-2025-03-07 14:11:44 - Total Tokens: 9690
-2025-03-07 14:11:44 - Prompt Tokens: 9600
-2025-03-07 14:11:44 - Completion Tokens: 90
-2025-03-07 14:24:26 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:24:26 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:24:26 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:24:26 - Nenhum chatbot encontrado. Erro: 
-2025-03-07 14:42:38 - -------- TRAINING CONTEXT --------
-2025-03-07 14:42:38 - Seu nome é Joãoo
-Mensagem de boas vindas Olá sou o joão
-Sua principal função é: Atendimento ao Cliente
-Sua função secundária é: Atendimento ao Cliente
-Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: 
-O link de conhecimento que você deverá consultar sempre que necessário é: 
-o link do youtube que você deverá consultar sempre que houver necessidade é: 
-Link onde o visitante pode falar com um atendente humano no WhatsApp: 
-Link onde o visitante pode agendar uma reunião: 
+Sua função secundária é: Suporte de Vendas
+Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: https://www.globo.com
+O link de conhecimento que você deverá consultar sempre que necessário é: https://g1.globo.com/?utm_source=globo.com&utm_medium=header
+o link do youtube que você deverá consultar sempre que houver necessidade é: https://www.youtube.com/@TNTSportsBR
+Link onde o visitante pode falar com um atendente humano no WhatsApp: https://web.whatsapp.com/
+Link onde o visitante pode agendar uma reunião: https://meet.google.com/
