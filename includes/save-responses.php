@@ -82,11 +82,11 @@ function save_responses()
 
     curl_close($ch);
 
-    $response = json_decode($response, true);
 
     // Atualizar o chatbot
     $update_success = $chatbot_instance->updateChatbot(
         $chatbot_id,
+        $response,
         $user_id,
         $chatbot_name,
         $chatbot_options,
@@ -95,6 +95,9 @@ function save_responses()
 
         
     );
+
+    $response = json_decode($response, true);
+
 
     if ($update_success) {
         wp_send_json_success([

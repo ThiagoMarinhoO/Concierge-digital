@@ -13,6 +13,7 @@ class Chatbot
     private $table;
 
     private $id;
+    private $assistant;
     private $name;
     private $welcome_message;
     private $instructions;
@@ -36,6 +37,7 @@ class Chatbot
 
         $sql = "CREATE TABLE {$this->table} (
             id VARCHAR(255) PRIMARY KEY,
+            assistant TEXT,
             chatbot_name TEXT,
             chatbot_welcome_message TEXT,
             chatbot_options TEXT,
@@ -52,6 +54,7 @@ class Chatbot
     {
         $data = [
             'id' => $this->id,
+            'assistant' => $this->assistant,
             'chatbot_name' => $this->name,
             'chatbot_welcome_message' => $this->welcome_message,
             'chatbot_options' => $this->instructions,
@@ -92,7 +95,7 @@ class Chatbot
         return $result !== false;
     }
 
-    public function updateChatbot($id, $user_id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null,)
+    public function updateChatbot($id, $assistant, $user_id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null)
     {
         if (empty($id)) {
             return false;
@@ -133,6 +136,9 @@ class Chatbot
         if (empty($data)) {
             return false;
         }
+
+        $data['assistant'] = $assistant;
+        $formats[] = '%s';
 
         $result = $this->wpdb->update(
             $this->table,
@@ -429,6 +435,11 @@ class Chatbot
         return $this->name;
     }
 
+    public function getAssistant()
+    {
+        return $this->assistant;
+    }
+
     public function getWelcomeMessage()
     {
         return $this->welcome_message;
@@ -458,6 +469,11 @@ class Chatbot
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    public function setAssistant($assistant)
+    {
+        $this->assistant = $assistant;
     }
 
     public function setWelcomeMessage($welcome_message)

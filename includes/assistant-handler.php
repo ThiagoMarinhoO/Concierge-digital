@@ -54,12 +54,14 @@ function create_assistant()
 
     curl_close($ch);
 
-    $response = json_decode($response, true);
-
     $new_assistant = new Chatbot();
 
+    $new_assistant->setAssistant($response);
+    
+    $response = json_decode($response, true);
+    
     $new_assistant->setId($response['id']);
-    $new_assistant->setInstructions($response['instructions']);
+    $new_assistant->setInstructions($chatbot_options);
     $new_assistant->setImage($response['metadata']['assistant_image']);
 
     $new_assistant->save();
