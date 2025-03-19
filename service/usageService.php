@@ -1,7 +1,7 @@
 <?php
 class UsageService
 {
-    private static $tokenLimit = 20000;
+    private static $tokenLimit = 500000;
 
     public static function usageControl()
     {

@@ -165,8 +165,119 @@
         }
     });
 
+    // function sendMessage() {
+    //     var message = input.value.trim();
+    //     if (!message) return;
+    
+    //     var userMessage = document.createElement('div');
+    //     userMessage.style.display = 'flex';
+    //     userMessage.style.justifyContent = 'flex-end';
+    //     userMessage.style.marginBottom = '10px';
+    
+    //     var userAvatar = document.createElement('div');
+    //     userAvatar.style.width = '30px';
+    //     userAvatar.style.height = '30px';
+    //     userAvatar.style.backgroundColor = '#0073aa';
+    //     userAvatar.style.borderRadius = '50%';
+    //     userAvatar.style.display = 'flex';
+    //     userAvatar.style.alignItems = 'center';
+    //     userAvatar.style.justifyContent = 'center';
+    //     userAvatar.style.color = 'white';
+    //     userAvatar.style.fontSize = '14px';
+    //     userAvatar.textContent = '👤';
+    
+    //     var userBubble = document.createElement('div');
+    //     userBubble.textContent = message;
+    //     userBubble.style.marginRight = '5px';
+    //     userBubble.style.padding = '5px 10px';
+    //     userBubble.style.background = '#0073aa';
+    //     userBubble.style.color = '#fff';
+    //     userBubble.style.borderRadius = '5px';
+    //     userBubble.style.maxWidth = '80%';
+    //     userBubble.style.fontSize = '14px';
+    
+    //     userMessage.appendChild(userBubble);
+    //     userMessage.appendChild(userAvatar);
+    //     chatMessages.appendChild(userMessage);
+    
+    //     input.value = '';
+    
+    //     var botResponse = document.createElement('div');
+    //     botResponse.style.display = 'flex';
+    //     botResponse.style.alignItems = 'center';
+    //     botResponse.style.marginBottom = '10px';
+    
+    //     var botResponseAvatar = botAvatar.cloneNode(true);
+    
+    //     var botBubble = document.createElement('div');
+    //     botBubble.style.marginLeft = '10px';
+    //     botBubble.style.padding = '5px 10px';
+    //     botBubble.style.background = '#f0f0f0';
+    //     botBubble.style.borderRadius = '5px';
+    //     botBubble.style.maxWidth = '80%';
+    //     botBubble.style.fontSize = '14px';
+    //     botBubble.textContent = 'Digitando...';
+    
+    //     botResponse.appendChild(botResponseAvatar);
+    //     botResponse.appendChild(botBubble);
+    //     chatMessages.appendChild(botResponse);
+    
+    //     chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    //     // Enviar a mensagem para o backend
+    //     fetch('https://projetocharlie.humans.land/wp-json/chatbot/v1/send_message', {
+    //         method: 'POST',
+    //         credentials: 'include',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             message: message,
+    //             user_id: localStorage.getItem('chatbot_user_id'),
+    //             chatbot_id: localStorage.getItem('chatbot_id'),
+    //         }),
+    //     })
+    //     .then(response => {
+    //         if (!response.ok) {
+    //             throw new Error(`Erro HTTP: ${response.status}`);
+    //         }
+
+    //         console.log(response)
+    
+    //         // Abrindo uma conexão com EventStream para receber os chunks em tempo real
+    //         // const reader = response.body.getReader();
+    //         // const decoder = new TextDecoder();
+    //         // let botReply = '';
+    
+    //         // function readStream() {
+    //         //     reader.read().then(({ done, value }) => {
+    //         //         if (done) {
+    //         //             botBubble.textContent = botReply;
+    //         //             chatMessages.scrollTop = chatMessages.scrollHeight;
+    //         //             return;
+    //         //         }
+    
+    //         //         const chunk = decoder.decode(value, { stream: true });
+    //         //         botReply += chunk;
+    //         //         botBubble.textContent = botReply; // Atualiza o texto conforme os chunks chegam
+                    
+    //         //         chatMessages.scrollTop = chatMessages.scrollHeight;
+    //         //         readStream();
+    //         //     });
+    //         // }
+    
+    //         readStream();
+    //     })
+    //     .catch(error => {
+    //         console.error('Erro ao processar resposta do chatbot:', error);
+    //         botBubble.textContent = 'Erro ao obter resposta.';
+    //     });
+    // }
+    
+
     function sendMessage() {
-        //checar se tem threadId.
+
+        const thread_id = localStorage.getItem('sessionId') || null;
 
         var message = input.value.trim();
         if (!message) return;
@@ -204,6 +315,8 @@
 
         input.value = '';
 
+        
+
         fetch('https://projetocharlie.humans.land/wp-json/chatbot/v1/send_message', {
             method: 'POST',
             credentials: 'include',
@@ -214,14 +327,16 @@
                 message: message,
                 user_id: localStorage.getItem('chatbot_user_id'),
                 chatbot_id: localStorage.getItem('chatbot_id'),
-                //passar threadId se existir
+                thread_id
             }),
         })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
+                if ( data.thread_id ) {
+                    localStorage.setItem('sessionId', data.thread_id);
+                }
 
-                    //criar threadId para enviar ou não
+                if (data.status === 'success') {
 
                     var botResponse = document.createElement('div');
                     botResponse.style.display = 'flex';
@@ -231,7 +346,15 @@
                     var botResponseAvatar = botAvatar.cloneNode(true);
 
                     var botBubble = document.createElement('div');
-                    botBubble.textContent = data.response;
+
+                    console.log(data.response);
+
+                    function transformarLinks(texto) {
+                        return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color: blue; text-decoration: underline;" class="text-blue-600 underline">$1</a>');
+                    }                    
+
+                    botBubble.innerHTML = transformarLinks(data.response);
+                    
                     botBubble.style.marginLeft = '10px';
                     botBubble.style.padding = '5px 10px';
                     botBubble.style.background = '#f0f0f0';
@@ -240,7 +363,7 @@
                     botBubble.style.fontSize = '14px';
 
                     botResponse.appendChild(botResponseAvatar);
-                    botResponse.appendChild(botBubble);
+                    botResponse.appendChild(botBubble);                   
                     chatMessages.appendChild(botResponse);
                     
                     chatMessages.scrollTop = chatMessages.scrollHeight;

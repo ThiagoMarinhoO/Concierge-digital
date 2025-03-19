@@ -92,8 +92,6 @@ function save_responses()
         $chatbot_options,
         $chatbot_image,
         $chatbot_welcome_message,
-
-        
     );
 
     $response = json_decode($response, true);

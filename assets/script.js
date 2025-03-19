@@ -361,11 +361,15 @@ jQuery(document).ready(function ($) {
                 try {
                     const lines = chunk.trim().split("\n");
 
+                    console.log(lines);
+
                     lines.forEach((line) => {
                         if (line.startsWith("data: {")) {
                             const jsonData = line.replace("data: ", "");
                             if (jsonData !== "[DONE]") {
                                 const parsed = JSON.parse(jsonData);
+
+                                console.log(parsed);
 
                                 if (parsed?.delta?.content) {
                                     parsed.delta.content.forEach((part) => {
@@ -589,7 +593,7 @@ jQuery(document).ready(function ($) {
         //     return option;
         // });
 
-        // console.log(chatbotOptions);
+        console.log('atualizando chatbot');
 
         const assistant = JSON.parse(localStorage.getItem('assistant')) || null;
         let chatbotOptions = JSON.parse(localStorage.getItem('chatbotRespostas')) || {};
@@ -670,6 +674,7 @@ jQuery(document).ready(function ($) {
     }
 
     function saveResponses() {
+        console.log('chamei saveResponses')
         const activeContent = $(".tab-content:not(.hidden)");
         const chatbotOptions = [];
         const fileInputs = activeContent.find('input[type="file"]');
@@ -912,18 +917,20 @@ jQuery(document).ready(function ($) {
     const $saveBtn = $("button.saveButton");
 
     if ($saveBtn.length) {
-        $saveBtn.on("click", function () {
+        $saveBtn.on("click", function (e) {
+            e.preventDefault();
             saveResponses();
-            getDataCurrent()
+            // getDataCurrent();
         });
     }
 
     const $saveAparenciaButton = $("button.saveAparenciaButton");
 
     if ($saveAparenciaButton.length) {
-        $saveAparenciaButton.on("click", function () {
+        $saveAparenciaButton.on("click", function (e) {
+            e.preventDefault();
             saveStyles();
-            getDataCurrent()
+            // getDataCurrent();
         });
     }
 
@@ -1173,6 +1180,7 @@ jQuery(document).ready(function ($) {
 
     function getDataCurrent() {
         let lastUnlocked = $('.tab-btn[data-locked="false"]').last();
+        console.log(lastUnlocked);
 
         // Remover data-current de todos os botões
         $('.tab-btn').attr('data-current', 'false');
@@ -1181,7 +1189,7 @@ jQuery(document).ready(function ($) {
         lastUnlocked.attr('data-current', 'true');
     }
 
-    getDataCurrent()
+    getDataCurrent();
 });
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -7,21 +7,22 @@ function create_assistant()
 {
     $chatbot_options = isset($_POST['chatbot_options']) ? json_decode(stripslashes($_POST['chatbot_options']), true) : [];
     $chatbot_name = $_POST['chatbot_name'] ?? '';
+    $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
 
     $api_url = "https://api.openai.com/v1/assistants";
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
-    $data = [
-        "instructions" => $assistant_dto['assistant_instructions'],
-        "name" => $assistant_dto['assistant_name'],
-        "tools" => [["type" => "file_search"]],
-        "model" => "gpt-3.5-turbo",
-        "metadata" => (object) [
-            "assistant_image" => $assistant_dto['assistant_image']
-        ]
-    ];
+    // $data = [
+    //     "instructions" => $assistant_dto['assistant_instructions'],
+    //     "name" => $assistant_dto['assistant_name'],
+    //     "tools" => [["type" => "file_search"]],
+    //     "model" => "gpt-3.5-turbo",
+    //     "metadata" => (object) [
+    //         "assistant_image" => $assistant_dto['assistant_image']
+    //     ]
+    // ];
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
@@ -32,6 +33,10 @@ function create_assistant()
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
     ];
+
+    if (!empty($chatbot_welcome_message)) {
+        $data['metadata']->welcome_message = $chatbot_welcome_message;
+    }
 
     $headers = [
         "Content-Type: application/json",
@@ -132,7 +137,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
                     $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
                 }
 
-                $sanitized_file_content = substr($file_content, 0, 5000);
+                $sanitized_file_content = substr($file_content, 0);
                 $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
             }
         } else {

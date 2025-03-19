@@ -174,20 +174,358 @@ add_action('rest_api_init', 'chatbot_rest_api_init');
 
 function handle_chatbot_message(WP_REST_Request $request)
 {
+    plugin_log('--- HANDLE FUUUUNCTION ---');
+
     $message = sanitize_text_field($request->get_param('message'));
     $user_id = intval($request->get_param('user_id'));
-    $chatbot_id = intval($request->get_param('chatbot_id'));
+    $chatbot_id = sanitize_text_field($request->get_param('chatbot_id'));
+    $thread_id = sanitize_text_field($request->get_param('thread_id'));
 
-    $chatbot = new Chatbot();
-    $response = $chatbot->enviarMensagem($message, $chatbot_id , $user_id);
+    if (empty($thread_id)) {
+        $thread_id = create_thread();
+    }
+
+    add_message_to_thread($thread_id, $message);
+
+    plugin_log('--- RUNNNN FUUUUNCTION ---');
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $api_url = "https://api.openai.com/v1/threads/$thread_id/runs";
+
+    $data = json_encode([
+        "assistant_id" => $chatbot_id,
+        "stream" => true
+    ]);
+
+    $headers = [
+        "Content-Type: application/json",
+        "Authorization: Bearer $api_key",
+        "OpenAI-Beta: assistants=v2"
+    ];
+
+    $assistant_message = "";
+
+    $ch = curl_init($api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+    // Captura toda a resposta da API
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        throw new Exception('Erro no cURL: ' . curl_error($ch));
+        // plugin_log('Erro no cURL: ' . curl_error($ch));
+    }
+
+    curl_close($ch);
+
+    // $response = json_decode($response, true);
+
+    plugin_log('--- Resposta completa da OpenAI ---');
+    plugin_log(print_r($response, true));
+
+    // Divide a resposta por linha
+    $lines = explode("\n", $response);
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        // Log para verificar cada linha recebida
+        plugin_log("Linha recebida: " . $line);
+
+        if (strpos($line, 'data:') === 0) {
+            $jsonData = trim(substr($line, 5));
+
+            // Verifica se o JSON é válido antes de tentar decodificar
+            if (!empty($jsonData) && $jsonData !== "[DONE]") {
+                $decodedData = json_decode($jsonData, true);
+
+                plugin_log('--- JSON Decodificado ---');
+                plugin_log(print_r($decodedData, true));
+
+                if (isset($decodedData['delta']['content'])) {
+                    foreach ($decodedData['delta']['content'] as $chunkPart) {
+                        if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
+                            $assistant_message .= $chunkPart['text']['value'];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    plugin_log('--- Mensagem final gerada ---');
+    plugin_log(print_r($assistant_message, true));
+
+    return new WP_REST_Response([
+        'status' => 'success',
+        'response' => $assistant_message,
+        'thread_id' => $thread_id
+    ], 200);
+}
+
+function create_thread()
+{
+    plugin_log('--- CRIAR THREAAD FUUUUNCTION ---');
+
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $api_url = "https://api.openai.com/v1/threads";
+
+    plugin_log('--- Create thread funcccc ---');
+
+    $headers = [
+        "Content-Type: application/json",
+        "Authorization: Bearer $api_key",
+        "OpenAI-Beta: assistants=v2"
+    ];
+
+    $ch = curl_init($api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+
+    curl_close($ch);
 
     $response = json_decode($response, true);
-    
-    return new WP_REST_Response(
-        array(
-            'status' => 'success',
-            'response' => $response['message'],
-        ),
-        200
-    );
+
+    plugin_log('--- Create thread ---');
+    plugin_log(print_r($response, true));
+
+    return $response['id'];
 }
+
+function add_message_to_thread($thread_id, $message)
+{
+    plugin_log('--- ADD MESSAGE  funcccc ---');
+
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $api_url = "https://api.openai.com/v1/threads/$thread_id/messages";
+
+
+    $data = [
+        "role" => "user",
+        "content" => $message
+    ];
+
+    $headers = [
+        "Content-Type: application/json",
+        "Authorization: Bearer $api_key",
+        "OpenAI-Beta: assistants=v2"
+    ];
+
+    $ch = curl_init($api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+
+    curl_close($ch);
+
+    $response = json_decode($response, true);
+
+    plugin_log('--- Add Message to thread ---');
+    plugin_log(print_r($response, true));
+
+    return $response;
+}
+
+// function run_thread($thread_id, $assistant_id) {
+
+//     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+//     $api_url = "https://api.openai.com/v1/threads/". $thread_id . "/messages";
+
+//     $data = [
+//         "assistant_id" => $assistant_id,
+//         "stream" => true
+//     ];
+
+//     $headers = [
+//         "Content-Type: application/json",
+//         "Authorization: Bearer $api_key",
+//         "OpenAI-Beta: assistants=v2"
+//     ];
+
+//     $ch = curl_init($api_url);
+//     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//     curl_setopt($ch, CURLOPT_POST, true);
+//     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+//     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+//     $response = curl_exec($ch);
+//     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+//     if (curl_errno($ch)) {
+//         throw new Exception(curl_error($ch));
+//     }
+
+//     curl_close($ch);
+
+//     $response = json_decode($response, true);
+
+//     return $response;
+// }
+
+// ----------- MOCK DAS REQUISIÇÕES -----------
+// function handle_chatbot_message(WP_REST_Request $request)
+// {
+//     plugin_log('--- HANDLE FUUUUNCTION (Mock) ---');
+
+//     $message = sanitize_text_field($request->get_param('message'));
+//     $user_id = intval($request->get_param('user_id'));
+//     $chatbot_id = sanitize_text_field($request->get_param('chatbot_id'));
+//     $thread_id = sanitize_text_field($request->get_param('thread_id'));
+
+//     if (empty($thread_id)) {
+//         $thread_id = create_thread();
+//     }
+
+//     add_message_to_thread($thread_id, $message);
+
+//     plugin_log('--- RUNNNN FUUUUNCTION (Mock) ---');
+
+//     // Simulando uma resposta de execução de thread
+//     $mock_response = <<<EOT
+//         event: thread.run.created
+//         data: {"id":"run_123","object":"thread.run","created_at":1710330640,"assistant_id":"asst_123","thread_id":"thread_123","status":"queued","started_at":null,"expires_at":1710331240,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o","instructions":null,"tools":[],"metadata":{},"temperature":1.0,"top_p":1.0,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}}
+
+//         event: thread.run.queued
+//         data: {"id":"run_123","object":"thread.run","created_at":1710330640,"assistant_id":"asst_123","thread_id":"thread_123","status":"queued","started_at":null,"expires_at":1710331240,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o","instructions":null,"tools":[],"metadata":{},"temperature":1.0,"top_p":1.0,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}}
+
+//         event: thread.run.in_progress
+//         data: {"id":"run_123","object":"thread.run","created_at":1710330640,"assistant_id":"asst_123","thread_id":"thread_123","status":"in_progress","started_at":1710330641,"expires_at":1710331240,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o","instructions":null,"tools":[],"metadata":{},"temperature":1.0,"top_p":1.0,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}}
+
+//         event: thread.run.step.created
+//         data: {"id":"step_001","object":"thread.run.step","created_at":1710330641,"run_id":"run_123","assistant_id":"asst_123","thread_id":"thread_123","type":"message_creation","status":"in_progress","cancelled_at":null,"completed_at":null,"expires_at":1710331240,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_001"}},"usage":null}
+
+//         event: thread.run.step.in_progress
+//         data: {"id":"step_001","object":"thread.run.step","created_at":1710330641,"run_id":"run_123","assistant_id":"asst_123","thread_id":"thread_123","type":"message_creation","status":"in_progress","cancelled_at":null,"completed_at":null,"expires_at":1710331240,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_001"}},"usage":null}
+
+//         event: thread.message.created
+//         data: {"id":"msg_001","object":"thread.message","created_at":1710330641,"assistant_id":"asst_123","thread_id":"thread_123","run_id":"run_123","status":"in_progress","incomplete_details":null,"incomplete_at":null,"completed_at":null,"role":"assistant","content":[],"metadata":{}}
+
+//         event: thread.message.in_progress
+//         data: {"id":"msg_001","object":"thread.message","created_at":1710330641,"assistant_id":"asst_123","thread_id":"thread_123","run_id":"run_123","status":"in_progress","incomplete_details":null,"incomplete_at":null,"completed_at":null,"role":"assistant","content":[],"metadata":{}}
+
+//         event: thread.message.delta
+//         data: {"id":"msg_001","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"Hello","annotations":[]}}]}}
+
+//         event: thread.message.delta
+//         data: {"id":"msg_001","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":" today"}}]}}
+
+//         event: thread.message.delta
+//         data: {"id":"msg_001","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"?"}}]}}
+
+//         event: thread.message.completed
+//         data: {"id":"msg_001","object":"thread.message","created_at":1710330641,"assistant_id":"asst_123","thread_id":"thread_123","run_id":"run_123","status":"completed","incomplete_details":null,"incomplete_at":null,"completed_at":1710330642,"role":"assistant","content":[{"type":"text","text":{"value":"Hello! How can I assist you today?","annotations":[]}}],"metadata":{}}
+
+//         event: thread.run.step.completed
+//         data: {"id":"step_001","object":"thread.run.step","created_at":1710330641,"run_id":"run_123","assistant_id":"asst_123","thread_id":"thread_123","type":"message_creation","status":"completed","cancelled_at":null,"completed_at":1710330642,"expires_at":1710331240,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_001"}},"usage":{"prompt_tokens":20,"completion_tokens":11,"total_tokens":31}}
+
+//         event: thread.run.completed
+//         data: {"id":"run_123","object":"thread.run","created_at":1710330640,"assistant_id":"asst_123","thread_id":"thread_123","status":"completed","started_at":1710330641,"expires_at":null,"cancelled_at":null,"failed_at":null,"completed_at":1710330642,"required_action":null,"last_error":null,"model":"gpt-4o","instructions":null,"tools":[],"metadata":{},"temperature":1.0,"top_p":1.0,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":{"prompt_tokens":20,"completion_tokens":11,"total_tokens":31},"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}}
+
+//         event: done
+//         data: [DONE]
+//     EOT;
+
+//     plugin_log('--- Resposta completa MOCK ---');
+//     plugin_log(print_r($mock_response, true));
+
+//     $assistant_message = "";
+
+//     $lines = explode("\n", $mock_response);
+//     foreach ($lines as $line) {
+//         $line = trim($line);
+
+//         if (strpos($line, 'data:') === 0) {
+//             $jsonData = trim(substr($line, 5));
+
+//             if (!empty($jsonData) && $jsonData !== "[DONE]") {
+//                 $decodedData = json_decode($jsonData, true);
+
+//                 if (isset($decodedData['delta']['content'])) {
+//                     foreach ($decodedData['delta']['content'] as $chunkPart) {
+//                         if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
+//                             $assistant_message .= $chunkPart['text']['value'];
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     plugin_log('--- Mensagem final gerada MOCK ---');
+//     plugin_log(print_r($assistant_message, true));
+
+//     return new WP_REST_Response([
+//         'status' => 'success',
+//         'response' => $assistant_message,
+//         'thread_id' => $thread_id
+//     ], 200);
+// }
+
+// function add_message_to_thread($thread_id, $message)
+// {
+//     plugin_log('--- ADD MESSAGE (Mock) ---');
+
+//     // Resposta mockada
+//     $response = [
+//         "id" => "msg_abc123",
+//         "object" => "thread.message",
+//         "created_at" => time(),
+//         "assistant_id" => null,
+//         "thread_id" => $thread_id,
+//         "run_id" => null,
+//         "role" => "user",
+//         "content" => [
+//             [
+//                 "type" => "text",
+//                 "text" => [
+//                     "value" => $message,
+//                     "annotations" => []
+//                 ]
+//             ]
+//         ],
+//         "attachments" => [],
+//         "metadata" => []
+//     ];
+
+//     plugin_log('--- Add Message to thread MOCK ---');
+//     plugin_log(print_r($response, true));
+
+//     return $response;
+// }
+
+// function create_thread()
+// {
+//     plugin_log('--- CRIAR THREAAD FUUUUNCTION (Mock) ---');
+
+//     // Resposta mockada da OpenAI
+//     $response = [
+//         "id" => "thread_abc123",
+//         "object" => "thread",
+//         "created_at" => time(),
+//         "metadata" => [],
+//         "tool_resources" => []
+//     ];
+
+//     plugin_log('--- Create thread MOCK ---');
+//     plugin_log(print_r($response, true));
+
+//     return $response['id'];
+// }

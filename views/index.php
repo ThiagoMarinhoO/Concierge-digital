@@ -1,5 +1,4 @@
 <?php
-
 $question = new Question();
 $chatbot = new Chatbot();
 $user_id = get_current_user_id();
@@ -38,9 +37,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 			<?= esc_html($tabNameText) ?>
 		</button>
 		<?php $i++ ?>
-	<!-- teste de branch -->
+		<!-- teste de branch -->
 	<?php endforeach; ?>
-	
+
 	<button data-current="false" data-tab="Aparência" data-locked="true"
 		class="tab-btn rounded-md cursor-not-allowed p-6 shadow-md bg-white text-gray-700 font-bold border-b-2 border-transparent opacity-50" data-tab-num="<?php echo $i++ ?>">
 		Aparência
@@ -185,7 +184,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 				</div>
 			<?php endif; ?>
 			<div class="flex justify-center mt-10">
-				<button class="saveButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
+				<button type="button" class="saveButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 			</div>
 		</div>
 	<?php endforeach ?>
@@ -202,7 +201,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 			</div>
 		</div>
 		<div class="flex justify-center mt-10">
-		    <button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
+			<button class="saveAparenciaButton px-4 py-2.5 bg-green-400 rounded-full">Salvar</button>
 		</div>
 	</div>
 	<div id="Teste-content" class="tab-content hidden absolute inset-0 bg-white p-4">
@@ -244,11 +243,27 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 							<?php endforeach; ?>
 						</select>
 					</div>
-
 					<!-- Container do chat -->
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-assistant-id="<?php echo esc_attr($assistants[0]->id); ?>" data-session-id="">
-						
+						<?php
+							$assistant_obj = json_decode($assistants[0]->assistant, true);
+							// var_dump($assistant_obj);
+						?>
+
+						<?php if (!empty($assistant_obj['metadata']['welcome_message'])): ?>
+							<div class="flex w-full mt-2 space-x-3 max-w-xs">
+								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+									<img src="<?php echo $assistant_obj['metadata']['assistant_image']; ?>" alt="">
+								</div>
+								<div>
+									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
+										<?php echo $assistant_obj['metadata']['welcome_message']; ?>
+									</div>
+								</div>
+							</div>
+						<?php endif; ?>
+
 					</div>
 
 					<!-- Input para mensagem -->
@@ -268,9 +283,6 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 				</div>
 
 				<div class="flex justify-center gap-10">
-					<!-- <form action="" method="POST" id="deleteChatbotForm">
-						<button type="submit" name="delete_chatbot" class="bg-red-600 text-white p-2 mt-4 rounded">Resetar assistente virtual</button>
-					</form> -->
 					<button class="back-btn bg-red-600 text-white p-2 mt-4 rounded">Editar assistente virtual</button>
 				</div>
 
