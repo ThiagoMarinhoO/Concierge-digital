@@ -58,12 +58,12 @@ function save_responses()
         ] : (object) []
     ];
 
-    $api_url = "https://api.openai.com/v1/assistants/". $chatbot_id;
-    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
-
     if (!empty($chatbot_welcome_message)) {
         $data['metadata']->welcome_message = $chatbot_welcome_message;
     }
+
+    $api_url = "https://api.openai.com/v1/assistants/". $chatbot_id;
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
     $headers = [
         "Content-Type: application/json",

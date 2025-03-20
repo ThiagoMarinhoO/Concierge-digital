@@ -90,7 +90,7 @@ function gerar_script_chatbot()
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
                     localStorage.setItem('chatbot_user_id', $user_id);
                     localStorage.setItem('chatbot_id', '$chatbot_id');
-                    localStorage.setItem('assistant', `$assistant_json`);
+                    localStorage.setItem('assistant', JSON.stringify({$assistant_json}));
                     
                     var script = document.createElement('script');
                     script.async = false;

@@ -1142,7 +1142,6 @@ jQuery(document).ready(function ($) {
                 success: function (response) {
                     if (response.success) {
                         const script = response.data.script;
-
                         // Salva o script no localStorage
                         localStorage.setItem('chatbot_script', script);
 

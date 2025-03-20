@@ -1,4 +1,8 @@
 (function () {
+
+    const assistant = JSON.parse(localStorage.getItem('assistant')) || {};
+    console.log(assistant);
+
     var chatButton = document.createElement('div');
     chatButton.id = 'chatbot-toggle';
     chatButton.style.position = 'fixed';
@@ -25,10 +29,10 @@
 
     var chatBubble = document.createElement('div');
     chatBubble.id = 'chatbot-bubble';
-    // if (localStorage.getItem('chatbot_welcome_message')) {
-    //     chatBubble.textContent = localStorage.getItem('chatbot_welcome_message');
-    // }
-    chatBubble.textContent = 'Olá! Posso ajudar?';
+    if (assistant.metadata && assistant.metadata.welcome_message) {
+        chatBubble.textContent = assistant.metadata.welcome_message;
+    }
+    // chatBubble.textContent = 'Olá! Posso ajudar?';
     chatBubble.style.position = 'fixed';
     chatBubble.style.bottom = '26px';
     chatBubble.style.right = '75px';
@@ -86,7 +90,7 @@
     botAvatar.style.color = 'white';
     botAvatar.style.fontSize = '14px';
     var botAvatarImg = document.createElement('img');
-    botAvatarImg.src = localStorage.getItem('chatbot_image');
+    botAvatarImg.src = assistant.metadata?.assistant_image || '';
     botAvatarImg.alt = '';
     botAvatarImg.style.width = '30px';
     botAvatarImg.style.height = '30px';
@@ -94,10 +98,10 @@
     botAvatar.appendChild(botAvatarImg);
     
     var botMessage = document.createElement('div');
-    if (localStorage.getItem('chatbot_welcome_message')) {
-        botMessage.textContent = localStorage.getItem('chatbot_welcome_message');
+    if (assistant.metadata && assistant.metadata.welcome_message) {
+        chatBubble.textContent = assistant.metadata.welcome_message;
+        botMessage.textContent = assistant.metadata.welcome_message;
     }
-    // botMessage.textContent = 'Olá! Como posso te ajudar?';
     botMessage.style.marginLeft = '10px';
     botMessage.style.padding = '10px';
     botMessage.style.background = '#f0f0f0';
