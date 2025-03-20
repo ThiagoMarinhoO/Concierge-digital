@@ -920,7 +920,7 @@ jQuery(document).ready(function ($) {
         $saveBtn.on("click", function (e) {
             e.preventDefault();
             saveResponses();
-            // getDataCurrent();
+            getDataCurrent();
         });
     }
 
@@ -930,7 +930,7 @@ jQuery(document).ready(function ($) {
         $saveAparenciaButton.on("click", function (e) {
             e.preventDefault();
             saveStyles();
-            // getDataCurrent();
+            getDataCurrent();
         });
     }
 
@@ -1212,4 +1212,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (assistantId) getAssistant(assistantId);
 
+});
+
+
+window.addEventListener("load", function () {
+    const buttons = document.querySelectorAll("button[data-current]");
+    if (buttons.length === 0) return;
+
+    function updateSpans() {
+        // Remove spans existentes
+        buttons.forEach(button => {
+            const existingSpan = button.querySelector("span");
+            if (existingSpan) {
+                existingSpan.remove();
+            }
+        });
+
+        let firstButton = buttons[0]; 
+        let otherButtonsHaveCurrent = Array.from(buttons).some((btn, index) =>
+            index > 0 && btn.getAttribute("data-current") === "true"
+        );
+
+        buttons.forEach(function (button, index) {
+            if (button.getAttribute("data-current") === "true" && !(index === 0 && !otherButtonsHaveCurrent)) {
+                let span = document.createElement("span");
+                span.textContent = "Você está nessa etapa";
+                span.style.display = "block";
+                span.style.fontSize = "0.9rem";
+                span.style.fontWeight = "400";
+                span.style.marginTop = "4px";
+                button.appendChild(span);
+            }
+        });
+
+        if (!otherButtonsHaveCurrent) {
+            let span = document.createElement("span");
+            span.textContent = "Clique aqui para começar";
+            span.style.display = "block";
+            span.style.fontSize = "0.9rem";
+            span.style.fontWeight = "400";
+            span.style.marginTop = "4px";
+            firstButton.appendChild(span);
+        }
+    }
+
+    // Observador para monitorar alterações no atributo data-current
+    const observer = new MutationObserver(function (mutationsList) {
+        for (let mutation of mutationsList) {
+            if (mutation.type === "attributes" && mutation.attributeName === "data-current") {
+                updateSpans(); // Atualiza os spans ao detectar mudanças
+            }
+        }
+    });
+
+    // Observa cada botão com data-current
+    buttons.forEach(button => {
+        observer.observe(button, { attributes: true });
+    });
+
+    updateSpans(); // Executa a atualização inicial
 });

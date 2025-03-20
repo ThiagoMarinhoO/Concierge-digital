@@ -30,9 +30,9 @@
     var chatBubble = document.createElement('div');
     chatBubble.id = 'chatbot-bubble';
     if (assistant.metadata && assistant.metadata.welcome_message) {
-        chatBubble.textContent = assistant.metadata.welcome_message;
+        // chatBubble.textContent = assistant.metadata.welcome_message;
     }
-    // chatBubble.textContent = 'Olá! Posso ajudar?';
+    chatBubble.textContent = 'Olá! Como posso ajudar?';
     chatBubble.style.position = 'fixed';
     chatBubble.style.bottom = '26px';
     chatBubble.style.right = '75px';
