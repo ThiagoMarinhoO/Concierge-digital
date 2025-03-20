@@ -157,31 +157,65 @@ class Chatbot
         return $this->wpdb->get_results($sql);
     }
 
-    public function getChatbotById($id, $user_id)
-{
-    
-    $sql = $this->wpdb->prepare(
-        "SELECT * FROM {$this->table} WHERE id = %d AND user_id = %d",
-        $id,
-        $user_id
-    );
-
-    $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
-
-    if (!$chatbot) {
-        global $wpdb;
-        plugin_log("Nenhum chatbot encontrado. Erro: " . $wpdb->last_error);
-    } else {
-        $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
+    public function getAllChatbotsInDB()
+    {
+        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table}");
+        return $this->wpdb->get_results($sql);
     }
 
-    return $chatbot;
-}
+
+    public function getChatbotById($id, $user_id)
+    {
+
+        $sql = $this->wpdb->prepare(
+            "SELECT * FROM {$this->table} WHERE id = %d AND user_id = %d",
+            $id,
+            $user_id
+        );
+
+        $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
+
+        if (!$chatbot) {
+            global $wpdb;
+            plugin_log("Nenhum chatbot encontrado. Erro: " . $wpdb->last_error);
+        } else {
+            $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
+        }
+
+        return $chatbot;
+    }
+
+    public function getChatbotByIdII($id)
+    {
+
+        $sql = $this->wpdb->prepare(
+            "SELECT * FROM {$this->table} WHERE id = %d",
+            $id
+        );
+
+        $chatbot = $this->wpdb->get_row($sql, ARRAY_A);
+
+        if (!$chatbot) {
+            global $wpdb;
+            plugin_log("Nenhum chatbot encontrado. Erro: " . $wpdb->last_error);
+        } else {
+            $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
+        }
+
+        return $chatbot;
+    }
 
 
     public function deleteChatbot($id)
     {
         $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d AND user_id = %d", $id, $this->user_id);
+
+        return $this->wpdb->query($sql);
+    }
+
+    public function deleteChatbotII($id)
+    {
+        $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d", $id);
 
         return $this->wpdb->query($sql);
     }
@@ -423,7 +457,7 @@ class Chatbot
     }
 
 
-    
+
     // Getters
     public function getId()
     {

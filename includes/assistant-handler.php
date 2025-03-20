@@ -76,6 +76,63 @@ function create_assistant()
     ]);
 }
 
+add_action('wp_ajax_delete_assistant', 'delete_assistant');
+function delete_assistant()
+{
+    $assistant_id = $_POST['assistant_id'] ?? '';
+
+    $existing_assistant = new Chatbot();
+    $existing_assistant = $existing_assistant->getChatbotByIdII($assistant_id);
+
+    if(empty($existing_assistant)) {
+        wp_send_json_error([
+            "message" => "Assistente não encontrado"
+        ]);
+    }
+
+    $api_url = "https://api.openai.com/v1/assistants";
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+
+    $headers = [
+        "Content-Type: application/json",
+        "Authorization: Bearer $api_key",
+        "OpenAI-Beta: assistants=v2"
+    ];
+
+    $ch = curl_init($api_url . '/' . $assistant_id);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        throw new Exception('Erro na criação do Assistente' . curl_error($ch));
+    }
+
+    curl_close($ch);
+    
+    $response = json_decode($response, true);
+    plugin_log(print_r($response, true));
+
+    $deleted_status = isset($response['deleted']) && $response['deleted'] ? $response['deleted'] : 'Assistente não deletado na API';
+    plugin_log(print_r($deleted_status, true));
+    
+    $deleted_assistant = new Chatbot();
+    $deleted_db_status = $deleted_assistant->deleteChatbotII($assistant_id);
+    plugin_log(print_r($deleted_db_status, true));
+
+    wp_send_json_success([
+        // "assistant" => $response,
+        "deleted" => $deleted_status,
+        "deletion_info" => [
+            "API" => $deleted_status,
+            "DB" => $deleted_db_status
+        ]
+    ]);
+}
+
 // add_action('wp_ajax_generate_instructions', 'generate_instructions');
 function generate_instructions($chatbot_options, $chatbot_name)
 {
