@@ -90,37 +90,37 @@ function delete_assistant()
         ]);
     }
 
-    $api_url = "https://api.openai.com/v1/assistants";
-    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    // $api_url = "https://api.openai.com/v1/assistants";
+    // $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
-    $headers = [
-        "Content-Type: application/json",
-        "Authorization: Bearer $api_key",
-        "OpenAI-Beta: assistants=v2"
-    ];
+    // $headers = [
+    //     "Content-Type: application/json",
+    //     "Authorization: Bearer $api_key",
+    //     "OpenAI-Beta: assistants=v2"
+    // ];
 
-    $ch = curl_init($api_url . '/' . $assistant_id);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    // $ch = curl_init($api_url . '/' . $assistant_id);
+    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    // curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    // $response = curl_exec($ch);
+    // $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if (curl_errno($ch)) {
-        throw new Exception('Erro na criação do Assistente' . curl_error($ch));
-    }
+    // if (curl_errno($ch)) {
+    //     throw new Exception('Erro na criação do Assistente' . curl_error($ch));
+    // }
 
-    curl_close($ch);
+    // curl_close($ch);
     
-    $response = json_decode($response, true);
-    plugin_log(print_r($response, true));
+    // $response = json_decode($response, true);
+    // plugin_log(print_r($response, true));
 
     $deleted_status = isset($response['deleted']) && $response['deleted'] ? $response['deleted'] : 'Assistente não deletado na API';
     plugin_log(print_r($deleted_status, true));
     
     $deleted_assistant = new Chatbot();
-    $deleted_db_status = $deleted_assistant->deleteChatbotII($assistant_id);
+    $deleted_db_status = $deleted_assistant->adminDeleteChatbot($assistant_id);
     plugin_log(print_r($deleted_db_status, true));
 
     wp_send_json_success([

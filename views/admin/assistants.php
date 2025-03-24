@@ -138,6 +138,14 @@
         if (confirm('Tem certeza que deseja excluir este assistente ?')) {
 
             try {
+                Swal.fire({
+                    title: 'Excluindo assistente...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 const response = await fetch(conciergeAjax.ajax_url, {
                         method: 'POST',
                         headers: {
@@ -151,7 +159,7 @@
 
                 const { data } = await response.json();
 
-                if( data.deleted ) {
+                if (data.deleted) {
                     Swal.fire({
                         title: `Assistente excluído com sucesso!`,
                         icon: "success"
@@ -160,10 +168,19 @@
                             location.reload();
                         }
                     });
+                } else {
+                    Swal.fire({
+                        title: 'Erro ao excluir o assistente.',
+                        icon: 'error'
+                    });
                 }
 
             } catch (e) {
                 console.log('Erro: ', e);
+                Swal.fire({
+                    title: 'Erro ao excluir o assistente.',
+                    icon: 'error'
+                });
             }
 
 

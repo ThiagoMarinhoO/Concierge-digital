@@ -213,9 +213,9 @@ class Chatbot
         return $this->wpdb->query($sql);
     }
 
-    public function deleteChatbotII($id)
+    public function adminDeleteChatbot($id)
     {
-        $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %d", $id);
+        $sql = $this->wpdb->prepare("DELETE FROM {$this->table} WHERE id = %s", $id);
 
         return $this->wpdb->query($sql);
     }
