@@ -136,6 +136,9 @@ function delete_assistant()
 // add_action('wp_ajax_generate_instructions', 'generate_instructions');
 function generate_instructions($chatbot_options, $chatbot_name)
 {
+    plugin_log('-------- entrou no generate_instructions --------');
+
+
     if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['chatbot_image'];
 
@@ -197,7 +200,14 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 $sanitized_file_content = substr($file_content, 0);
                 $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
             }
-        } else {
+        } elseif ($option['pergunta'] == "Adicione Links de conhecimento:") {
+            plugin_log('-------- entrou no elseif do generate_instructions --------');
+            $url = $resposta;
+            $depth = 2;
+            $text = crawl_page($url, $depth);
+            $chatbot_trainning[] = $training_phrase . ' ' . $text;
+        }
+        else {
             $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
         }
     }
@@ -661,4 +671,39 @@ function transcribe_audio_with_whisper($file_path)
 
 
     return $result['text'] ?? '';
+}
+
+function crawl_page($url, $depth = 5)
+{
+    static $seen = array();
+    if (isset($seen[$url]) || $depth === 0) {
+        return;
+    }
+
+    $seen[$url] = true;
+
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    @$dom->loadHTMLFile($url);
+
+    // Extrair texto puro
+    $text = extract_text($dom);
+    
+    // echo "URL:", $url, PHP_EOL, "CONTENT:", PHP_EOL, $text, PHP_EOL, PHP_EOL;
+    return $text;
+}
+
+function extract_text($dom)
+{
+    $xpath = new DOMXPath($dom);
+    $nodes = $xpath->query('//body//text()'); // Seleciona somente o texto dentro do <body>
+    
+    $textContent = [];
+    foreach ($nodes as $node) {
+        $trimmedText = trim($node->nodeValue);
+        if (!empty($trimmedText) && !preg_match('/^(@|document|[^a-zA-Z0-9])/', $trimmedText)) {
+            $textContent[] = $trimmedText;
+        }
+    }
+    
+    return implode("\n", $textContent);
 }
