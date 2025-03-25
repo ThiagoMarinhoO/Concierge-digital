@@ -13,3 +13,1020 @@ Link onde o visitante pode falar com um atendente humano no WhatsApp: https://we
 Link onde o visitante pode agendar uma reunião: https://meet.google.com/
 2025-03-24 14:56:56 - Assistente não deletado na API
 2025-03-24 14:56:56 - 1
+2025-03-24 20:00:32 - -------- TRAINING CONTEXT --------
+2025-03-24 20:00:32 - Seu nome é João
+Mensagem de boas vindas Olá sou o joão
+Sua principal função é: Atendimento ao Cliente
+Sua função secundária é: Suporte de Vendas
+Sempre que um usuário perguntar pelo site, retorne a resposta no formato de um link clicável. Use a estrutura adequada conforme o suporte da plataforma, garantindo que o link seja acessível diretamente pelo usuário. Você pode acessar nosso site através do seguinte link: https://www.globo.com
+O link de conhecimento que você deverá consultar sempre que necessário é: https://wave.pro.br/
+o link do youtube que você deverá consultar sempre que houver necessidade é: 
+Link onde o visitante pode falar com um atendente humano no WhatsApp: https://web.whatsapp.com/
+Link onde o visitante pode agendar uma reunião: https://meet.google.com/
+2025-03-24 20:02:33 - ----Usage----
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 867
+    [completion_tokens] => 66
+    [total_tokens] => 933
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Dados recebidos para atualização:
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 867
+    [completion_tokens] => 66
+    [total_tokens] => 933
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Valores atuais:
+2025-03-24 20:02:33 - Total Tokens: 9690
+2025-03-24 20:02:33 - Prompt Tokens: 9600
+2025-03-24 20:02:33 - Completion Tokens: 90
+2025-03-24 20:02:33 - Novos valores:
+2025-03-24 20:02:33 - Total Tokens: 10623
+2025-03-24 20:02:33 - Prompt Tokens: 10467
+2025-03-24 20:02:33 - Completion Tokens: 156
+2025-03-24 20:02:33 - ----Usage----
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 822
+    [completion_tokens] => 16
+    [total_tokens] => 838
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Dados recebidos para atualização:
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 822
+    [completion_tokens] => 16
+    [total_tokens] => 838
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Valores atuais:
+2025-03-24 20:02:33 - Total Tokens: 10623
+2025-03-24 20:02:33 - Prompt Tokens: 10467
+2025-03-24 20:02:33 - Completion Tokens: 156
+2025-03-24 20:02:33 - Novos valores:
+2025-03-24 20:02:33 - Total Tokens: 11461
+2025-03-24 20:02:33 - Prompt Tokens: 11289
+2025-03-24 20:02:33 - Completion Tokens: 172
+2025-03-24 20:02:33 - ----Usage----
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 1689
+    [completion_tokens] => 82
+    [total_tokens] => 1771
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Dados recebidos para atualização:
+2025-03-24 20:02:33 - Array
+(
+    [prompt_tokens] => 1689
+    [completion_tokens] => 82
+    [total_tokens] => 1771
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:02:33 - Valores atuais:
+2025-03-24 20:02:33 - Total Tokens: 11461
+2025-03-24 20:02:33 - Prompt Tokens: 11289
+2025-03-24 20:02:33 - Completion Tokens: 172
+2025-03-24 20:02:33 - Novos valores:
+2025-03-24 20:02:33 - Total Tokens: 13232
+2025-03-24 20:02:33 - Prompt Tokens: 12978
+2025-03-24 20:02:33 - Completion Tokens: 254
+2025-03-24 20:04:01 - ----Usage----
+2025-03-24 20:04:01 - Array
+(
+    [prompt_tokens] => 946
+    [completion_tokens] => 16
+    [total_tokens] => 962
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:01 - Dados recebidos para atualização:
+2025-03-24 20:04:01 - Array
+(
+    [prompt_tokens] => 946
+    [completion_tokens] => 16
+    [total_tokens] => 962
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:01 - Valores atuais:
+2025-03-24 20:04:01 - Total Tokens: 13232
+2025-03-24 20:04:01 - Prompt Tokens: 12978
+2025-03-24 20:04:01 - Completion Tokens: 254
+2025-03-24 20:04:01 - Novos valores:
+2025-03-24 20:04:01 - Total Tokens: 14194
+2025-03-24 20:04:01 - Prompt Tokens: 13924
+2025-03-24 20:04:01 - Completion Tokens: 270
+2025-03-24 20:04:02 - ----Usage----
+2025-03-24 20:04:02 - Array
+(
+    [prompt_tokens] => 991
+    [completion_tokens] => 98
+    [total_tokens] => 1089
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:02 - Dados recebidos para atualização:
+2025-03-24 20:04:02 - Array
+(
+    [prompt_tokens] => 991
+    [completion_tokens] => 98
+    [total_tokens] => 1089
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:02 - Valores atuais:
+2025-03-24 20:04:02 - Total Tokens: 14194
+2025-03-24 20:04:02 - Prompt Tokens: 13924
+2025-03-24 20:04:02 - Completion Tokens: 270
+2025-03-24 20:04:02 - Novos valores:
+2025-03-24 20:04:02 - Total Tokens: 15283
+2025-03-24 20:04:02 - Prompt Tokens: 14915
+2025-03-24 20:04:02 - Completion Tokens: 368
+2025-03-24 20:04:03 - ----Usage----
+2025-03-24 20:04:03 - Array
+(
+    [prompt_tokens] => 1937
+    [completion_tokens] => 114
+    [total_tokens] => 2051
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:03 - Dados recebidos para atualização:
+2025-03-24 20:04:03 - Array
+(
+    [prompt_tokens] => 1937
+    [completion_tokens] => 114
+    [total_tokens] => 2051
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:04:03 - Valores atuais:
+2025-03-24 20:04:03 - Total Tokens: 15283
+2025-03-24 20:04:03 - Prompt Tokens: 14915
+2025-03-24 20:04:03 - Completion Tokens: 368
+2025-03-24 20:04:03 - Novos valores:
+2025-03-24 20:04:03 - Total Tokens: 17334
+2025-03-24 20:04:03 - Prompt Tokens: 16852
+2025-03-24 20:04:03 - Completion Tokens: 482
+2025-03-24 20:09:22 - ----Usage----
+2025-03-24 20:09:22 - Array
+(
+    [prompt_tokens] => 826
+    [completion_tokens] => 16
+    [total_tokens] => 842
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:22 - Dados recebidos para atualização:
+2025-03-24 20:09:22 - Array
+(
+    [prompt_tokens] => 826
+    [completion_tokens] => 16
+    [total_tokens] => 842
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:22 - Valores atuais:
+2025-03-24 20:09:22 - Total Tokens: 17334
+2025-03-24 20:09:22 - Prompt Tokens: 16852
+2025-03-24 20:09:22 - Completion Tokens: 482
+2025-03-24 20:09:22 - Novos valores:
+2025-03-24 20:09:22 - Total Tokens: 18176
+2025-03-24 20:09:22 - Prompt Tokens: 17678
+2025-03-24 20:09:22 - Completion Tokens: 498
+2025-03-24 20:09:25 - ----Usage----
+2025-03-24 20:09:25 - Array
+(
+    [prompt_tokens] => 1697
+    [completion_tokens] => 171
+    [total_tokens] => 1868
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:25 - Dados recebidos para atualização:
+2025-03-24 20:09:25 - Array
+(
+    [prompt_tokens] => 1697
+    [completion_tokens] => 171
+    [total_tokens] => 1868
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:25 - Valores atuais:
+2025-03-24 20:09:25 - Total Tokens: 18176
+2025-03-24 20:09:25 - Prompt Tokens: 17678
+2025-03-24 20:09:25 - Completion Tokens: 498
+2025-03-24 20:09:25 - Novos valores:
+2025-03-24 20:09:25 - Total Tokens: 20044
+2025-03-24 20:09:25 - Prompt Tokens: 19375
+2025-03-24 20:09:25 - Completion Tokens: 669
+2025-03-24 20:09:26 - ----Usage----
+2025-03-24 20:09:26 - Array
+(
+    [prompt_tokens] => 871
+    [completion_tokens] => 155
+    [total_tokens] => 1026
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:26 - Dados recebidos para atualização:
+2025-03-24 20:09:26 - Array
+(
+    [prompt_tokens] => 871
+    [completion_tokens] => 155
+    [total_tokens] => 1026
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:09:26 - Valores atuais:
+2025-03-24 20:09:26 - Total Tokens: 20044
+2025-03-24 20:09:26 - Prompt Tokens: 19375
+2025-03-24 20:09:26 - Completion Tokens: 669
+2025-03-24 20:09:26 - Novos valores:
+2025-03-24 20:09:26 - Total Tokens: 21070
+2025-03-24 20:09:26 - Prompt Tokens: 20246
+2025-03-24 20:09:26 - Completion Tokens: 824
+2025-03-24 20:10:45 - ----Usage----
+2025-03-24 20:10:45 - Array
+(
+    [prompt_tokens] => 1042
+    [completion_tokens] => 16
+    [total_tokens] => 1058
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:45 - Dados recebidos para atualização:
+2025-03-24 20:10:45 - Array
+(
+    [prompt_tokens] => 1042
+    [completion_tokens] => 16
+    [total_tokens] => 1058
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:45 - Valores atuais:
+2025-03-24 20:10:45 - Total Tokens: 21070
+2025-03-24 20:10:45 - Prompt Tokens: 20246
+2025-03-24 20:10:45 - Completion Tokens: 824
+2025-03-24 20:10:45 - Novos valores:
+2025-03-24 20:10:45 - Total Tokens: 22128
+2025-03-24 20:10:45 - Prompt Tokens: 21288
+2025-03-24 20:10:45 - Completion Tokens: 840
+2025-03-24 20:10:48 - ----Usage----
+2025-03-24 20:10:48 - Array
+(
+    [prompt_tokens] => 1087
+    [completion_tokens] => 92
+    [total_tokens] => 1179
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:48 - Dados recebidos para atualização:
+2025-03-24 20:10:48 - Array
+(
+    [prompt_tokens] => 1087
+    [completion_tokens] => 92
+    [total_tokens] => 1179
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:48 - Valores atuais:
+2025-03-24 20:10:48 - Total Tokens: 22128
+2025-03-24 20:10:48 - Prompt Tokens: 21288
+2025-03-24 20:10:48 - Completion Tokens: 840
+2025-03-24 20:10:48 - Novos valores:
+2025-03-24 20:10:48 - Total Tokens: 23307
+2025-03-24 20:10:48 - Prompt Tokens: 22375
+2025-03-24 20:10:48 - Completion Tokens: 932
+2025-03-24 20:10:49 - ----Usage----
+2025-03-24 20:10:49 - Array
+(
+    [prompt_tokens] => 2129
+    [completion_tokens] => 108
+    [total_tokens] => 2237
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:49 - Dados recebidos para atualização:
+2025-03-24 20:10:49 - Array
+(
+    [prompt_tokens] => 2129
+    [completion_tokens] => 108
+    [total_tokens] => 2237
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:10:49 - Valores atuais:
+2025-03-24 20:10:49 - Total Tokens: 23307
+2025-03-24 20:10:49 - Prompt Tokens: 22375
+2025-03-24 20:10:49 - Completion Tokens: 932
+2025-03-24 20:10:49 - Novos valores:
+2025-03-24 20:10:49 - Total Tokens: 25544
+2025-03-24 20:10:49 - Prompt Tokens: 24504
+2025-03-24 20:10:49 - Completion Tokens: 1040
+2025-03-24 20:11:10 - ----Usage----
+2025-03-24 20:11:10 - Array
+(
+    [prompt_tokens] => 1193
+    [completion_tokens] => 18
+    [total_tokens] => 1211
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:10 - Dados recebidos para atualização:
+2025-03-24 20:11:10 - Array
+(
+    [prompt_tokens] => 1193
+    [completion_tokens] => 18
+    [total_tokens] => 1211
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:10 - Valores atuais:
+2025-03-24 20:11:10 - Total Tokens: 25544
+2025-03-24 20:11:10 - Prompt Tokens: 24504
+2025-03-24 20:11:10 - Completion Tokens: 1040
+2025-03-24 20:11:10 - Novos valores:
+2025-03-24 20:11:10 - Total Tokens: 26755
+2025-03-24 20:11:10 - Prompt Tokens: 25697
+2025-03-24 20:11:10 - Completion Tokens: 1058
+2025-03-24 20:11:15 - ----Usage----
+2025-03-24 20:11:15 - Array
+(
+    [prompt_tokens] => 1240
+    [completion_tokens] => 197
+    [total_tokens] => 1437
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:15 - Dados recebidos para atualização:
+2025-03-24 20:11:15 - Array
+(
+    [prompt_tokens] => 1240
+    [completion_tokens] => 197
+    [total_tokens] => 1437
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:15 - Valores atuais:
+2025-03-24 20:11:15 - Total Tokens: 26755
+2025-03-24 20:11:15 - Prompt Tokens: 25697
+2025-03-24 20:11:15 - Completion Tokens: 1058
+2025-03-24 20:11:15 - Novos valores:
+2025-03-24 20:11:15 - Total Tokens: 28192
+2025-03-24 20:11:15 - Prompt Tokens: 26937
+2025-03-24 20:11:15 - Completion Tokens: 1255
+2025-03-24 20:11:15 - ----Usage----
+2025-03-24 20:11:15 - Array
+(
+    [prompt_tokens] => 2433
+    [completion_tokens] => 215
+    [total_tokens] => 2648
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:15 - Dados recebidos para atualização:
+2025-03-24 20:11:15 - Array
+(
+    [prompt_tokens] => 2433
+    [completion_tokens] => 215
+    [total_tokens] => 2648
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:11:15 - Valores atuais:
+2025-03-24 20:11:15 - Total Tokens: 28192
+2025-03-24 20:11:15 - Prompt Tokens: 26937
+2025-03-24 20:11:15 - Completion Tokens: 1255
+2025-03-24 20:11:15 - Novos valores:
+2025-03-24 20:11:15 - Total Tokens: 30840
+2025-03-24 20:11:15 - Prompt Tokens: 29370
+2025-03-24 20:11:15 - Completion Tokens: 1470
+2025-03-24 20:16:21 - ----Usage----
+2025-03-24 20:16:21 - Array
+(
+    [prompt_tokens] => 837
+    [completion_tokens] => 16
+    [total_tokens] => 853
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:21 - Dados recebidos para atualização:
+2025-03-24 20:16:21 - Array
+(
+    [prompt_tokens] => 837
+    [completion_tokens] => 16
+    [total_tokens] => 853
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:21 - Valores atuais:
+2025-03-24 20:16:21 - Total Tokens: 30840
+2025-03-24 20:16:21 - Prompt Tokens: 29370
+2025-03-24 20:16:21 - Completion Tokens: 1470
+2025-03-24 20:16:21 - Novos valores:
+2025-03-24 20:16:21 - Total Tokens: 31693
+2025-03-24 20:16:21 - Prompt Tokens: 30207
+2025-03-24 20:16:21 - Completion Tokens: 1486
+2025-03-24 20:16:24 - ----Usage----
+2025-03-24 20:16:24 - Array
+(
+    [prompt_tokens] => 1719
+    [completion_tokens] => 153
+    [total_tokens] => 1872
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:24 - Dados recebidos para atualização:
+2025-03-24 20:16:24 - Array
+(
+    [prompt_tokens] => 1719
+    [completion_tokens] => 153
+    [total_tokens] => 1872
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:24 - Valores atuais:
+2025-03-24 20:16:24 - Total Tokens: 31693
+2025-03-24 20:16:24 - Prompt Tokens: 30207
+2025-03-24 20:16:24 - Completion Tokens: 1486
+2025-03-24 20:16:24 - Novos valores:
+2025-03-24 20:16:24 - Total Tokens: 33565
+2025-03-24 20:16:24 - Prompt Tokens: 31926
+2025-03-24 20:16:24 - Completion Tokens: 1639
+2025-03-24 20:16:26 - ----Usage----
+2025-03-24 20:16:26 - Array
+(
+    [prompt_tokens] => 882
+    [completion_tokens] => 137
+    [total_tokens] => 1019
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:26 - Dados recebidos para atualização:
+2025-03-24 20:16:26 - Array
+(
+    [prompt_tokens] => 882
+    [completion_tokens] => 137
+    [total_tokens] => 1019
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:16:26 - Valores atuais:
+2025-03-24 20:16:26 - Total Tokens: 33565
+2025-03-24 20:16:26 - Prompt Tokens: 31926
+2025-03-24 20:16:26 - Completion Tokens: 1639
+2025-03-24 20:16:26 - Novos valores:
+2025-03-24 20:16:26 - Total Tokens: 34584
+2025-03-24 20:16:26 - Prompt Tokens: 32808
+2025-03-24 20:16:26 - Completion Tokens: 1776
+2025-03-24 20:29:25 - ----Usage----
+2025-03-24 20:29:25 - Array
+(
+    [prompt_tokens] => 851
+    [completion_tokens] => 18
+    [total_tokens] => 869
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:25 - Dados recebidos para atualização:
+2025-03-24 20:29:25 - Array
+(
+    [prompt_tokens] => 851
+    [completion_tokens] => 18
+    [total_tokens] => 869
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:25 - Valores atuais:
+2025-03-24 20:29:25 - Total Tokens: 34584
+2025-03-24 20:29:25 - Prompt Tokens: 32808
+2025-03-24 20:29:25 - Completion Tokens: 1776
+2025-03-24 20:29:25 - Novos valores:
+2025-03-24 20:29:25 - Total Tokens: 35453
+2025-03-24 20:29:25 - Prompt Tokens: 33659
+2025-03-24 20:29:25 - Completion Tokens: 1794
+2025-03-24 20:29:26 - ----Usage----
+2025-03-24 20:29:26 - Array
+(
+    [prompt_tokens] => 1749
+    [completion_tokens] => 121
+    [total_tokens] => 1870
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:26 - Dados recebidos para atualização:
+2025-03-24 20:29:26 - Array
+(
+    [prompt_tokens] => 1749
+    [completion_tokens] => 121
+    [total_tokens] => 1870
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:26 - Valores atuais:
+2025-03-24 20:29:26 - Total Tokens: 35453
+2025-03-24 20:29:26 - Prompt Tokens: 33659
+2025-03-24 20:29:26 - Completion Tokens: 1794
+2025-03-24 20:29:26 - Novos valores:
+2025-03-24 20:29:26 - Total Tokens: 37323
+2025-03-24 20:29:26 - Prompt Tokens: 35408
+2025-03-24 20:29:26 - Completion Tokens: 1915
+2025-03-24 20:29:26 - ----Usage----
+2025-03-24 20:29:26 - Array
+(
+    [prompt_tokens] => 898
+    [completion_tokens] => 103
+    [total_tokens] => 1001
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:26 - Dados recebidos para atualização:
+2025-03-24 20:29:26 - Array
+(
+    [prompt_tokens] => 898
+    [completion_tokens] => 103
+    [total_tokens] => 1001
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:26 - Valores atuais:
+2025-03-24 20:29:26 - Total Tokens: 37323
+2025-03-24 20:29:26 - Prompt Tokens: 35408
+2025-03-24 20:29:26 - Completion Tokens: 1915
+2025-03-24 20:29:26 - Novos valores:
+2025-03-24 20:29:26 - Total Tokens: 38324
+2025-03-24 20:29:26 - Prompt Tokens: 36306
+2025-03-24 20:29:26 - Completion Tokens: 2018
+2025-03-24 20:29:57 - ----Usage----
+2025-03-24 20:29:57 - ----Usage----
+rompt_tokens] => 1021
+    [completion_tokens] => 142
+    [total_tokens] => 1163
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:57 - Array
+(
+    [prompt_tokens] => 1021
+    [completion_tokens] => 142
+    [total_tokens] => 1163
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:57 - Dados recebidos para atualização:
+2025-03-24 20:29:57 - Dados recebidos para atualização:
+    [completion_tokens] => 142
+    [total_tokens] => 1163
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:57 - Array
+(
+    [prompt_tokens] => 1021
+    [completion_tokens] => 142
+    [total_tokens] => 1163
+    [prompt_token_details] => Array
+        (
+            [cached_tokens] => 0
+        )
+
+    [completion_tokens_details] => Array
+        (
+            [reasoning_tokens] => 0
+        )
+
+)
+
+2025-03-24 20:29:57 - Valores atuais:
+2025-03-24 20:29:57 - Total Tokens: 38324
+2025-03-24 20:29:57 - Valores atuais:
+2025-03-24 20:29:57 - Prompt Tokens: 36306
+2025-03-24 20:29:57 - Total Tokens: 38324
+2025-03-24 20:29:57 - Completion Tokens: 2018
+2025-03-24 20:29:57 - Prompt Tokens: 36306
+2025-03-24 20:29:57 - Novos valores:
+2025-03-24 20:29:57 - Completion Tokens: 2018
+2025-03-24 20:29:57 - Total Tokens: 39487
+2025-03-24 20:29:57 - Novos valores:
+2025-03-24 20:29:57 - Prompt Tokens: 37327
+2025-03-24 20:29:57 - Total Tokens: 39487
+2025-03-24 20:29:57 - Completion Tokens: 2160
+2025-03-24 20:29:57 - Prompt Tokens: 37327
+2025-03-24 20:29:57 - Completion Tokens: 2160
