@@ -18,7 +18,6 @@ function concierge_chat()
     // error_log(print_r($result, true));
 
     wp_send_json_success($result);
-
 }
 
 add_action('wp_ajax_create_chatbot', 'create_chatbot');
@@ -129,10 +128,30 @@ function delete_question()
 {
     $question_id = isset($_POST['question_id']) ? $_POST['question_id'] : null;
 
-    $question = new Question();
-    $question->deleteQuestion($question_id);
+    $question_model = new Question();
+    $rules_questions = $question_model->getQuestionsByCategory('Regras Gerais');
+    // $question = $question_model->getQuestionById($question_id);
 
-    wp_send_json_success(['message' => "pergunta deletada com sucesso"]);
+    $is_question_rules = false;
+
+    foreach ($rules_questions as $rule_question) {
+        if ($rule_question['id'] == $question_id) {
+            $is_question_rules = true;
+            break;
+        }
+    }
+
+    $question_model->deleteQuestion($question_id);
+
+    $updatedAssistants = [];
+    if ($is_question_rules) {
+        $updatedAssistants = updateOpenaiAssistantsRules();
+    }
+
+    wp_send_json_success([
+        'message' => "pergunta deletada com sucesso",
+        'updated_assistants' => $updatedAssistants,
+    ]);
 }
 
 add_action('wp_ajax_delete_category', 'delete_category');
@@ -164,7 +183,15 @@ function edit_question()
         $updated = $question->updateQuestion($question_id, '', '', $options, 'Regras Gerais', '', $responseQuestion, $priority_field, null);
 
         if ($updated) {
-            wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
+
+            $updatedAssistants = updateOpenaiAssistantsRules();
+
+            wp_send_json_success([
+                'message' => 'Resposta das regras gerais atualizada com sucesso!',
+                'updated_assistants' => $updatedAssistants
+            ]);
+
+            // wp_send_json_success(['message' => 'Resposta da pergunta atualizada com sucesso!']);
         } else {
             wp_send_json_error(['message' => 'Erro ao atualizar a resposta da pergunta']);
         }
@@ -179,8 +206,95 @@ function edit_question()
     }
 }
 
+
 add_action('wp_ajax_edit_question', 'edit_question');
 add_action('wp_ajax_nopriv_edit_question', 'edit_question');
+
+function updateOpenaiAssistantsRules()
+{
+    $assistants = new Chatbot();
+    $assistants = $assistants->getAllChatbotsInDB();
+
+    $updatedAssistants = [];
+
+    foreach ($assistants as $assistant) {
+        $assistant_id = $assistant->id;
+        $assistant_options = $assistant->chatbot_options;
+
+        $assistant_options = json_decode($assistant_options, true);
+
+        $rules = prepareGeneralRules();
+
+        $rules_text = implode("\n", $rules);
+
+        $merged_instructions = $rules_text . "\n\n" . $assistant_options;
+
+        $data = [
+            "instructions" => $merged_instructions,
+            "model" => "gpt-3.5-turbo",
+        ];
+
+        $api_url = "https://api.openai.com/v1/assistants/". $assistant_id;
+        $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+
+        $headers = [
+            "Content-Type: application/json",
+            "Authorization: Bearer $api_key",
+            "OpenAI-Beta: assistants=v2"
+        ];
+
+        $ch = curl_init($api_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if (curl_errno($ch)) {
+            throw new Exception('Erro na criação do Assistente' . curl_error($ch));
+        }
+
+        curl_close($ch);
+
+        $response_data = json_decode($response, true);
+
+        $new_instance = new Chatbot();
+        $user_id = get_current_user_id();
+        $new_instance->updateChatbot($response_data['id'], $response, $user_id);
+
+        if ($http_code == 200) {
+            $updatedAssistants[] = [
+                'id' => $response_data['id'],
+                'status' => 'Atualizado com sucesso',
+                // 'response' => $response_data
+            ];
+        } else {
+            $updatedAssistants[] = [
+                'id' => $assistant_id,
+                'status' => 'Falha na atualização',
+                // 'response' => $response_data
+            ];
+        }
+    }
+
+    return $updatedAssistants;
+}
+
+function prepareGeneralRules()
+{
+    $question_model = new Question();
+    $questions = $question_model->getQuestionsByCategory('Regras Gerais');
+
+    $rules = [];
+
+    foreach ($questions as $question) {
+        $rules[] = $question['response'];
+    }
+
+    return $rules;
+}
 
 
 function edit_cat()
@@ -196,7 +310,7 @@ function edit_cat()
 
     $categories = new QuestionCategory();
 
-    $updated = $categories->updateCategory($cat_id, $title, $position , $video_url);
+    $updated = $categories->updateCategory($cat_id, $title, $position, $video_url);
 
     if ($updated) {
         wp_send_json_success(['message' => 'Categoria atualizada com sucesso!']);
@@ -248,8 +362,14 @@ function add_fixed_question()
         $question = new Question();
         $question_id = $question->addFixedQuestion($response);
 
+        $updatedAssistants = updateOpenaiAssistantsRules();
+
         if ($question_id) {
-            wp_send_json_success(['message' => 'Pergunta adicionada com sucesso!']);
+            // wp_send_json_success(['message' => 'Pergunta adicionada com sucesso!']);
+            wp_send_json_success([
+                'message' => 'Resposta das regras gerais atualizada com sucesso!',
+                'updated_assistants' => $updatedAssistants
+            ]);
         } else {
             wp_send_json_error(['message' => 'Erro ao adicionar a pergunta. Tente novamente.']);
         }
@@ -257,4 +377,3 @@ function add_fixed_question()
         wp_send_json_error(['message' => $e->getMessage()]);
     }
 }
-?>

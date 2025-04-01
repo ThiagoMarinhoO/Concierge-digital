@@ -57,7 +57,7 @@ class Chatbot
             'assistant' => $this->assistant,
             'chatbot_name' => $this->name,
             'chatbot_welcome_message' => $this->welcome_message,
-            'chatbot_options' => $this->instructions,
+            'chatbot_options' => json_encode($this->instructions),
             'chatbot_image' => $this->image,
             'user_id' => $this->user_id,
             'created_at' => current_time('mysql')
@@ -97,6 +97,11 @@ class Chatbot
 
     public function updateChatbot($id, $assistant, $user_id, $chatbot_name = null, $chatbot_options = null, $chatbot_image = null, $chatbot_welcome_message = null)
     {
+        plugin_log('tentou atualizar');
+        plugin_log(print_r($id, true));
+        plugin_log(print_r($assistant, true));
+        plugin_log(print_r($user_id, true));
+
         if (empty($id)) {
             return false;
         }
@@ -133,12 +138,15 @@ class Chatbot
             $formats[] = '%s';
         }
 
+        $data['assistant'] = $assistant;
+        $formats[] = '%s';
+
         if (empty($data)) {
             return false;
         }
 
-        $data['assistant'] = $assistant;
-        $formats[] = '%s';
+        plugin_log('Data');
+        plugin_log(print_r($data, true));
 
         $result = $this->wpdb->update(
             $this->table,

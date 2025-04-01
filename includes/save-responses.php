@@ -48,6 +48,8 @@ function save_responses()
 
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
+    //Adicionar as regras gerais do assistente
+
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
         "name" => $assistant_dto['assistant_name'],
@@ -93,7 +95,7 @@ function save_responses()
         $response,
         $user_id,
         $chatbot_name,
-        $chatbot_options,
+        $assistant_dto['assistant_instructions'],
         $chatbot_image,
         $chatbot_welcome_message,
     );
