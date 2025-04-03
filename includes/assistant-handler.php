@@ -270,13 +270,25 @@ function manage_usage(){
 
     plugin_log("----Usage----");
     plugin_log(print_r($usage, true));
-
+    
     UsageService::updateUsage($usage);
+    // $updatedUsagePercentages = UsageService::usagePercentages();
+    
+    $usage_check = UsageService::usageControl();
+
+    plugin_log('-------- USAGE CHECK --------');
+    plugin_log(print_r($usage_check, true));
+    
+    $warning_message = null;
+    if ( is_array($usage_check) && isset($usage_check['message']) ) {
+        $warning_message = $usage_check['message'];
+    }
 
     $updatedUsagePercentages = UsageService::usagePercentages();
-    
+
     wp_send_json_success([
         "usage" => $updatedUsagePercentages,
+        "warning" => $warning_message
     ]);
 
 }

@@ -351,6 +351,7 @@ jQuery(document).ready(function ($) {
         }
 
         let messageParts = [];
+        let usage = null;
 
         while (!done) {
             const { value, done: readerDone } = await reader.read();
@@ -386,25 +387,7 @@ jQuery(document).ready(function ($) {
 
                                 if (parsed?.usage) {
                                     console.log(parsed.usage)
-                                    $.ajax({
-                                        url: conciergeAjax.ajax_url,
-                                        method: 'POST',
-                                        data: {
-                                            action: 'manage_usage',
-                                            usage: parsed.usage
-                                        },
-                                        success: function (response) {
-
-                                            let usageValue = response.data.usage.total;
-
-                                            $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
-
-                                            $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
-                                        },
-                                        error: function (error) {
-                                            console.error('Error managing usage:', error);
-                                        }
-                                    });
+                                    usage = parsed.usage;
                                 }
                             }
                         }
@@ -414,6 +397,26 @@ jQuery(document).ready(function ($) {
                 }
             }
         }
+
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'manage_usage',
+                usage: usage
+            },
+            success: function (response) {
+
+                let usageValue = response.data.usage.total;
+
+                $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
+
+                $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
+            },
+            error: function (error) {
+                console.error('Error managing usage:', error);
+            }
+        });
 
         // Quando o streaming termina:
         aiMessage = messageParts.join(""); // Monta a mensagem final
