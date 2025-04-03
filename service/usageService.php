@@ -1,7 +1,7 @@
 <?php
 class UsageService
 {
-    private static $tokenLimit = 500000;
+    private static $tokenLimit = 50000;
 
     public static function usageControl()
     {
@@ -12,12 +12,26 @@ class UsageService
         $percentageUsed = ($tokenUsage / self::$tokenLimit) * 100;
 
         if ($percentageUsed >= 100) {
-            wp_send_json_error(['message' => 'Limite de tokens atingido. Você deve recarregar seu plano.', 'type' => 'limit']);
-            return false;
+
+            $subscriptionRenewed = self::renewSubscriptionForUser($usage->getUserId());
+
+            if ($subscriptionRenewed) {
+
+                $usage->setTotalTokens(0);
+                $usage->setTotalPromptTokens(0);
+                $usage->setTotalCompletionTokens(0);
+                $usage->update();
+
+                return ['message' => 'Limite de tokens atingido. Seu plano foi recarregado automaticamente. kdasjfklçdsjflksakl'];
+            } else {
+                return ['message' => 'Falha ao renovar automaticamente. Entre em contato com o suporte.'];
+            }
+
+            // return ['message' => 'Limite de tokens atingido. Seu plano será recarregado automaticamente.'];
         }
 
         if ($percentageUsed >= 80) {
-            wp_send_json_success(['message' => 'Você usou 80% do seu plano. Considere recarregar.', 'type' => 'warning']);
+            return ['message' => 'Você usou 80% do seu plano. Seu plano será recarregado automaticamente em 100%.'];
         }
 
         return true;
@@ -91,6 +105,8 @@ class UsageService
         // Simula uma recarga automática (aqui pode chamar a API de cobrança, por exemplo)
         error_log("Recarga automática realizada com sucesso!");
 
+
+
         // Aqui podemos redefinir os tokens do usuário para 0 ou somar mais tokens
         $usage = new AssistantUsage();
         $usage->load();
@@ -98,5 +114,62 @@ class UsageService
         $usage->setTotalPromptTokens(0);
         $usage->setTotalCompletionTokens(0);
         $usage->update();
+    }
+
+    private static function renewSubscriptionForUser($userId)
+    {
+        plugin_log("Tentando renovar a assinatura para o usuário ID: " . $userId);
+
+        if (!function_exists('wcs_get_users_subscriptions')) {
+            plugin_log("WooCommerce Subscriptions não está ativo.");
+            return false;
+        }
+
+        // Obtém as assinaturas do usuário
+        $subscriptions = wcs_get_users_subscriptions($userId);
+
+        if (!$subscriptions) {
+            plugin_log("Nenhuma assinatura encontrada para o usuário ID: " . $userId);
+            return false;
+        }
+
+        // Filtra apenas assinaturas ativas
+        $activeSubscriptions = array_filter($subscriptions, function ($subscription) {
+            return $subscription->has_status('active');
+        });
+
+        // Pega apenas a primeira assinatura ativa encontrada
+        $currentSubscription = reset($activeSubscriptions);
+
+        if (!$currentSubscription) {
+            plugin_log("Nenhuma assinatura ativa encontrada para o usuário ID: " . $userId);
+            return false;
+        }
+
+        // Criar um pedido de renovação
+        $renewal_order = wcs_create_renewal_order($currentSubscription);
+
+        if (!$renewal_order) {
+            plugin_log("Erro ao criar pedido de renovação para a assinatura ID: " . $currentSubscription->get_id());
+            return false;
+        }
+    
+        plugin_log("Pedido de renovação criado: " . $renewal_order->get_id());
+    
+        // Define o método de pagamento como o da assinatura original
+        $payment_method = $currentSubscription->get_payment_method();
+        $renewal_order->set_payment_method($payment_method);
+    
+        // Processa o pagamento automaticamente
+        $renewal_order->payment_complete();
+    
+        // Verifica se o pedido foi pago com sucesso
+        if ($renewal_order->is_paid()) {
+            plugin_log("Pagamento processado com sucesso para o pedido: " . $renewal_order->get_id());
+            return true;
+        } else {
+            plugin_log("Falha ao processar pagamento para o pedido: " . $renewal_order->get_id());
+            return false;
+        }
     }
 }
