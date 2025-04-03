@@ -49,6 +49,26 @@ class Question
         return $this->wpdb->get_results($sql, ARRAY_A);
     }
 
+    public function getQuestionById(int $id): ?array
+    {
+        $relation_table = $this->getRelationTable();
+        $category_table = $this->wpdb->prefix . 'question_categories';
+
+        $sql = "
+        SELECT q.id, q.title, q.options, q.training_phrase, q.field_type, q.response, q.prioridade, q.required_field, q.objective, q.created_at,
+               GROUP_CONCAT(c.title) AS categories
+        FROM {$this->table} q
+        LEFT JOIN {$relation_table} r ON q.id = r.question_id
+        LEFT JOIN {$category_table} c ON r.category_id = c.id
+        WHERE q.id = %d
+        GROUP BY q.id
+        ";
+
+        $result = $this->wpdb->get_row($this->wpdb->prepare($sql, $id), ARRAY_A);
+
+        return $result ?: null;
+    }
+
     public function getAllCategories(): array
     {
         $category_table = $this->wpdb->prefix . 'question_categories';

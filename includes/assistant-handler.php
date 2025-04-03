@@ -14,15 +14,7 @@ function create_assistant()
 
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
-    // $data = [
-    //     "instructions" => $assistant_dto['assistant_instructions'],
-    //     "name" => $assistant_dto['assistant_name'],
-    //     "tools" => [["type" => "file_search"]],
-    //     "model" => "gpt-3.5-turbo",
-    //     "metadata" => (object) [
-    //         "assistant_image" => $assistant_dto['assistant_image']
-    //     ]
-    // ];
+    //Adicionar as regras gerais ao assistente instructions
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
@@ -66,7 +58,7 @@ function create_assistant()
     $response = json_decode($response, true);
     
     $new_assistant->setId($response['id']);
-    $new_assistant->setInstructions($chatbot_options);
+    $new_assistant->setInstructions($assistant_dto['assistant_instructions']);
     $new_assistant->setImage($response['metadata']['assistant_image']);
 
     $new_assistant->save();
@@ -136,7 +128,7 @@ function delete_assistant()
 // add_action('wp_ajax_generate_instructions', 'generate_instructions');
 function generate_instructions($chatbot_options, $chatbot_name)
 {
-    plugin_log('-------- entrou no generate_instructions --------');
+    // plugin_log('-------- entrou no generate_instructions --------');
 
 
     if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {

@@ -364,8 +364,11 @@ $max_position = count($categories) + 1;
                         Swal.fire({
                             title: `Pergunta excluída com sucesso!`,
                             icon: "success"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
                         });
-                        location.reload();
                     } else {
                         alert('Erro ao excluir a pergunta.');
                     }
