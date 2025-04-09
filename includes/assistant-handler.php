@@ -196,8 +196,10 @@ function generate_instructions($chatbot_options, $chatbot_name)
             plugin_log('-------- entrou no elseif do generate_instructions --------');
             $url = $resposta;
             $depth = 2;
-            $text = crawl_page($url, $depth);
-            $chatbot_trainning[] = $training_phrase . ' ' . $text;
+            if ( !empty($url) ) {
+                $text = crawl_page($url, $depth);
+                $chatbot_trainning[] = $training_phrase . ' ' . $text;
+            }
         }
         else {
             $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
@@ -264,9 +266,12 @@ function upload_image()
 }
 
 
-add_action('wp_ajax_manage_usage', 'manage_usage');
-function manage_usage(){
-    $usage = $_POST['usage'] ?? null;
+// add_action('wp_ajax_manage_usage', 'manage_usage');
+function manage_usage($usage = null){
+
+    if( empty($usage) ) {
+        $usage = $_POST['usage'] ?? null;
+    }
 
     plugin_log("----Usage----");
     plugin_log(print_r($usage, true));
@@ -286,12 +291,156 @@ function manage_usage(){
 
     $updatedUsagePercentages = UsageService::usagePercentages();
 
-    wp_send_json_success([
+    // wp_send_json_success([
+    //     "usage" => $updatedUsagePercentages,
+    //     "warning" => $warning_message
+    // ]);
+
+    return [
         "usage" => $updatedUsagePercentages,
         "warning" => $warning_message
-    ]);
+    ];
 
 }
+
+
+// 
+// 
+//  HANDLE MESSAGES
+// 
+// 
+
+add_action('wp_ajax_handle_assistant_message', 'handle_assistant_message');
+function handle_assistant_message()
+{
+    plugin_log('--- HANDLE ASSISTANT FUNCTION ---');
+
+    // $message = sanitize_text_field($request->get_param('message'));
+    // $assistant_id = sanitize_text_field($request->get_param('chatbot_id'));
+    // $thread_id = sanitize_text_field($request->get_param('thread_id'));
+
+    $message = $_POST['message'] ?? null;
+    $thread_id = $_POST['session_id'] ?? null;
+    $assistant_id = $_POST['assistant_id'] ?? null;
+
+    $usage = null;
+
+    if(empty($assistant_id)) {
+        wp_send_json_error(['message' => 'Nenhum assistente encontrado.']);
+        return;
+    }
+
+    if (empty($thread_id)) {
+        $thread_id = create_thread();
+    }
+
+    add_message_to_thread($thread_id, $message);
+
+    plugin_log('--- RUNNNN FUUUUNCTION ---');
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $api_url = "https://api.openai.com/v1/threads/$thread_id/runs";
+
+    $data = json_encode([
+        "assistant_id" => $assistant_id,
+        "stream" => true
+    ]);
+
+    $headers = [
+        "Content-Type: application/json",
+        "Authorization: Bearer $api_key",
+        "OpenAI-Beta: assistants=v2"
+    ];
+
+    $assistant_message = "";
+
+    $ch = curl_init($api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+    // Captura toda a resposta da API
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        throw new Exception('Erro no cURL: ' . curl_error($ch));
+        // plugin_log('Erro no cURL: ' . curl_error($ch));
+    }
+
+    curl_close($ch);
+
+    // $response = json_decode($response, true);
+
+    plugin_log('--- Resposta completa da OpenAI ---');
+    plugin_log(print_r($response, true));
+
+    // Divide a resposta por linha
+    $lines = explode("\n", $response);
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        // Log para verificar cada linha recebida
+        plugin_log("Linha recebida: " . $line);
+
+        if (strpos($line, 'data:') === 0) {
+            $jsonData = trim(substr($line, 5));
+
+            // Verifica se o JSON é válido antes de tentar decodificar
+            if (!empty($jsonData) && $jsonData !== "[DONE]") {
+                $decodedData = json_decode($jsonData, true);
+
+                // plugin_log('--- JSON Decodificado ---');
+                // plugin_log(print_r($decodedData, true));
+
+                if (isset($decodedData['delta']['content'])) {
+                    foreach ($decodedData['delta']['content'] as $chunkPart) {
+                        if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
+                            $assistant_message .= $chunkPart['text']['value'];
+                        }
+                    }
+                }
+
+                if (isset($decodedData['usage'])) {
+                    $usage = $decodedData['usage'];
+                }
+            }
+        }
+    }
+
+    plugin_log('--- Mensagem final gerada ---');
+    plugin_log(print_r($assistant_message, true));
+
+    $usageObj = manage_usage($usage);
+
+    wp_send_json_success([
+        'ai_response' => $assistant_message,
+        'thread_id' => $thread_id,
+        'usage' => $usageObj
+    ]);
+
+    // return new WP_REST_Response([
+    //     'status' => 'success',
+    //     'response' => $assistant_message,
+    //     'thread_id' => $thread_id
+    // ], 200);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // add_action('wp_ajax_create_thread', 'create_thread');
 // function create_thread()
@@ -336,7 +485,6 @@ function manage_usage(){
 
 // }
 
-// add_action('wp_ajax_add_message_to_thread', 'add_message_to_thread');
 // function add_message_to_thread()
 // {
 //     if (!UsageService::usageControl()) {
@@ -411,6 +559,15 @@ function manage_usage(){
 //         'msg' => $response['id'],
 //     ]);
 // }
+
+// 
+// 
+//  END HANDLE MESSAGES
+// 
+// 
+
+// add_action('wp_ajax_add_message_to_thread', 'add_message_to_thread');
+
 
 // add_action('wp_ajax_create_run', 'create_run');
 // function create_run()
@@ -710,4 +867,52 @@ function extract_text($dom)
     }
     
     return implode("\n", $textContent);
+}
+
+
+add_action('wp_ajax_get_assistant_by_id', 'get_assistant_by_id');
+function get_assistant_by_id() {
+    $assistant_id = $_POST['assistant_id'] ?? null;
+
+    if (empty($assistant_id)) {
+        wp_send_json_error(['message' => 'Nenhum ID de assistente fornecido.']);
+        return;
+    }
+
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $url = "https://api.openai.com/v1/assistants/" . urlencode($assistant_id);
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $api_key,
+            'OpenAI-Beta: assistants=v2'
+        ],
+    ]);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        $error_msg = curl_error($ch);
+        curl_close($ch);
+        wp_send_json_error(['message' => "Erro ao conectar à API: $error_msg"]);
+        return;
+    }
+
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+
+    if ($http_code >= 400 || isset($data['error'])) {
+        $message = $data['error']['message'] ?? 'Erro desconhecido na API.';
+        wp_send_json_error(['message' => $message]);
+        return;
+    }
+
+    wp_send_json_success(['assistant' => $data]);
 }

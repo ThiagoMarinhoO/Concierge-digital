@@ -22,7 +22,7 @@ class UsageService
                 $usage->setTotalCompletionTokens(0);
                 $usage->update();
 
-                return ['message' => 'Limite de tokens atingido. Seu plano foi recarregado automaticamente. kdasjfklçdsjflksakl'];
+                return ['message' => 'Limite de tokens atingido. Seu plano foi recarregado automaticamente.'];
             } else {
                 return ['message' => 'Falha ao renovar automaticamente. Entre em contato com o suporte.'];
             }

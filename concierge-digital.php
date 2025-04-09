@@ -60,8 +60,9 @@ function concierge_enqueue_assets()
         'nonce' => wp_create_nonce('concierge_nonce'),
     ]);
 
+    
     wp_localize_script('concierge-script', 'envVars', [
-        'OPENAI_API_KEY' => OPENAI_API_KEY,
+        'OPENAI_API_KEY' => 'aaa',
         'nonce' => wp_create_nonce('concierge_nonce'),
     ]);
 }
