@@ -29,18 +29,42 @@ jQuery(document).ready(function ($) {
 
 
     async function getAssistantById(assistantId) {
-        const response = await fetch(`https://api.openai.com/v1/assistants/${assistantId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
-                'OpenAI-Beta': 'assistants=v2'
+        // const response = await fetch(`https://api.openai.com/v1/assistants/${assistantId}`, {
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
+        //         'OpenAI-Beta': 'assistants=v2'
+        //     },
+        // });
+
+        // const data = await response.json();
+
+        // if (data.error) {
+        //     console.error('Error fetching assistant:', response.statusText);
+        //     return;
+        // }
+
+        // localStorage.setItem('assistant', JSON.stringify(data));
+
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'get_assistant_by_id',
+                assistant_id: assistantId
             },
+            success: function (response) {
+                if (response.success && response.data.assistant) {
+                    localStorage.setItem('assistant', JSON.stringify(response.data.assistant));
+                } else {
+                    console.error('Erro ao buscar assistente:', response.data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+            }
         });
-
-        const data = await response.json();
-
-        localStorage.setItem('assistant', JSON.stringify(data));
     }
 
     async function createAssistant(assistantDTO) {
@@ -292,38 +316,38 @@ jQuery(document).ready(function ($) {
         sendButton.prop('disabled', true).addClass('opacity-90');
         $("#enviarMensagem svg").addClass('animate-spin');
 
-        await createThreadIfNeeded();
+        // await createThreadIfNeeded();
 
-        console.log(sessionId);
+        // console.log(sessionId);
 
         if (!assistantId) return;
 
-        // Envia a mensagem para a API
-        await fetch(`https://api.openai.com/v1/threads/${sessionId}/messages`, {
+        const response = await $.ajax({
+            url: conciergeAjax.ajax_url,
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
-                'OpenAI-Beta': 'assistants=v2'
-            },
-            body: JSON.stringify({ "role": "user", "content": message })
+            data: {
+                action: 'handle_assistant_message',
+                session_id: sessionId,
+                assistant_id: assistantId,
+                message: message
+            }
         });
 
-        // Inicia o streaming da resposta
-        const runResponse = await fetch(`https://api.openai.com/v1/threads/${sessionId}/runs`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
-                'OpenAI-Beta': 'assistants=v2'
-            },
-            body: JSON.stringify({
-                "assistant_id": assistantId,
-                "stream": true
-            })
-        });
+        const responseData = response.data;
 
-        const assistantImage = JSON.parse(localStorage.getItem('assistant')).metadata.assistant_image;
+        if (responseData.thread_id) {
+            localStorage.setItem('sessionID', responseData.thread_id);
+            chatBox.attr('data-session-id', responseData.thread_id);
+        }
+
+        console.log(responseData.usage);
+
+        const assistantObj = JSON.parse(localStorage.getItem('assistant')) || null;
+        let assistantImage = '';
+
+        if(assistantObj) {
+            assistantImage = assistantObj.metadata.assistant_image;
+        }
 
         const aiMsgTemplate = $(`
             <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
@@ -341,95 +365,28 @@ jQuery(document).ready(function ($) {
         chatBox.append(aiMsgTemplate);
         chatBox.scrollTop(chatBox.prop("scrollHeight"));
 
-        const reader = runResponse.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let done = false;
-        let aiMessage = "";
-
         function transformarLinks(texto) {
             return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
         }
 
-        let messageParts = [];
-        let usage = null;
-
-        while (!done) {
-            const { value, done: readerDone } = await reader.read();
-            done = readerDone;
-            const chunk = decoder.decode(value, { stream: true });
-
-            if (chunk) {
-                try {
-                    const lines = chunk.trim().split("\n");
-
-                    console.log(lines);
-
-                    lines.forEach((line) => {
-                        if (line.startsWith("data: {")) {
-                            const jsonData = line.replace("data: ", "");
-                            if (jsonData !== "[DONE]") {
-                                const parsed = JSON.parse(jsonData);
-
-                                console.log(parsed);
-
-                                if (parsed?.delta?.content) {
-                                    parsed.delta.content.forEach((part) => {
-                                        if (part.type === "text") {
-                                            messageParts.push(part.text.value);
-                                            aiMessage += part.text.value; // Atualiza ao vivo
-                                        }
-                                    });
-
-                                    // Exibe o texto sem modificar os links ainda
-                                    aiMsgTemplate.find(".stream-text").text(aiMessage);
-                                    chatBox.scrollTop(chatBox.prop("scrollHeight"));
-                                }
-
-                                if (parsed?.usage) {
-                                    console.log(parsed.usage)
-                                    usage = parsed.usage;
-                                }
-                            }
-                        }
-                    });
-                } catch (e) {
-                    console.error("Erro ao processar chunk:", chunk, e);
-                }
-            }
-        }
-
-        $.ajax({
-            url: conciergeAjax.ajax_url,
-            method: 'POST',
-            data: {
-                action: 'manage_usage',
-                usage: usage
-            },
-            success: function (response) {
-
-                let usageValue = response.data.usage.total;
-
-                $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
-
-                $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
-            },
-            error: function (error) {
-                console.error('Error managing usage:', error);
-            }
-        });
-
         // Quando o streaming termina:
-        aiMessage = messageParts.join(""); // Monta a mensagem final
-        const formattedMessage = transformarLinks(aiMessage); // Aplica a conversão de links
+        // aiMessage = messageParts.join(""); // Monta a mensagem final
+        const formattedMessage = transformarLinks(responseData.ai_response); // Aplica a conversão de links
 
         // Substitui a mensagem pelo texto formatado com links clicáveis
         aiMsgTemplate.find(".stream-text").html(formattedMessage);
         aiMsgTemplate.find(".stream-text").removeClass('animate-ping');
 
-
-
         sendButton.removeClass('opacity-90').prop('disabled', false);
         $("#enviarMensagem svg").removeClass('animate-spin');
+
+        if (responseData.usage) {
+            let usageValue = response.data.usage.usage.total;
+
+            $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
+
+            $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
+        }
     }
 
     function addMessageToChat(image, message) {
@@ -1194,27 +1151,32 @@ jQuery(document).ready(function ($) {
     getDataCurrent();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+jQuery(document).ready(function ($) {
     const chatContainer = document.querySelector('.chatContainer');
     const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
 
     async function getAssistant(assistantId) {
-        const response = await fetch(`https://api.openai.com/v1/assistants/${assistantId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${envVars.OPENAI_API_KEY}`,
-                'OpenAI-Beta': 'assistants=v2'
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'get_assistant_by_id',
+                assistant_id: assistantId
             },
+            success: function (response) {
+                if (response.success && response.data.assistant) {
+                    localStorage.setItem('assistant', JSON.stringify(response.data.assistant));
+                } else {
+                    console.error('Erro ao buscar assistente:', response.data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+            }
         });
-
-        const data = await response.json();
-
-        localStorage.setItem('assistant', JSON.stringify(data));
     }
 
     if (assistantId) getAssistant(assistantId);
-
 });
 
 
@@ -1231,7 +1193,7 @@ window.addEventListener("load", function () {
             }
         });
 
-        let firstButton = buttons[0]; 
+        let firstButton = buttons[0];
         let otherButtonsHaveCurrent = Array.from(buttons).some((btn, index) =>
             index > 0 && btn.getAttribute("data-current") === "true"
         );

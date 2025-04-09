@@ -115,16 +115,17 @@ class Chatbot
         }
 
         if ($chatbot_options !== null) {
-            $current_options = $this->wpdb->get_var(
-                $this->wpdb->prepare(
-                    "SELECT chatbot_options FROM {$this->table} WHERE id = %d AND user_id = %d",
-                    $id,
-                    $user_id
-                )
-            );
-            $current_options = json_decode($current_options, true);
-            $new_options = array_replace_recursive((array) $current_options, $chatbot_options);
-            $data['chatbot_options'] = json_encode($new_options);
+            // $current_options = $this->wpdb->get_var(
+            //     $this->wpdb->prepare(
+            //         "SELECT chatbot_options FROM {$this->table} WHERE id = %d AND user_id = %d",
+            //         $id,
+            //         $user_id
+            //     )
+            // );
+            // $current_options = json_decode($current_options, true);
+            // $new_options = array_replace_recursive((array) $current_options, $chatbot_options);
+            // $data['chatbot_options'] = json_encode($new_options);
+            $data['chatbot_options'] = $chatbot_options;
             $formats[] = '%s';
         }
 
