@@ -1,4 +1,115 @@
 jQuery(document).ready(function ($) {
+
+    const chatContainer = document.querySelector('.chatContainer');
+    const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
+
+    if(!assistantId) {
+        localStorage.removeItem('assistant');
+        localStorage.removeItem('chatbot_script');
+        localStorage.removeItem('sessionID');
+    }
+
+    async function getAssistant(assistantId) {
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'get_assistant_by_id',
+                assistant_id: assistantId
+            },
+            success: function (response) {
+                if (response.success && response.data.assistant) {
+                    localStorage.setItem('assistant', JSON.stringify(response.data.assistant));
+
+                    // getAnswers(response.data.assistant.name);
+
+                } else {
+                    console.error('Erro ao buscar assistente:', response.data.message);
+                    localStorage.removeItem('assistant');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+            }
+        });
+    }
+
+    if (assistantId) getAssistant(assistantId);
+
+    function getAnswers() {
+        // const assistant_name = $('.assistent-name').val();
+
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'get_questions_answers',
+            },
+            success: function (response) {
+                if (response.success && response.data.answers) {
+                    localStorage.setItem('chatbotRespostas', JSON.stringify(response.data.answers));
+
+                    populateField(response.data.answers);
+
+                    if (checkAllTabsUnlocked() && assistantId) {
+                        $('[data-tab="Download"]').attr('data-locked', 'false').removeClass('opacity-50 cursor-not-allowed');
+                    }
+
+                    getDataCurrent();
+
+                } else {
+                    console.error('Erro ao buscar assistente:', response.data.message);
+                    localStorage.removeItem('chatbotRespostas');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+            }
+        });
+    }
+
+    getAnswers();
+
+    // const storedData = JSON.parse(localStorage.getItem('chatbotRespostas'));
+    // if (storedData) {
+    //     populateField(storedData)
+    // }
+
+
+    function populateField(storedData) {
+
+        Object.keys(storedData).forEach((tab, index) => {
+            const tabData = storedData[tab];
+            const $tabContent = $(`#${tab}-content`);
+            if ($tabContent.length) {
+                tabData.forEach(item => {
+                    const $field = $tabContent.find(`[name="${item.field_name}"]`);
+                    if ($field.length) {
+                        if ($field.is('input, textarea')) {
+                            if ($field.attr('type') !== 'file') {
+                                $field.val(item.resposta);
+                            } else {
+                                $field.siblings('.file-name').text(item.resposta);
+                            }
+                        } else if ($field.is('select')) {
+                            if ($field.find(`option[value="${item.resposta}"]`).length) {
+                                $field.val(item.resposta);
+                            } else {
+                                console.warn(`Valor "${item.resposta}" não encontrado para o campo "${item.field_name}"`);
+                            }
+                        }
+                    }
+                });
+                if (index < buttons.length - 1) {
+                    const $nextTabButton = $(buttons[index + 1]);
+                    $nextTabButton.attr("data-locked", "false");
+                    $nextTabButton.removeClass("opacity-50 cursor-not-allowed");
+                }
+            }
+        });
+    }
+
+
     const chatBox = $(".chatContainer");
     const sendButton = $('#enviarMensagem');
     const messageField = $(".mensagem");
@@ -445,7 +556,7 @@ jQuery(document).ready(function ($) {
     }
 
     const chatbotSelector = $('#chatbot-selector');
-    const chatContainer = $('.chatContainer');
+    // const chatContainer = $('.chatContainer');
 
     if (chatbotSelector.length) {
         chatbotSelector.on('change', function () {
@@ -660,6 +771,27 @@ jQuery(document).ready(function ($) {
 
             unlockNextTab();
             stopAllVideos();
+
+            // Salvar no user meta
+            $.ajax({
+                url: conciergeAjax.ajax_url,
+                method: 'POST',
+                data: {
+                    action: 'handle_questions_answers',
+                    assistant_name: $('.assistent-name').val(),
+                    saved_data: JSON.stringify(savedData)
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // console.log('Dados enviados com sucesso:', response.data.message);
+                    } else {
+                        console.error('Erro ao enviar dados:', response.data.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Erro na requisição AJAX:', error);
+                }
+            });
 
             Swal.fire({
                 title: `Respostas salvas`,
@@ -1041,7 +1173,7 @@ jQuery(document).ready(function ($) {
         return allUnlocked;
     }
 
-    if (checkAllTabsUnlocked()) {
+    if (checkAllTabsUnlocked() && assistantId) {
         $('[data-tab="Download"]').attr('data-locked', 'false').removeClass('opacity-50 cursor-not-allowed');
     }
 
@@ -1149,34 +1281,6 @@ jQuery(document).ready(function ($) {
     }
 
     getDataCurrent();
-});
-
-jQuery(document).ready(function ($) {
-    const chatContainer = document.querySelector('.chatContainer');
-    const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
-
-    async function getAssistant(assistantId) {
-        $.ajax({
-            url: conciergeAjax.ajax_url,
-            method: 'POST',
-            data: {
-                action: 'get_assistant_by_id',
-                assistant_id: assistantId
-            },
-            success: function (response) {
-                if (response.success && response.data.assistant) {
-                    localStorage.setItem('assistant', JSON.stringify(response.data.assistant));
-                } else {
-                    console.error('Erro ao buscar assistente:', response.data.message);
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error('Erro na requisição AJAX:', error);
-            }
-        });
-    }
-
-    if (assistantId) getAssistant(assistantId);
 });
 
 
