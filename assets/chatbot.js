@@ -20,9 +20,17 @@
     chatButton.style.zIndex = '1000';
 
     var chatIcon = document.createElement('div');
-    chatIcon.textContent = '💬';
-    chatIcon.style.fontSize = '20px';
-    chatIcon.style.color = 'white';
+    chatIcon.style.width = '50px';
+    chatIcon.style.height = '50px';
+
+    var botAvatarImgBubble = document.createElement('img');
+    botAvatarImgBubble.src = assistant.metadata?.assistant_image || '';
+    botAvatarImgBubble.alt = 'Bot Avatar';
+    botAvatarImgBubble.style.width = '50px';
+    botAvatarImgBubble.style.height = '50px';
+    botAvatarImgBubble.style.borderRadius = '999px';
+    chatIcon.appendChild(botAvatarImgBubble);
+
     chatButton.appendChild(chatIcon);
 
     document.body.appendChild(chatButton);

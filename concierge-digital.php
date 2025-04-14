@@ -16,6 +16,7 @@ define('CONCIERGE_DIGITAL_PATH', plugin_dir_path(__FILE__));
 define('CONCIERGE_DIGITAL_URL', plugin_dir_url(__FILE__));
 
 // Incluir arquivos necessários
+require_once CONCIERGE_DIGITAL_PATH . 'includes/answersHandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/api-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/helper-functions.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/requesthandler.php';
