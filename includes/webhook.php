@@ -90,7 +90,6 @@ function gerar_script_chatbot()
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
                     localStorage.setItem('chatbot_user_id', $user_id);
                     localStorage.setItem('chatbot_id', '$chatbot_id');
-                    localStorage.setItem('assistant', JSON.stringify({$assistant_json}));
                     
                     var script = document.createElement('script');
                     script.async = false;
@@ -126,9 +125,13 @@ add_action('rest_api_init', function () {
 
 function custom_chatbot_script()
 {
-    $file_path = esc_url(site_url('/wp-content/plugins/Concierge-digital/assets/chatbot.js'));
+    // $file_path = esc_url(site_url('/wp-content/plugins/Concierge-digital/assets/chatbot.js'));
+    // $cleaned_path = str_replace(['\\', ' '], '', $file_path);
 
+    $timestamp = time(); // força o browser a pegar sempre a última versão
+    $file_path = esc_url(site_url("/wp-content/plugins/Concierge-digital/assets/chatbot.js?v=$timestamp"));
     $cleaned_path = str_replace(['\\', ' '], '', $file_path);
+
 
     return new WP_REST_Response($cleaned_path, 200, [
         'Content-Type' => 'application/javascript',
@@ -343,6 +346,69 @@ function add_message_to_thread($thread_id, $message)
 
     return $response;
 }
+
+function get_assistant_rest_api()
+{
+    register_rest_route('chatbot/v1', '/get_assistant', array(
+        'methods' => ['POST', 'OPTIONS'],
+        'callback' => 'get_assistant_handler',
+        'permission_callback' => '__return_true',
+    ));
+}
+add_action('rest_api_init', 'get_assistant_rest_api');
+
+function get_assistant_handler(WP_REST_Request $request) {
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type");
+
+    $assistant_id = $request->get_param('assistant_id');
+
+    if (empty($assistant_id)) {
+        return new WP_REST_Response(['message' => 'Nenhum ID de assistente fornecido.'], 400);
+    }
+
+    $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+    $url = "https://api.openai.com/v1/assistants/" . urlencode($assistant_id);
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $api_key,
+            'OpenAI-Beta: assistants=v2'
+        ],
+    ]);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        $error_msg = curl_error($ch);
+        curl_close($ch);
+        return new WP_REST_Response(['message' => "Erro ao conectar à API: $error_msg"], 500);
+    }
+
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+
+    if ($http_code >= 400 || isset($data['error'])) {
+        $message = $data['error']['message'] ?? 'Erro desconhecido na API.';
+        return new WP_REST_Response(['message' => $message], $http_code);
+    }
+
+    return new WP_REST_Response([
+        'status' => true,
+        'assistant' => $data
+    ], 200);
+}
+
+
+
 
 // function run_thread($thread_id, $assistant_id) {
 

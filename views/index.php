@@ -254,7 +254,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 						<?php if (!empty($assistant_obj['metadata']['welcome_message'])): ?>
 							<div class="flex w-full mt-2 space-x-3 max-w-xs">
 								<div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-									<img src="<?php echo $assistant_obj['metadata']['assistant_image']; ?>" alt="">
+									<img src="<?php echo $assistant_obj['metadata']['assistant_image']; ?>" alt="" class="w-10 !h-10 object-cover !rounded-full">
 								</div>
 								<div>
 									<div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm">
