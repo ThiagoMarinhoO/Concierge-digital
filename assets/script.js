@@ -757,6 +757,7 @@ jQuery(document).ready(function ($) {
 
         // Função para salvar no localStorage
         const saveData = (chatbotOptions) => {
+
             const categoryNameElement = activeContent.find("h2").get(0) || {
                 innerText: activeContent.attr("id").replace("-content", ""),
             };
@@ -813,7 +814,7 @@ jQuery(document).ready(function ($) {
             if (isBehaviorTab) {
                 const activeTab = activeContent.find("[x-show]:not([style*='display: none'])");
 
-                activeTab.find(".question-block").each((index, questionBlock) => {
+                activeContent.find(".question-block").each((index, questionBlock) => {
                     const inputElement = $(questionBlock).find("input:not([type='checkbox']), select, textarea").get(0);
 
                     if (inputElement) {
@@ -945,6 +946,27 @@ jQuery(document).ready(function ($) {
         localStorage.setItem("chatbotRespostas", JSON.stringify(savedData));
 
         const hasChatbot = $("#hasChatbot").val();
+
+        // Salvar no user meta
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'handle_questions_answers',
+                assistant_name: $('.assistent-name').val(),
+                saved_data: JSON.stringify(savedData)
+            },
+            success: function (response) {
+                if (response.success) {
+                    // console.log('Dados enviados com sucesso:', response.data.message);
+                } else {
+                    console.error('Erro ao enviar dados:', response.data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro na requisição AJAX:', error);
+            }
+        });
 
         if (hasChatbot === '1') {
             updateChatbot(chatbotOptions);
