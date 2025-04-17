@@ -305,6 +305,7 @@
                             botBubble.style.borderRadius = '5px';
                             botBubble.style.maxWidth = '80%';
                             botBubble.style.fontSize = '14px';
+                            botBubble.style.whiteSpace = 'pre-wrap';
         
                             botResponse.appendChild(botResponseAvatar);
                             botResponse.appendChild(botBubble);                   

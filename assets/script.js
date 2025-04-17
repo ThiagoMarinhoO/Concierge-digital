@@ -399,7 +399,7 @@ jQuery(document).ready(function ($) {
     }
 
     async function sendMessage() {
-        // const sessionId = localStorage.getItem('sessionID') || "";
+        const sessionId = localStorage.getItem('sessionID') || "";
         const assistantId = $('.chatContainer').attr('data-assistant-id');
         const message = messageField.val().trim();
         if (!message) return;
@@ -451,8 +451,6 @@ jQuery(document).ready(function ($) {
             chatBox.attr('data-session-id', responseData.thread_id);
         }
 
-        console.log(responseData.usage);
-
         const assistantObj = JSON.parse(localStorage.getItem('assistant')) || null;
         let assistantImage = '';
 
@@ -463,11 +461,11 @@ jQuery(document).ready(function ($) {
         const aiMsgTemplate = $(`
             <div class="flex w-full mt-2 space-x-3 max-w-xs messageInput">
                 <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
-                    <img src="${assistantImage}" class="size-10 rounded-full" alt="">
+                    <img src="${assistantImage}" class="w-10 !h-10 !rounded-full" alt="">
                 </div>
                 <div>
                     <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm ai-message">
-                        <span class="stream-text animate-ping">...</span>
+                        <span class="stream-text !whitespace-pre-wrap animate-ping">...</span>
                     </div>
                     <span class="text-xs text-gray-500 leading-none">${currHour.getHours()}:${minutes}</span>
                 </div>
