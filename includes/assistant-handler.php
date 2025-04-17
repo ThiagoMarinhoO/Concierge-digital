@@ -21,6 +21,7 @@ function create_assistant()
         "name" => $assistant_dto['assistant_name'],
         "tools" => [["type" => "file_search"]],
         "model" => "gpt-3.5-turbo",
+        "temperature" => 0.5,
         "metadata" => !empty($assistant_dto['assistant_image']) ? (object) [
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
