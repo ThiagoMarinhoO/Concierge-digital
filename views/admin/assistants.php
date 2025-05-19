@@ -112,7 +112,7 @@
                     <?php
                         $assistant_user = get_userdata($a->user_id);
                     ?>
-                    <td class="assistant-userId"><?php echo $assistant_user->first_name; ?></td>
+                    <td class="assistant-userId"><?php echo $assistant_user->user_login; ?></td>
                     <td class="actions">
                         <div style="display: flex; gap: 20px;">
                             <button type="button" class="deleteAssistant"

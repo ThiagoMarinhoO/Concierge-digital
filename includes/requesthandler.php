@@ -210,6 +210,78 @@ function edit_question()
 add_action('wp_ajax_edit_question', 'edit_question');
 add_action('wp_ajax_nopriv_edit_question', 'edit_question');
 
+// function updateOpenaiAssistantsRules()
+// {
+//     $assistants = new Chatbot();
+//     $assistants = $assistants->getAllChatbotsInDB();
+
+//     $updatedAssistants = [];
+
+//     foreach ($assistants as $assistant) {
+//         $assistant_id = $assistant->id;
+//         $assistant_options = $assistant->chatbot_options;
+
+//         $assistant_options = json_decode($assistant_options, true);
+
+//         $rules = prepareGeneralRules();
+
+//         $rules_text = implode("\n", $rules);
+
+//         $merged_instructions = $rules_text . "\n\n" . $assistant_options;
+
+//         $data = [
+//             "instructions" => $merged_instructions,
+//             "model" => "gpt-3.5-turbo",
+//         ];
+
+//         $api_url = "https://api.openai.com/v1/assistants/". $assistant_id;
+//         $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
+
+//         $headers = [
+//             "Content-Type: application/json",
+//             "Authorization: Bearer $api_key",
+//             "OpenAI-Beta: assistants=v2"
+//         ];
+
+//         $ch = curl_init($api_url);
+//         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//         curl_setopt($ch, CURLOPT_POST, true);
+//         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+//         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+//         $response = curl_exec($ch);
+//         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+//         if (curl_errno($ch)) {
+//             throw new Exception('Erro na criação do Assistente' . curl_error($ch));
+//         }
+
+//         curl_close($ch);
+
+//         $response_data = json_decode($response, true);
+
+//         $new_instance = new Chatbot();
+//         $user_id = get_current_user_id();
+//         $new_instance->updateChatbot($response_data['id'], $response, $user_id);
+
+//         if ($http_code == 200) {
+//             $updatedAssistants[] = [
+//                 'id' => $response_data['id'],
+//                 'status' => 'Atualizado com sucesso',
+//                 // 'response' => $response_data
+//             ];
+//         } else {
+//             $updatedAssistants[] = [
+//                 'id' => $assistant_id,
+//                 'status' => 'Falha na atualização',
+//                 // 'response' => $response_data
+//             ];
+//         }
+//     }
+
+//     return $updatedAssistants;
+// }
+
 function updateOpenaiAssistantsRules()
 {
     $assistants = new Chatbot();
@@ -219,18 +291,17 @@ function updateOpenaiAssistantsRules()
 
     foreach ($assistants as $assistant) {
         $assistant_id = $assistant->id;
-        $assistant_options = $assistant->chatbot_options;
+        $assistant_user_id = $assistant->user_id;
+        $assistant_name = $assistant->chatbot_name;
 
+        $assistant_options = get_user_meta( $assistant_user_id, "assistant_answers", true);
         $assistant_options = json_decode($assistant_options, true);
 
-        $rules = prepareGeneralRules();
 
-        $rules_text = implode("\n", $rules);
-
-        $merged_instructions = $rules_text . "\n\n" . $assistant_options;
+        $hard_instructions = generate_instructions( $assistant_options, $assistant_name );
 
         $data = [
-            "instructions" => $merged_instructions,
+            "instructions" => $hard_instructions['assistant_instructions'],
             "model" => "gpt-3.5-turbo",
         ];
 

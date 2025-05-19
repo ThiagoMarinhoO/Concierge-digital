@@ -48,13 +48,15 @@ function save_responses()
 
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
+    plugin_log('Assistant DTO', $assistant_dto['assistant_instructions']);
+
     //Adicionar as regras gerais do assistente
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
         "name" => $assistant_dto['assistant_name'],
         "tools" => [["type" => "file_search"]],
-        "model" => "gpt-3.5-turbo",
+        "model" => "gpt-4.1-mini-2025-04-14",
         "metadata" => !empty($assistant_dto['assistant_image']) ? (object) [
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
