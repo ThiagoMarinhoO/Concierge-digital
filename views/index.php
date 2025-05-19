@@ -102,6 +102,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 												<input type="file" id="question-<?php echo esc_attr($index); ?>"
 													name="question_<?php echo esc_attr($question['id']); ?>"
 													class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>" <?php echo $required ?>>
+												<!-- <p class="file-name p-2 font-bold"></p> -->
+												<div class="flex items-center justify-between gap-2 file-name-container">
+												</div>
 											<?php else: ?>
 												<!-- Campo do tipo texto (padrão) -->
 												<input type="text" id="question-<?php echo esc_attr($index); ?>"
@@ -157,6 +160,9 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 										<input type="file" id="question-<?php echo esc_attr($index); ?>"
 											name="question_<?php echo esc_attr($question['id']); ?>"
 											class="py-2 px-2.5 border border-gray-100 rounded-lg w-full my-2 <?php echo $name . ' ' . $wellcome_message ?>" <?php echo $required ?>>
+										<!-- <p class="file-name p-2 font-bold"></p> -->
+										<div class="flex items-center justify-between gap-2 file-name-container">
+										</div>
 									<?php else: ?>
 										<!-- Campo do tipo texto (padrão) -->
 										<input type="text" id="question-<?php echo esc_attr($index); ?>"
@@ -247,8 +253,8 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 					<div class="flex flex-col flex-grow h-0 p-4 overflow-auto chatContainer"
 						data-assistant-id="<?php echo esc_attr($assistants[0]->id); ?>" data-session-id="">
 						<?php
-							$assistant_obj = json_decode($assistants[0]->assistant, true);
-							// var_dump($assistant_obj);
+						$assistant_obj = json_decode($assistants[0]->assistant, true);
+						// var_dump($assistant_obj);
 						?>
 
 						<?php if (!empty($assistant_obj['metadata']['welcome_message'])): ?>
@@ -289,7 +295,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 			</div>
 		<?php else: ?>
-			<button class="generateChatbot px-4 py-2.5 bg-green-400">Gerar chatbot</button>
+			<button class="generateChatbot px-4 py-2.5 bg-green-400">Gerar assistente</button>
 		<?php endif; ?>
 	</div>
 	<div id="Download-content" class="tab-content hidden absolute inset-0 bg-white p-4">

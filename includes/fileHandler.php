@@ -10,6 +10,8 @@ function handle_file_upload() {
 
 	$uploaded_urls = [];
 
+	$question_ids = isset($_POST['questionIds']) ? $_POST['questionIds'] : [];
+
 	foreach ($_FILES['files']['name'] as $index => $name) {
 		// Montar corretamente cada arquivo
 		$file = [
@@ -39,7 +41,13 @@ function handle_file_upload() {
 			if (!is_wp_error($attachment_id)) {
 				require_once ABSPATH . 'wp-admin/includes/image.php';
 				wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $upload['file']));
-				$uploaded_urls[] = wp_get_attachment_url($attachment_id);
+				// $uploaded_urls[] = wp_get_attachment_url($attachment_id);
+
+				$uploaded_urls[] = array(
+					'url' => wp_get_attachment_url($attachment_id),
+					'id'  => isset($question_ids[$index]) ? $question_ids[$index] : null
+				);
+
 			} else {
 				wp_send_json_error(['message' => 'Erro ao inserir anexo na biblioteca de mídia']);
 			}
