@@ -88,8 +88,8 @@ function gerar_script_chatbot()
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     var cleanResponseText = xhr.responseText.replace(/\\\\|\\s+|\"/g, '').trim();
-                    localStorage.setItem('chatbot_user_id', $user_id);
-                    localStorage.setItem('chatbot_id', '$chatbot_id');
+                    localStorage.setItem('asst_user_id', $user_id);
+                    localStorage.setItem('asst_id', '$chatbot_id');
                     
                     var script = document.createElement('script');
                     script.async = false;
