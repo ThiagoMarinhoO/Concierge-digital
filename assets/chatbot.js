@@ -1,7 +1,7 @@
 (function () {
     let assistant = {};
 
-    const assistantId = (localStorage.getItem('chatbot_id')) || null;
+    const assistantId = (localStorage.getItem('asst_id')) || null;
     const loadingElement = 'https://i.gifer.com/ZKZx.gif';
     const loadingText = 'carregando...';
 
@@ -185,7 +185,7 @@
             const data = await response.json();
 
             if (data.status) {
-                localStorage.setItem('assistant', JSON.stringify(data.assistant));
+                localStorage.setItem('asst', JSON.stringify(data.assistant));
                 assistant = data.assistant;
 
                 // Atualiza conteúdo
@@ -221,7 +221,7 @@
         
             function sendMessage() {
         
-                const thread_id = localStorage.getItem('sessionId') || null;
+                const thread_id = localStorage.getItem('td_id') || null;
         
                 var message = input.value.trim();
                 if (!message) return;
@@ -269,15 +269,15 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        user_id: localStorage.getItem('chatbot_user_id'),
-                        chatbot_id: localStorage.getItem('chatbot_id'),
+                        user_id: localStorage.getItem('asst_user_id'),
+                        chatbot_id: localStorage.getItem('asst_id'),
                         thread_id
                     }),
                 })
                     .then(response => response.json())
                     .then(data => {
                         if ( data.thread_id ) {
-                            localStorage.setItem('sessionId', data.thread_id);
+                            localStorage.setItem('td_id', data.thread_id);
                         }
         
                         if (data.status === 'success') {
