@@ -18,45 +18,27 @@ function save_responses()
     $chatbot_instance = new Chatbot();
     $current_chatbot = $chatbot_instance->getChatbotById($chatbot_id, $user_id);
 
-    // if ($current_chatbot) {
-    //     $current_options = $current_chatbot['chatbot_options'];
-    //     $current_image = $current_chatbot['chatbot_image'];
-
-    //     // Manter valores antigos se chatbot_options for nulo ou vazio
-    //     if (is_null($chatbot_options)) {
-    //         $chatbot_options = $current_options;
-    //     } else {
-    //         // Iterar pelos chatbot_options e manter valores antigos para campos do tipo "file" vazios
-    //         foreach ($chatbot_options as &$option) {
-    //             if ($option['field_type'] === 'file' && empty($option['value'])) {
-    //                 // Verificar se o valor atual existe no banco
-    //                 foreach ($current_options as $current_option) {
-    //                     if ($current_option['name'] === $option['name']) {
-    //                         $option['value'] = $current_option['value'];
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     if (empty($chatbot_image)) {
-    //         $chatbot_image = $current_image;
-    //     }
-    // }
-
-
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
     plugin_log('Assistant DTO', $assistant_dto['assistant_instructions']);
 
-    //Adicionar as regras gerais do assistente
+    $tools = [
+        ["type" => "file_search"]
+    ];
+
+    $assistant_whatsapp_instance = WhatsappInstance::findByAssistant($chatbot_id);
+    if (!empty($assistant_whatsapp_instance)) {
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
+        ];
+    }
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
         "name" => $assistant_dto['assistant_name'],
-        "tools" => [["type" => "file_search"]],
-        "model" => "gpt-4.1-mini-2025-04-14",
+        "tools" => $tools,
+        "model" => "gpt-4.1-mini",
         "metadata" => !empty($assistant_dto['assistant_image']) ? (object) [
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
@@ -66,7 +48,7 @@ function save_responses()
         $data['metadata']->welcome_message = $chatbot_welcome_message;
     }
 
-    $api_url = "https://api.openai.com/v1/assistants/". $chatbot_id;
+    $api_url = "https://api.openai.com/v1/assistants/" . $chatbot_id;
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
     $headers = [

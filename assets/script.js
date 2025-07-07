@@ -475,8 +475,15 @@ jQuery(document).ready(function ($) {
         chatBox.scrollTop(chatBox.prop("scrollHeight"));
 
         function transformarLinks(texto) {
-            return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+            // Converte links no formato Markdown
+            texto = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+
+            // Converte URLs em texto puro em links clicáveis
+            texto = texto.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+
+            return texto;
         }
+
 
         // Quando o streaming termina:
         // aiMessage = messageParts.join(""); // Monta a mensagem final
@@ -1037,6 +1044,18 @@ jQuery(document).ready(function ($) {
                             } else {
                                 // $field.siblings('.file-name').text(item.resposta);
 
+                                if ($field.siblings('textarea').length > 0) {
+                                    // console.log('sdsfdsa');
+                                    const $questionBlock = $field.closest('.question-block');
+                                    const $label = $questionBlock.find('label[for^="question-"]');
+                                    // const labelText = $label.text().trim();
+
+                                    // if (labelText === '') {
+                                    $label.attr('data-question-base', item.training_phrase);
+                                    $field.siblings('textarea').val(item.training_phrase);
+                                    // }
+                                }
+
                                 if (Array.isArray(item.resposta)) {
                                     const $container = $field.siblings('.file-name-container');
                                     $container.empty();
@@ -1302,16 +1321,16 @@ jQuery(document).ready(function ($) {
             });
 
             localStorage.setItem('chatbotRespostas', JSON.stringify(savedData));
-            
+
             handleQuestionsAnswers(savedData);
         }
     });
 
     function handleQuestionsAnswers(savedData) {
 
-        if(!savedData) {
+        if (!savedData) {
             console.error('Nenhum dado encontrado para salvar.');
-            
+
             const savedData = JSON.parse(localStorage.getItem("chatbotRespostas")) || {};
         }
 
@@ -1335,6 +1354,179 @@ jQuery(document).ready(function ($) {
             }
         });
     }
+
+
+    $('#attachmentInstructions').on('input', function () {
+        const instructions = $(this).val();
+        $(this)
+            .closest('.question-block')
+            .find('label[for^="question-"]')
+            .attr('data-question-base', instructions);
+    });
+
+    // 
+    // 
+    //  WHATSAPP HANDLERS
+    // 
+    // 
+
+    const connectWhatsapp = document.getElementById('conectar-whatsapp');
+    if (connectWhatsapp) {
+        connectWhatsapp.addEventListener('click', async function () {
+
+            swal.fire({
+                title: 'Criando instância do WhatsApp',
+                text: 'Aguarde enquanto criamos uma nova instância do WhatsApp.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                showConfirmButton: false,
+                showCancelButton: false,
+            });
+
+            try {
+                const assistantId = JSON.parse(localStorage.getItem('assistant'))?.id;
+
+                const response = await fetch(conciergeAjax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        action: 'create_whatsapp_instance',
+                        // instanceName: newInstanceName,
+                        assistant_id: assistantId
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+
+                    Swal.close();
+
+                    const data = result.data;
+
+                    Swal.fire({
+                        title: 'Escaneie o QR Code para conectar o WhatsApp',
+                        html: `<img src="${data.qrcode.base64}" alt="QR Code do WhatsApp" style="max-width: 100%; height: auto;" />`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Fechar'
+                    }).then((result) => {
+                        console.log('SweetAlert fechado', result);
+                        updateChatbot(); // Certifique-se que essa função existe nesse escopo
+                    });
+
+
+                    // alert('Instância do WhatsApp criada com sucesso!');
+                } else {
+
+                    Swal.close();
+
+                    swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao criar instância do WhatsApp',
+                        text: data.data?.message || 'Erro desconhecido',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Erro na requisição para criar instância do WhatsApp.');
+            }
+        });
+    }
+
+    const deleteInstance = document.getElementById('delete_instance');
+    if (deleteInstance) {
+        deleteInstance.addEventListener('click', async function () {
+
+            swal.fire({
+                title: 'Deletando instância do WhatsApp',
+                text: 'Aguarde enquanto deletamos a instância do WhatsApp.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                showConfirmButton: false,
+                showCancelButton: false,
+            });
+
+            try {
+
+                const instanceName = document.getElementById('whatsapp-instance').dataset.instancename;
+
+                console.log(instanceName);
+
+                const response = await fetch(conciergeAjax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        action: 'delete_whatsapp_instance',
+                        instanceName: instanceName,
+                    })
+                });
+
+                const { data } = await response.json();
+
+                if (data.error === false) {
+
+                    Swal.close();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Instância do WhatsApp deletada com sucesso!',
+                        text: 'A instância foi removida.',
+                        confirmButtonText: 'OK'
+                    }).then(async () => {
+                        await updateChatbot();
+                        window.location.reload();
+                    });
+
+                } else {
+
+                    Swal.close();
+
+                    swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao deletar instância do WhatsApp',
+                        text: 'Erro desconhecido',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao deletar instância do WhatsApp',
+                    // text: error,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    $('#gcalendar-connect').on('click', function () {
+        console.log('adfads')
+        // Chama seu backend para pegar a URL de login do Google
+        $.ajax({
+            url: conciergeAjax.ajax_url, // WordPress fornece isso automaticamente em admin, mas você pode definir no frontend também
+            method: 'POST',
+            data: {
+                action: 'gcalendar_auth'
+            },
+            success: function (response) {
+                if (response.url) {
+                    window.location.href = response.url; // Redireciona para o Google
+                    // window.open(response.url, '_blank');
+                } else {
+                    alert('Erro ao gerar URL de autenticação.');
+                }
+            }
+        });
+    });
+
+    console.log('to')
 });
 
 
@@ -1394,4 +1586,153 @@ window.addEventListener("load", function () {
     });
 
     updateSpans(); // Executa a atualização inicial
+
+
+    // // 
+    // // 
+    // //  WHATSAPP HANDLERS
+    // // 
+    // // 
+
+    // const connectWhatsapp = document.getElementById('conectar-whatsapp');
+    // if (connectWhatsapp) {
+    //     connectWhatsapp.addEventListener('click', async function () {
+
+    //         swal.fire({
+    //             title: 'Criando instância do WhatsApp',
+    //             text: 'Aguarde enquanto criamos uma nova instância do WhatsApp.',
+    //             allowOutsideClick: false,
+    //             didOpen: () => {
+    //                 Swal.showLoading();
+    //             },
+    //             showConfirmButton: false,
+    //             showCancelButton: false,
+    //         });
+
+    //         try {
+    //             const assistantId = JSON.parse(localStorage.getItem('assistant'))?.id;
+
+    //             const response = await fetch(conciergeAjax.ajax_url, {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    //                 },
+    //                 body: new URLSearchParams({
+    //                     action: 'create_whatsapp_instance',
+    //                     // instanceName: newInstanceName,
+    //                     assistant_id: assistantId
+    //                 })
+    //             });
+    //             const result = await response.json();
+    //             if (result.success) {
+
+    //                 Swal.close();
+
+    //                 const data = result.data;
+
+    //                 Swal.fire({
+    //                     title: 'Escaneie o QR Code para conectar o WhatsApp',
+    //                     html: `<img src="${data.qrcode.base64}" alt="QR Code do WhatsApp" style="max-width: 100%; height: auto;" />`,
+    //                     showConfirmButton: true,
+    //                     confirmButtonText: 'Fechar'
+    //                 }).then((result) => {
+    //                     console.log('SweetAlert fechado', result);
+    //                     updateChatbot(); // Certifique-se que essa função existe nesse escopo
+    //                 });
+
+
+    //                 // alert('Instância do WhatsApp criada com sucesso!');
+    //             } else {
+
+    //                 Swal.close();
+
+    //                 swal.fire({
+    //                     icon: 'error',
+    //                     title: 'Erro ao criar instância do WhatsApp',
+    //                     text: data.data?.message || 'Erro desconhecido',
+    //                     confirmButtonText: 'OK'
+    //                 });
+    //             }
+    //         } catch (error) {
+    //             console.error('Erro na requisição:', error);
+    //             alert('Erro na requisição para criar instância do WhatsApp.');
+    //         }
+    //     });
+    // }
+
+    // const deleteInstance = document.getElementById('delete_instance');
+    // if (deleteInstance) {
+    //     deleteInstance.addEventListener('click', async function () {
+
+    //         swal.fire({
+    //             title: 'Deletando instância do WhatsApp',
+    //             text: 'Aguarde enquanto deletamos a instância do WhatsApp.',
+    //             allowOutsideClick: false,
+    //             didOpen: () => {
+    //                 Swal.showLoading();
+    //             },
+    //             showConfirmButton: false,
+    //             showCancelButton: false,
+    //         });
+
+    //         try {
+
+    //             const instanceName = document.getElementById('whatsapp-instance').dataset.instancename;
+
+    //             console.log(instanceName);
+
+    //             const response = await fetch(conciergeAjax.ajax_url, {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    //                 },
+    //                 body: new URLSearchParams({
+    //                     action: 'delete_whatsapp_instance',
+    //                     instanceName: instanceName,
+    //                 })
+    //             });
+
+    //             const { data } = await response.json();
+
+    //             if (data.error === false) {
+
+    //                 Swal.close();
+
+    //                 Swal.fire({
+    //                     icon: 'success',
+    //                     title: 'Instância do WhatsApp deletada com sucesso!',
+    //                     text: 'A instância foi removida.',
+    //                     confirmButtonText: 'OK'
+    //                 }).then(() => {
+    //                     window.location.reload();
+    //                 });
+
+    //             } else {
+
+    //                 Swal.close();
+
+    //                 swal.fire({
+    //                     icon: 'error',
+    //                     title: 'Erro ao deletar instância do WhatsApp',
+    //                     text: 'Erro desconhecido',
+    //                     confirmButtonText: 'OK'
+    //                 });
+    //             }
+    //         } catch (error) {
+    //             swal.fire({
+    //                 icon: 'error',
+    //                 title: 'Erro ao deletar instância do WhatsApp',
+    //                 // text: error,
+    //                 confirmButtonText: 'OK'
+    //             });
+    //         }
+    //     });
+    // }
+
+
+    //
+    //  Passar as instruções junto do attachment
+    //
+
+    // const attachmentInstructionsObserver = new MutationObserver(functino)
 });

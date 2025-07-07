@@ -29,12 +29,32 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistant.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/whatsappInstance.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/whatsappMessage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistantUsage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
-require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
+
+//controllers
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/WhatsappController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/googleCalendarController.php';
+
+//services
+require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/assistantService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/whatsappInstanceService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/whatsappMessageService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/evolutionApiService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/openaiService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/googleCalendarService.php';
+
+
+//Helpers
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/assistantHelpers.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/whatsappMessageHelpers.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/clientEvolutionApi.php';
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';
@@ -335,4 +355,7 @@ register_activation_hook(__FILE__, function () {
     // $initialAssistants->createTable();
 
     AssistantUsage::createTable();
+
+    WhatsappInstance::createTable();
+    WhatsappMessage::createOrUpdateTable();
 });

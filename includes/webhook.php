@@ -228,6 +228,8 @@ function handle_chatbot_message(WP_REST_Request $request)
     plugin_log('--- Resposta completa da OpenAI ---');
     plugin_log(print_r($response, true));
 
+    $run_id = null;
+
     // Divide a resposta por linha
     $lines = explode("\n", $response);
 
@@ -241,17 +243,75 @@ function handle_chatbot_message(WP_REST_Request $request)
             $jsonData = trim(substr($line, 5));
 
             // Verifica se o JSON é válido antes de tentar decodificar
+            // if (!empty($jsonData) && $jsonData !== "[DONE]") {
+            //     $decodedData = json_decode($jsonData, true);
+
+            //     plugin_log('--- JSON Decodificado ---');
+            //     plugin_log(print_r($decodedData, true));
+
+            //     if (isset($decodedData['delta']['content'])) {
+            //         foreach ($decodedData['delta']['content'] as $chunkPart) {
+            //             if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
+            //                 $assistant_message .= $chunkPart['text']['value'];
+            //             }
+            //         }
+            //     }
+            // }
+
             if (!empty($jsonData) && $jsonData !== "[DONE]") {
                 $decodedData = json_decode($jsonData, true);
 
                 plugin_log('--- JSON Decodificado ---');
                 plugin_log(print_r($decodedData, true));
 
+                if (!$run_id && isset($decodedData['id'])) {
+                    $run_id = $decodedData['id'];
+                    plugin_log(">> RUN_ID detectado: $run_id");
+                }
+
                 if (isset($decodedData['delta']['content'])) {
                     foreach ($decodedData['delta']['content'] as $chunkPart) {
                         if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
                             $assistant_message .= $chunkPart['text']['value'];
                         }
+                    }
+                }
+
+                // if (isset($decodedData['usage'])) {
+                //     $usage = $decodedData['usage'];
+                // }
+                
+                if (isset($decodedData['required_action'])) {
+                    $required_action = $decodedData['required_action'];
+
+                    if ($required_action['type'] === 'submit_tool_outputs') {
+
+                        $tool_call = $required_action['submit_tool_outputs']['tool_calls'][0];
+                        $tool_call_id = $tool_call['id'];
+
+                        // Obtém a instância do WhatsApp
+                        $instance = WhatsappInstance::findByAssistant($chatbot_id);
+                        $holeInstance = WhatsappController::fetch_instance_by_name($instance->getInstanceName());
+                        $whatsappInstanceNumber = $holeInstance[0]['ownerJid'];
+
+                        error_log("WhatsApp Instance Number: " . print_r($whatsappInstanceNumber, true));
+
+                        // Gera o link para o WhatsApp (sem precisar de mensagem do usuário)
+                        $assistant_message = AssistantHelpers::tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id);
+
+                        error_log("Assistant Message: " . print_r($assistant_message, true));
+
+                        // Envia o link como output da ferramenta
+                        AssistantService::submit_tool_outputs(
+                            [
+                                [
+                                    "tool_call_id" => $tool_call_id,
+                                    "output" => $assistant_message
+                                ]
+                            ],
+                            $thread_id,
+                            $run_id
+                        );
                     }
                 }
             }

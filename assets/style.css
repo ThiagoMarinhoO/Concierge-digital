@@ -79,3 +79,13 @@
 .messageInput {
     animation: fadeIn 0.3s ease-out;
 }
+
+.question-block:has(> .attachment-instructions-container) {
+    flex-wrap: wrap !important;
+}
+.question-block:has(> .attachment-instructions-container) label {
+    width: fit-content !important;
+}
+.question-block .attachment-instructions-container {
+    width: 100%;
+}

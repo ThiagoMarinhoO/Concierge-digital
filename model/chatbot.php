@@ -168,7 +168,7 @@ class Chatbot
 
     public function getAllChatbotsInDB()
     {
-        $sql = $this->wpdb->prepare("SELECT * FROM {$this->table}");
+        $sql = "SELECT * FROM {$this->table}";
         return $this->wpdb->get_results($sql);
     }
 
