@@ -176,7 +176,7 @@
     // Carregar dados do assistente
     async function getAssistant(assistantId) {
         try {
-            const response = await fetch('https://projetocharlie.humans.land/wp-json/chatbot/v1/get_assistant', {
+            const response = await fetch('https://charlie.humans.land/wp-json/chatbot/v1/get_assistant', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assistant_id: assistantId }),
@@ -211,122 +211,128 @@
     if (assistantId) getAssistant(assistantId);
 
     chatButton.addEventListener('click', function () {
-                if (chatContainer.style.display === 'none') {
-                    chatContainer.style.display = 'flex';
-                    chatBubble.style.opacity = '0';
+        if (chatContainer.style.display === 'none') {
+            chatContainer.style.display = 'flex';
+            chatBubble.style.opacity = '0';
+        } else {
+            chatContainer.style.display = 'none';
+        }
+    });
+
+    function sendMessage() {
+
+        const thread_id = localStorage.getItem('td_id') || null;
+
+        var message = input.value.trim();
+        if (!message) return;
+
+        var userMessage = document.createElement('div');
+        userMessage.style.display = 'flex';
+        userMessage.style.justifyContent = 'flex-end';
+        userMessage.style.marginBottom = '10px';
+
+        var userAvatar = document.createElement('div');
+        userAvatar.style.width = '30px';
+        userAvatar.style.height = '30px';
+        userAvatar.style.backgroundColor = '#0073aa';
+        userAvatar.style.borderRadius = '50%';
+        userAvatar.style.display = 'flex';
+        userAvatar.style.alignItems = 'center';
+        userAvatar.style.justifyContent = 'center';
+        userAvatar.style.color = 'white';
+        userAvatar.style.fontSize = '14px';
+        userAvatar.textContent = '👤';
+
+        var userBubble = document.createElement('div');
+        userBubble.textContent = message;
+        userBubble.style.marginRight = '5px';
+        userBubble.style.padding = '5px 10px';
+        userBubble.style.background = '#0073aa';
+        userBubble.style.color = '#fff';
+        userBubble.style.borderRadius = '5px';
+        userBubble.style.maxWidth = '80%';
+        userBubble.style.fontSize = '14px';
+
+        userMessage.appendChild(userBubble);
+        userMessage.appendChild(userAvatar);
+        chatMessages.appendChild(userMessage);
+
+        input.value = '';
+
+
+
+        fetch('https://charlie.humans.land/wp-json/chatbot/v1/send_message', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                user_id: localStorage.getItem('asst_user_id'),
+                chatbot_id: localStorage.getItem('asst_id'),
+                thread_id
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.thread_id) {
+                    localStorage.setItem('td_id', data.thread_id);
+                }
+
+                if (data.status === 'success') {
+
+                    var botResponse = document.createElement('div');
+                    botResponse.style.display = 'flex';
+                    botResponse.style.alignItems = 'center';
+                    botResponse.style.marginBottom = '10px';
+
+                    var botResponseAvatar = botAvatar.cloneNode(true);
+
+                    var botBubble = document.createElement('div');
+
+                    // console.log(data.response);
+
+                    function transformarLinks(texto) {
+                        // Converte links no formato Markdown
+                        texto = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>');
+
+                        // Converte URLs em texto puro em links clicáveis
+                        texto = texto.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+
+                        return texto;
+                    }
+
+                    botBubble.innerHTML = transformarLinks(data.response);
+
+                    botBubble.style.marginLeft = '10px';
+                    botBubble.style.padding = '5px 10px';
+                    botBubble.style.background = '#f0f0f0';
+                    botBubble.style.borderRadius = '5px';
+                    botBubble.style.maxWidth = '80%';
+                    botBubble.style.fontSize = '14px';
+                    botBubble.style.whiteSpace = 'pre-wrap';
+
+                    botResponse.appendChild(botResponseAvatar);
+                    botResponse.appendChild(botBubble);
+                    chatMessages.appendChild(botResponse);
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
                 } else {
-                    chatContainer.style.display = 'none';
+                    console.error('Erro: ', data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar mensagem via REST API: ', error);
             });
-        
-            function sendMessage() {
-        
-                const thread_id = localStorage.getItem('td_id') || null;
-        
-                var message = input.value.trim();
-                if (!message) return;
-        
-                var userMessage = document.createElement('div');
-                userMessage.style.display = 'flex';
-                userMessage.style.justifyContent = 'flex-end';
-                userMessage.style.marginBottom = '10px';
-        
-                var userAvatar = document.createElement('div');
-                userAvatar.style.width = '30px';
-                userAvatar.style.height = '30px';
-                userAvatar.style.backgroundColor = '#0073aa';
-                userAvatar.style.borderRadius = '50%';
-                userAvatar.style.display = 'flex';
-                userAvatar.style.alignItems = 'center';
-                userAvatar.style.justifyContent = 'center';
-                userAvatar.style.color = 'white';
-                userAvatar.style.fontSize = '14px';
-                userAvatar.textContent = '👤';
-        
-                var userBubble = document.createElement('div');
-                userBubble.textContent = message;
-                userBubble.style.marginRight = '5px';
-                userBubble.style.padding = '5px 10px';
-                userBubble.style.background = '#0073aa';
-                userBubble.style.color = '#fff';
-                userBubble.style.borderRadius = '5px';
-                userBubble.style.maxWidth = '80%';
-                userBubble.style.fontSize = '14px';
-        
-                userMessage.appendChild(userBubble);
-                userMessage.appendChild(userAvatar);
-                chatMessages.appendChild(userMessage);
-        
-                input.value = '';
-        
-                
-        
-                fetch('https://projetocharlie.humans.land/wp-json/chatbot/v1/send_message', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        user_id: localStorage.getItem('asst_user_id'),
-                        chatbot_id: localStorage.getItem('asst_id'),
-                        thread_id
-                    }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if ( data.thread_id ) {
-                            localStorage.setItem('td_id', data.thread_id);
-                        }
-        
-                        if (data.status === 'success') {
-        
-                            var botResponse = document.createElement('div');
-                            botResponse.style.display = 'flex';
-                            botResponse.style.alignItems = 'center';
-                            botResponse.style.marginBottom = '10px';
-        
-                            var botResponseAvatar = botAvatar.cloneNode(true);
-        
-                            var botBubble = document.createElement('div');
-        
-                            console.log(data.response);
-        
-                            function transformarLinks(texto) {
-                                return texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color: blue; text-decoration: underline;" class="text-blue-600 underline">$1</a>');
-                            }                    
-        
-                            botBubble.innerHTML = transformarLinks(data.response);
-                            
-                            botBubble.style.marginLeft = '10px';
-                            botBubble.style.padding = '5px 10px';
-                            botBubble.style.background = '#f0f0f0';
-                            botBubble.style.borderRadius = '5px';
-                            botBubble.style.maxWidth = '80%';
-                            botBubble.style.fontSize = '14px';
-                            botBubble.style.whiteSpace = 'pre-wrap';
-        
-                            botResponse.appendChild(botResponseAvatar);
-                            botResponse.appendChild(botBubble);                   
-                            chatMessages.appendChild(botResponse);
-                            
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                            
-                        } else {
-                            console.error('Erro: ', data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro ao enviar mensagem via REST API: ', error);
-                    });
-            }
-        
-            input.addEventListener('keypress', function (event) {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-        
-            button.addEventListener('click', sendMessage);
+    }
+
+    input.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    button.addEventListener('click', sendMessage);
 })();

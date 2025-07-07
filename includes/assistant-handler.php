@@ -19,8 +19,11 @@ function create_assistant()
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
         "name" => $assistant_dto['assistant_name'],
-        "tools" => [["type" => "file_search"]],
-        "model" => "gpt-4.1-mini-2025-04-14",
+        "tools" => [
+            ["type" => "file_search"],
+            // ["type" => "function", "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()]
+        ],
+        "model" => "gpt-4.1-mini",
         "temperature" => 0.6,
         "metadata" => !empty($assistant_dto['assistant_image']) ? (object) [
             "assistant_image" => $assistant_dto['assistant_image']
@@ -279,6 +282,16 @@ function generate_instructions($chatbot_options, $chatbot_name)
             $training_phrase = $option['training_phrase'] ?? '';
             $resposta = $option['resposta'] ?? '';
 
+            if (empty($resposta) || (is_array($resposta) && count(array_filter($resposta)) === 0)) {
+                continue;
+            }
+
+            if ($option['pergunta'] === 'Documentos anexos')
+            {
+                $destino[] = $training_phrase . ' ' . $resposta[0];
+                continue;
+            }
+
             if (($option['field_type'] ?? '') == 'file') {
                 $respostas = is_array($resposta) ? $resposta : [$resposta];
                 foreach ($respostas as $respostaItem) {
@@ -320,7 +333,6 @@ function generate_instructions($chatbot_options, $chatbot_name)
             }
         }
     }
-
     // Junta instruções de comportamento e base de conhecimento
     $training_context = implode("\n", array_merge($behavior_instructions, $knowledge_base));
 
@@ -343,13 +355,14 @@ function generate_instructions($chatbot_options, $chatbot_name)
     }
 
 
-    // plugin_log('-------- OUTPUT FORMATADO FINAL --------');
-    // plugin_log($formatted_output);
+    plugin_log('-------- OUTPUT FORMATADO FINAL --------');
+    plugin_log($formatted_output);
 
     return ([
         "assistant_name" => $chatbot_name,
         "assistant_instructions" => $formatted_output,
         "assistant_image" => $chatbot_image,
+        // "files_id" => $files_id
     ]);
 }
 
@@ -442,7 +455,7 @@ function manage_usage($usage = null)
 // 
 
 add_action('wp_ajax_handle_assistant_message', 'handle_assistant_message');
-function handle_assistant_message()
+function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, $thread_id = null)
 {
     plugin_log('--- HANDLE ASSISTANT FUNCTION ---');
 
@@ -451,8 +464,19 @@ function handle_assistant_message()
     // $thread_id = sanitize_text_field($request->get_param('thread_id'));
 
     $message = $_POST['message'] ?? null;
-    $thread_id = $_POST['session_id'] ?? null;
+    $thread_id = $_POST['session_id'] ?? $thread_id;
     $assistant_id = $_POST['assistant_id'] ?? null;
+
+    if ($isWhatsapp && $whatsappMessage) {
+        $message = $whatsappMessage->getMessage() ?? null;
+        // desenvolver thread_id
+
+        $assistant_id = WhatsappInstance::findByInstanceName($whatsappMessage->getInstanceName())->getAssistant();
+
+        // error_log("Assistant id WhatsApp instance: " . print_r($assistant_id, true));
+
+        $thread_id = $whatsappMessage->getThreadId() ?? null;
+    }
 
     $usage = null;
 
@@ -505,6 +529,8 @@ function handle_assistant_message()
     plugin_log('--- Resposta completa da OpenAI ---');
     plugin_log(print_r($response, true));
 
+    $run_id = null;
+
     // Divide a resposta por linha
     $lines = explode("\n", $response);
 
@@ -524,6 +550,11 @@ function handle_assistant_message()
                 plugin_log('--- JSON Decodificado ---');
                 plugin_log(print_r($decodedData, true));
 
+                if (!$run_id && isset($decodedData['id'])) {
+                    $run_id = $decodedData['id'];
+                    plugin_log(">> RUN_ID detectado: $run_id");
+                }
+
                 if (isset($decodedData['delta']['content'])) {
                     foreach ($decodedData['delta']['content'] as $chunkPart) {
                         if (isset($chunkPart['type']) && $chunkPart['type'] === 'text') {
@@ -534,6 +565,40 @@ function handle_assistant_message()
 
                 if (isset($decodedData['usage'])) {
                     $usage = $decodedData['usage'];
+                }
+                
+                if (isset($decodedData['required_action'])) {
+                    $required_action = $decodedData['required_action'];
+
+                    if ($required_action['type'] === 'submit_tool_outputs') {
+
+                        $tool_call = $required_action['submit_tool_outputs']['tool_calls'][0];
+                        $tool_call_id = $tool_call['id'];
+
+                        // Obtém a instância do WhatsApp
+                        $instance = WhatsappInstance::findByAssistant($assistant_id);
+                        $holeInstance = WhatsappController::fetch_instance_by_name($instance->getInstanceName());
+                        $whatsappInstanceNumber = $holeInstance[0]['ownerJid'];
+
+                        error_log("WhatsApp Instance Number: " . print_r($whatsappInstanceNumber, true));
+
+                        // Gera o link para o WhatsApp (sem precisar de mensagem do usuário)
+                        $assistant_message = AssistantHelpers::tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id);
+
+                        error_log("Assistant Message: " . print_r($assistant_message, true));
+
+                        // Envia o link como output da ferramenta
+                        AssistantService::submit_tool_outputs(
+                            [
+                                [
+                                    "tool_call_id" => $tool_call_id,
+                                    "output" => $assistant_message
+                                ]
+                            ],
+                            $thread_id,
+                            $run_id
+                        );
+                    }
                 }
             }
         }
@@ -546,6 +611,15 @@ function handle_assistant_message()
     plugin_log(print_r($usage, true));
 
     $usageObj = manage_usage($usage);
+
+    if ($isWhatsapp && $whatsappMessage) {
+
+        return [
+            'ai_response' => $assistant_message,
+            'thread_id' => $thread_id,
+            'usage' => $usageObj,
+        ];
+    }
 
     wp_send_json_success([
         'ai_response' => $assistant_message,

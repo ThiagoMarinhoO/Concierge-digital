@@ -290,22 +290,37 @@ function updateOpenaiAssistantsRules()
     $updatedAssistants = [];
 
     foreach ($assistants as $assistant) {
+        error_log("ID: {$assistant->id} | Nome: {$assistant->chatbot_name} | User ID: {$assistant->user_id}");
         $assistant_id = $assistant->id;
         $assistant_user_id = $assistant->user_id;
         $assistant_name = $assistant->chatbot_name;
 
-        $assistant_options = get_user_meta( $assistant_user_id, "assistant_answers", true);
+        $assistant_options = get_user_meta($assistant_user_id, "assistant_answers", true);
         $assistant_options = json_decode($assistant_options, true);
 
 
-        $hard_instructions = generate_instructions( $assistant_options, $assistant_name );
+        $hard_instructions = generate_instructions($assistant_options, $assistant_name);
 
-        $data = [
-            "instructions" => $hard_instructions['assistant_instructions'],
-            "model" => "gpt-3.5-turbo",
+        $tools = [
+            ["type" => "file_search"]
         ];
 
-        $api_url = "https://api.openai.com/v1/assistants/". $assistant_id;
+        $assistant_whatsapp_instance = WhatsappInstance::findByAssistant($assistant_id);
+        if (!empty($assistant_whatsapp_instance)) {
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
+            ];
+        }
+
+        $data = [
+            "name" => $assistant_name,
+            "instructions" => $hard_instructions['assistant_instructions'],
+            "model" => "gpt-4.1-mini-2025-04-14",
+            "tools" => $tools,
+        ];
+
+        $api_url = "https://api.openai.com/v1/assistants/" . $assistant_id;
         $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
         $headers = [
@@ -332,8 +347,8 @@ function updateOpenaiAssistantsRules()
         $response_data = json_decode($response, true);
 
         $new_instance = new Chatbot();
-        $user_id = get_current_user_id();
-        $new_instance->updateChatbot($response_data['id'], $response, $user_id);
+        // $user_id = get_current_user_id();
+        $new_instance->updateChatbot($response_data['id'], $response, $assistant_user_id);
 
         if ($http_code == 200) {
             $updatedAssistants[] = [

@@ -20,6 +20,17 @@ if (!empty($user_id)) {
 }
 
 $user_has_chatbot = $chatbot->userHasChatbot($user_id);
+
+
+
+// 
+// Instancias do whatsapp
+// 
+
+$whatsappInstance = WhatsappInstance::findByUserId($user_id);
+
+
+
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 	<?php $firstUnlocked = true; ?>
@@ -134,7 +145,7 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 							<?php if (!empty($questionsByCategory)): ?>
 								<div class="question-block">
 									<label for="question-<?php echo esc_attr($index); ?>"
-										data-question-base="<?php echo esc_attr($question['training_phrase']); ?>">
+										data-question-base="<?php echo ($question['title'] === 'Documentos anexos') ? '' : esc_attr($question['training_phrase']); ?>">
 										<?php echo esc_html($question['title']); ?>
 									</label>
 									<?php
@@ -163,6 +174,12 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 										<!-- <p class="file-name p-2 font-bold"></p> -->
 										<div class="flex items-center justify-between gap-2 file-name-container">
 										</div>
+										<?php if ($question['title'] === 'Documentos anexos') : ?>
+											<div class="attachment-instructions-container">
+												<p><?php echo get_field('texto_de_explicacao'); ?></p>
+												<textarea name="attachmentInstructions" id="attachmentInstructions"></textarea>
+											</div>
+										<?php endif; ?>
 									<?php else: ?>
 										<!-- Campo do tipo texto (padrão) -->
 										<input type="text" id="question-<?php echo esc_attr($index); ?>"
@@ -341,6 +358,187 @@ $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 			</div>
 		</div>
 
+		<?php if (empty($whatsappInstance)): ?>
+			<button type="button" name="" id="conectar-whatsapp" class="mb-4 rounded hover:!bg-green-700 hover:!text-white">Conectar ao whatsapp</button>
+		<?php endif; ?>
 
+		<?php if (($whatsappInstance)): ?>
+			<div id="whatsapp-instance" class="flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm" data-instanceName="<?php echo esc_attr($whatsappInstance->getInstanceName()); ?>">
+				<div class="flex flex-col space-y-1.5 p-6">
+					<div class="flex w-full flex-row items-center justify-between gap-4" href="">
+						<h3 class="text-wrap font-semibold"><?php echo esc_html($whatsappInstance->getInstanceName()); ?></h3>
+					</div>
+				</div>
+				<div class="flex items-center p-6 pt-0 justify-between">
+					<div class="!hidden inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary !text-primary-foreground hover:bg-primary/80">Connecting</div><button id="delete_instance" class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 !bg-red-500 !text-white hover:!bg-red-500/90 h-9 rounded-md px-3"><span>Delete</span></button>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<a href="<?= GoogleCalendarController::get_client()->createAuthUrl(); ?>" id="gcalendar-connect">Conectar com Google Calendar</a>
+
+		<!-- <button id="gcalendar-listEvents">List events</button>
+
+		<script>
+			window.addEventListener('DOMContentLoaded', () => {
+				document.querySelector('#gcaledar-listEvents').addEventListener('click', async () => {
+					const response = await fetch(conciergeAjax.ajax_url, {
+						
+					})
+				})
+			})
+		</script> -->
+
+		<!-- <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
+		<button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+
+		<pre id="content" style="white-space: pre-wrap;"></pre>
+
+		<script type="text/javascript">
+			/* exported gapiLoaded */
+			/* exported gisLoaded */
+			/* exported handleAuthClick */
+			/* exported handleSignoutClick */
+
+			// TODO(developer): Set to client ID and API key from the Developer Console
+			const CLIENT_ID = '144290176749-a1lr9pc06hl6jfmpbci5vucd0mukk1e5.apps.googleusercontent.com';
+			const API_KEY = 'AIzaSyAU8y3GH_DtNkt-o5LmqjFi3y9d7NmMhOE';
+
+			// Discovery doc URL for APIs used by the quickstart
+			const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+			// Authorization scopes required by the API; multiple scopes can be
+			// included, separated by spaces.
+			const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+
+			let tokenClient;
+			let gapiInited = false;
+			let gisInited = false;
+
+			document.getElementById('authorize_button').style.visibility = 'hidden';
+			document.getElementById('signout_button').style.visibility = 'hidden';
+
+			/**
+			 * Callback after api.js is loaded.
+			 */
+			function gapiLoaded() {
+				gapi.load('client', initializeGapiClient);
+			}
+
+			/**
+			 * Callback after the API client is loaded. Loads the
+			 * discovery doc to initialize the API.
+			 */
+			async function initializeGapiClient() {
+				await gapi.client.init({
+					apiKey: API_KEY,
+					discoveryDocs: [DISCOVERY_DOC],
+				});
+				gapiInited = true;
+				maybeEnableButtons();
+			}
+
+			/**
+			 * Callback after Google Identity Services are loaded.
+			 */
+			function gisLoaded() {
+				tokenClient = google.accounts.oauth2.initTokenClient({
+					client_id: CLIENT_ID,
+					scope: SCOPES,
+					callback: '', // defined later
+				});
+				gisInited = true;
+				maybeEnableButtons();
+			}
+
+			/**
+			 * Enables user interaction after all libraries are loaded.
+			 */
+			function maybeEnableButtons() {
+				if (gapiInited && gisInited) {
+					document.getElementById('authorize_button').style.visibility = 'visible';
+				}
+			}
+
+			/**
+			 *  Sign in the user upon button click.
+			 */
+			function handleAuthClick() {
+				tokenClient.callback = async (resp) => {
+					if (resp.error !== undefined) {
+						throw (resp);
+					}
+
+					console.log(resp)
+
+					document.getElementById('signout_button').style.visibility = 'visible';
+					document.getElementById('authorize_button').innerText = 'Refresh';
+					// await listUpcomingEvents();
+				};
+
+				if (gapi.client.getToken() === null) {
+					// Prompt the user to select a Google Account and ask for consent to share their data
+					// when establishing a new session.
+					tokenClient.requestAccessToken({
+						prompt: 'consent'
+					});
+				} else {
+					// Skip display of account chooser and consent dialog for an existing session.
+					tokenClient.requestAccessToken({
+						prompt: ''
+					});
+				}
+			}
+
+			/**
+			 *  Sign out the user upon button click.
+			 */
+			function handleSignoutClick() {
+				const token = gapi.client.getToken();
+				if (token !== null) {
+					google.accounts.oauth2.revoke(token.access_token);
+					gapi.client.setToken('');
+					document.getElementById('content').innerText = '';
+					document.getElementById('authorize_button').innerText = 'Authorize';
+					document.getElementById('signout_button').style.visibility = 'hidden';
+				}
+			}
+
+			/**
+			 * Print the summary and start datetime/date of the next ten events in
+			 * the authorized user's calendar. If no events are found an
+			 * appropriate message is printed.
+			 */
+			async function listUpcomingEvents() {
+				let response;
+				try {
+					const request = {
+						'calendarId': 'primary',
+						'timeMin': (new Date()).toISOString(),
+						'showDeleted': false,
+						'singleEvents': true,
+						'maxResults': 10,
+						'orderBy': 'startTime',
+					};
+					response = await gapi.client.calendar.events.list(request);
+				} catch (err) {
+					document.getElementById('content').innerText = err.message;
+					return;
+				}
+
+				const events = response.result.items;
+				if (!events || events.length == 0) {
+					document.getElementById('content').innerText = 'No events found.';
+					return;
+				}
+				// Flatten to string to display
+				const output = events.reduce(
+					(str, event) => `${str}${event.summary} (${event.start.dateTime || event.start.date})\n`,
+					'Events:\n');
+				document.getElementById('content').innerText = output;
+			}
+		</script>
+		<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+		<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script> -->
 	</div>
 </div>
