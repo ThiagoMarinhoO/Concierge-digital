@@ -188,9 +188,24 @@ function handle_chatbot_message(WP_REST_Request $request)
         $thread_id = create_thread();
     }
 
+    /*
+    *
+    *   SALVAR MENSAGEM DO USUÁRIO NO BANCO
+    *    
+    */
+    $message_obj = [
+        "message" => $message,
+        "thread_id" => $thread_id,
+        "from_me" => 0,
+        "assistant_id" => $chatbot_id,
+        // "date" => new DateTime('now')
+    ];
+
+    MessageService::processMessage($message_obj);
+
     add_message_to_thread($thread_id, $message);
 
-    plugin_log('--- RUNNNN FUUUUNCTION ---');
+    // plugin_log('--- RUNNNN FUUUUNCTION ---');
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
     $api_url = "https://api.openai.com/v1/threads/$thread_id/runs";
 
@@ -225,8 +240,8 @@ function handle_chatbot_message(WP_REST_Request $request)
 
     // $response = json_decode($response, true);
 
-    plugin_log('--- Resposta completa da OpenAI ---');
-    plugin_log(print_r($response, true));
+    // plugin_log('--- Resposta completa da OpenAI ---');
+    // plugin_log(print_r($response, true));
 
     $run_id = null;
 
@@ -280,7 +295,7 @@ function handle_chatbot_message(WP_REST_Request $request)
                 // if (isset($decodedData['usage'])) {
                 //     $usage = $decodedData['usage'];
                 // }
-                
+
                 if (isset($decodedData['required_action'])) {
                     $required_action = $decodedData['required_action'];
 
@@ -320,6 +335,22 @@ function handle_chatbot_message(WP_REST_Request $request)
 
     plugin_log('--- Mensagem final gerada ---');
     plugin_log(print_r($assistant_message, true));
+
+    /*
+    *
+    *   SALVAR MENSAGEM DO ASSISTENTE NO BANCO
+    *    
+    */
+    $assistant_message_obj = [
+        "message" => $assistant_message,
+        "thread_id" => $thread_id,
+        "from_me" => 1,
+        "name" => $chatbot_id,
+        "assistant_id" => $chatbot_id,
+        // "date" => new DateTime('now')
+    ];
+
+    MessageService::processMessage($assistant_message_obj);
 
     return new WP_REST_Response([
         'status' => 'success',
@@ -417,7 +448,8 @@ function get_assistant_rest_api()
 }
 add_action('rest_api_init', 'get_assistant_rest_api');
 
-function get_assistant_handler(WP_REST_Request $request) {
+function get_assistant_handler(WP_REST_Request $request)
+{
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type");

@@ -286,8 +286,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 continue;
             }
 
-            if ($option['pergunta'] === 'Documentos anexos')
-            {
+            if ($option['pergunta'] === 'Documentos anexos') {
                 $destino[] = $training_phrase . ' ' . $resposta[0];
                 continue;
             }
@@ -489,6 +488,23 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         $thread_id = create_thread();
     }
 
+    /*
+    *
+    *   SALVAR MENSAGEM DO USUÁRIO NO BANCO
+    *    
+    */
+    if (empty($isWhatsapp) && empty($whatsappMessage)) {
+        $message_obj = [
+            "message" => $message,
+            "thread_id" => $thread_id,
+            "from_me" => 0,
+            "assistant_id" => $assistant_id,
+            // "date" => new DateTime('now')
+        ];
+
+        MessageService::processMessage($message_obj);
+    }
+
     add_message_to_thread($thread_id, $message);
 
     plugin_log('--- RUNNNN FUUUUNCTION ---');
@@ -566,7 +582,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                 if (isset($decodedData['usage'])) {
                     $usage = $decodedData['usage'];
                 }
-                
+
                 if (isset($decodedData['required_action'])) {
                     $required_action = $decodedData['required_action'];
 
@@ -606,6 +622,24 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     plugin_log('--- Mensagem final gerada ---');
     plugin_log(print_r($assistant_message, true));
+
+    /*
+    *
+    *   SALVAR MENSAGEM DO USUÁRIO NO BANCO
+    *    
+    */
+    if (empty($isWhatsapp) && empty($whatsappMessage)) {
+        $assistant_message_obj = [
+            "message" => $assistant_message,
+            "thread_id" => $thread_id,
+            "from_me" => 1,
+            "name" => $assistant_id,
+            "assistant_id" => $assistant_id,
+            // "date" => new DateTime('now')
+        ];
+
+        MessageService::processMessage($assistant_message_obj);
+    }
 
     plugin_log('--- USAGE FINAL da mensagem ---');
     plugin_log(print_r($usage, true));
