@@ -27,6 +27,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/fileHandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/save-responses.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
+
+//Models
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistant.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/whatsappInstance.php';
@@ -34,8 +36,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'model/whatsappMessage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/question.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistantUsage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
-require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
-require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/message.php';
 
 //controllers
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/WhatsappController.php';
@@ -49,12 +51,19 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/whatsappMessageService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/evolutionApiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/openaiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/googleCalendarService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/messageService.php';
 
 
 //Helpers
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/assistantHelpers.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/whatsappMessageHelpers.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/clientEvolutionApi.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
+
+// Views
+require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
+
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';
@@ -358,4 +367,5 @@ register_activation_hook(__FILE__, function () {
 
     WhatsappInstance::createTable();
     WhatsappMessage::createOrUpdateTable();
+    Message::createOrUpdateTable();
 });

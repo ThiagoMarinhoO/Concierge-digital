@@ -37,7 +37,6 @@ class AssistantHelpers
         ];
     }
 
-
     public static function tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id)
     {
         // Remove o sufixo do número do WhatsApp
