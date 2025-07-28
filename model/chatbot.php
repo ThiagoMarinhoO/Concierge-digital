@@ -198,7 +198,7 @@ class Chatbot
     {
 
         $sql = $this->wpdb->prepare(
-            "SELECT * FROM {$this->table} WHERE id = %d",
+            "SELECT * FROM {$this->table} WHERE id = %s",
             $id
         );
 

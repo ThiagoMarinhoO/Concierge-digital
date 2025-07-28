@@ -20,7 +20,7 @@ function save_responses()
 
     $assistant_dto = generate_instructions($chatbot_options, $chatbot_name);
 
-    plugin_log('Assistant DTO', $assistant_dto['assistant_instructions']);
+    // plugin_log('Assistant DTO', $assistant_dto['assistant_instructions']);
 
     $tools = [
         ["type" => "file_search"]
@@ -33,6 +33,19 @@ function save_responses()
             "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
         ];
     }
+
+    $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+    ];
+    $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+    ];
+    $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+    ];
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],

@@ -64,6 +64,9 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
 
+// Components
+require_once CONCIERGE_DIGITAL_PATH . 'views/components/google-calendar-component.php';
+
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';
