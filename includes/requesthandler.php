@@ -290,7 +290,7 @@ function updateOpenaiAssistantsRules()
     $updatedAssistants = [];
 
     foreach ($assistants as $assistant) {
-        error_log("ID: {$assistant->id} | Nome: {$assistant->chatbot_name} | User ID: {$assistant->user_id}");
+        // error_log("ID: {$assistant->id} | Nome: {$assistant->chatbot_name} | User ID: {$assistant->user_id}");
         $assistant_id = $assistant->id;
         $assistant_user_id = $assistant->user_id;
         $assistant_name = $assistant->chatbot_name;
@@ -312,6 +312,19 @@ function updateOpenaiAssistantsRules()
                 "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
             ];
         }
+
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+        ];
 
         $data = [
             "name" => $assistant_name,

@@ -15,7 +15,7 @@ class ChatPage
 
         // Paginação
         $currentPage = max(1, intval($_GET['paged'] ?? 1));
-        $perPage = 2;
+        $perPage = 50;
         $offset = ($currentPage - 1) * $perPage;
 
         // Busca dados

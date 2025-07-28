@@ -22,14 +22,11 @@ if (!empty($user_id)) {
 $user_has_chatbot = $chatbot->userHasChatbot($user_id);
 
 
-
 // 
 // Instancias do whatsapp
 // 
 
 $whatsappInstance = WhatsappInstance::findByUserId($user_id);
-
-
 
 ?>
 <div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
@@ -192,6 +189,11 @@ $whatsappInstance = WhatsappInstance::findByUserId($user_id);
 								<p>Nenhuma pergunta cadastrada no momento.</p>
 							<?php endif; ?>
 						<?php endforeach; ?>
+
+						<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
+						<?php if (strtolower($category['title']) === 'integrações'): ?>
+							<?php echo do_shortcode('[google_calendar_component]'); ?>
+						<?php endif; ?>
 					</div>
 					<?php if ($category['video_url'] != ''): ?>
 						<div class="">
@@ -375,7 +377,10 @@ $whatsappInstance = WhatsappInstance::findByUserId($user_id);
 			</div>
 		<?php endif; ?>
 
-		<a href="<?= GoogleCalendarController::get_client()->createAuthUrl(); ?>" id="gcalendar-connect">Conectar com Google Calendar</a>
+
+		<!-- <button id="calendarsList">Show calendars</button> -->
+
+		<!-- <iframe src="https://calendar.google.com/calendar/embed?src=professionalmarinho%40gmail.com&ctz=America%2FSao_Paulo" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe> -->
 
 		<!-- <button id="gcalendar-listEvents">List events</button>
 

@@ -1526,7 +1526,117 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    console.log('to')
+    // $('#calendarsList').on('click', function () {
+    //     // Chama seu backend para pegar a URL de login do Google
+    //     $.ajax({
+    //         url: conciergeAjax.ajax_url,
+    //         method: 'POST',
+    //         data: {
+    //             action: 'create_calendar_event',
+    //             calendar_id: 'primary',
+    //             summary: 'Reunião de estratégia',
+    //             all_day: 0,
+    //             recurrence: 0,
+    //             recurrence_end: '',
+    //             event_date: '2025-07-14',
+    //             start_time: '2025-07-14T17:30:00',
+    //             end_time: '2025-07-14T18:00:00',
+    //             event_timezone: 'America/Sao_Paulo',
+    //             use_meet: 1,
+    //             attendees: JSON.stringify(['thiagomarinho19t@gmail.com', 'marcosmacedo.fogao@gmail.com'])
+    //         },
+    //         success: function (res) {
+    //             console.log(res);
+    //             if (res.success) {
+    //                 alert('Evento criado com sucesso: ' + res.data.event_id);
+    //             } else {
+    //                 alert('Erro: ' + res.data);
+    //             }
+    //         }
+    //     });
+    // });
+
+    $('#calendarsList').on('click', function () {
+        // Chama seu backend para pegar a URL de login do Google
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'handle_freebusy',
+                calendar_id: 'primary',
+                // event_id: 'mgo4jkg3db106a1ktta53bb3b0',
+            },
+            success: function (res) {
+                console.log(res);
+                if (res.success) {
+                    alert('sucesso');
+                } else {
+                    alert('Erro: ' + res.data);
+                }
+            }
+        });
+    });
+
+    $('#calendar-settings').on('submit', function (e) {
+        e.preventDefault();
+
+        // Captura os valores
+        const workStart = $('#work_start').val();
+        const workEnd = $('#work_end').val();
+        const slotDuration = parseInt($('#slot_duration').val());
+
+        // Dias disponíveis (checkboxes marcados)
+        let availableDays = [];
+        $('input[name="available_days[]"]:checked').each(function () {
+            availableDays.push(parseInt($(this).val()));
+        });
+
+        const data = {
+            work_start: workStart,
+            work_end: workEnd,
+            slot_duration: slotDuration,
+            'available_days[]': availableDays,
+
+            action: 'gcalendar_settings'
+        };
+
+        console.log('Dados enviados:', data);
+
+        swal.fire({
+            title: 'Salvando configurações...',
+            text: 'Aguarde enquanto salvamos suas configurações.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: data,
+            success: function (response) {
+                Swal.close(); // Fecha o loading
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: 'Configurações salvas com sucesso!',
+                });
+                console.log(response);
+            },
+            error: function (xhr) {
+                Swal.close(); // Fecha o loading
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao salvar configurações.',
+                });
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+    console.log('aa')
 });
 
 
