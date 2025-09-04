@@ -64,7 +64,12 @@ class AssistantHelpers
             "description" => "Consulta os horários disponíveis do usuário para agendamento de compromissos.",
             "parameters" => [
                 "type" => "object",
-                "properties" => new \stdClass(), // Nenhum parâmetro necessário
+                "properties" => [
+                    "target_date" => [
+                        "type" => "string",
+                        "description" => "Data no formato dd/mm/YYYY. Quando fornecida, retorna os horários detalhados desse dia. Se omitida, retorna apenas a lista de dias e períodos (manhã/tarde/noite)."
+                    ]
+                ],
                 "required" => []
             ]
         ];
@@ -143,6 +148,19 @@ class AssistantHelpers
                     ]
                 ],
                 "required" => ["email"]
+            ]
+        ];
+    }
+
+    public static function assistant_tool_create_human_flag()
+    {
+        return [
+            "name" => "create_human_flag",
+            "description" => "Registra no banco de dados que o atendimento deve ser transferido para um humano.",
+            "parameters" => [
+                "type" => "object",
+                "properties" => new \stdClass(),
+                "required" => []
             ]
         ];
     }

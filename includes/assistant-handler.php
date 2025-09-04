@@ -659,21 +659,60 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
                                 $access_token = GoogleCalendarController::get_valid_access_token($user_id);
 
-                                $output = "❌ Não foi possível acessar o Google Calendar. Verifique as configurações do assistente.";
+                                $output = "Desculpe, não fazemos agendamento.";
 
                                 if (!empty($access_token)) {
                                     $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
-                                    $readable = GoogleCalendarService::formatSlotsForMessage(array_slice($slots, 0, 5));
 
-                                    $output = "Claro! Vou te enviar as datas disponíveis:\n\n" .
-                                        implode("\n", array_map(
-                                            fn($i, $slot) => ($i + 1) . ". " . $slot,
-                                            array_keys($readable),
-                                            $readable
-                                        ));
+                                    $targetDate = $arguments['target_date'] ?? null;
+
+                                    if ($targetDate) {
+                                        // Exibir os horários detalhados do dia escolhido
+                                        $readable = GoogleCalendarService::formatSlotsForDay($slots, $targetDate);
+
+                                        if (empty($readable)) {
+                                            $output = "Não encontrei horários disponíveis em {$targetDate}. Deseja escolher outro dia?";
+                                        } else {
+                                            $output = "Claro! Vou te enviar as datas disponíveis:\n\n" .
+                                                implode("\n", array_map(
+                                                    fn($i, $slot) => ($i + 1) . ". " . $slot,
+                                                    array_keys($readable),
+                                                    $readable
+                                                ));
+                                        }
+                                    } else {
+                                        // Exibir apenas dias + períodos
+                                        $readable = GoogleCalendarService::formatDayPeriods($slots);
+
+                                        if (empty($readable)) {
+                                            $output = "No momento não há disponibilidade nos próximos dias.";
+                                        } else {
+                                            $output = "Tenho disponibilidade para agendar sua reunião nos seguintes dias e períodos:\n\n" .
+                                                implode("\n", $readable) .
+                                                "\n\nQual dia e período você prefere?";
+                                        }
+                                    }
                                 }
 
+                                /**
+                                 *  Deprecated
+                                 */
+                                // if (!empty($access_token)) {
+                                //     $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
 
+                                //     $readable = GoogleCalendarService::formatSlotsForMessage(array_slice($slots, 0, 5));
+
+                                //     $output = "Claro! Vou te enviar as datas disponíveis:\n\n" .
+                                //         implode("\n", array_map(
+                                //             fn($i, $slot) => ($i + 1) . ". " . $slot,
+                                //             array_keys($readable),
+                                //             $readable
+                                //         ));
+                                // }
+
+                                /**
+                                 *  Deprecated
+                                 */
                                 // $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
                                 // // error_log(print_r('Slots', true));
                                 // // error_log(print_r($slots, true));
@@ -794,6 +833,22 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                         $output = "❌ Não foi possível cancelar o evento. Verifique as informações.";
                                     }
                                 }
+                            } elseif ($function_name === 'create_human_flag') {
+                                // error_log('entrou create_human_flag');
+                                $output = "Desculpe. Não transferimos para humanos.";
+
+                                $instanceName = isset($whatsappMessage) && method_exists($whatsappMessage, 'getInstanceName') ? $whatsappMessage->getInstanceName() : null;
+                                $remoteJid = isset($whatsappMessage) && method_exists($whatsappMessage, 'getRemoteJid') ? $whatsappMessage->getRemoteJid() : null;
+                                // error_log('Instance: ' . print_r($instanceName, true));
+                                // error_log('Remote: ' . print_r($remoteJid, true));
+
+                                if (!empty($instanceName) && !empty($remoteJid)) {
+                                    $flag = new HumanSessionFlag($remoteJid, $instanceName);
+                                    $flag->createOrUpdate();
+
+                                    $output = "Um atendente entrará em contato em instantes";
+                                }
+                                error_log('Flag: ' . print_r($flag, true));
                             }
 
                             $assistant_message = $output;

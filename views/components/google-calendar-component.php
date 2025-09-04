@@ -2,12 +2,8 @@
 
 class GoogleCalendarComponent
 {
-    // Define um construtor, que pode ser usado para inicializações futuras
     public function __construct()
     {
-        // Adicione aqui qualquer lógica de inicialização global para o componente,
-        // como registro de scripts ou estilos se eles forem exclusivos deste componente
-        // e não já enfileirados globalmente pelo plugin.
     }
 
     /**

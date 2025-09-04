@@ -130,6 +130,91 @@ class GoogleCalendarService
         return $formatted;
     }
 
+
+    /* 
+        V1.2
+        Gerando slots a partir de data + período & data escolhida + hora
+    */
+    public static function formatDayPeriods(array $slots): array
+    {
+        $grouped = [];
+
+        foreach ($slots as $slot) {
+            $start = new DateTime($slot['start']);
+            $date = $start->format('d/m/Y');
+            $hour = (int)$start->format('H');
+
+            if ($hour < 12) {
+                $period = 'manhã';
+            } elseif ($hour < 18) {
+                $period = 'tarde';
+            } else {
+                $period = 'noite';
+            }
+
+            $grouped[$date][$period] = true;
+        }
+
+        $readable = [];
+        foreach ($grouped as $date => $periods) {
+            $readable[] = $date . ': ' . implode(' ou ', array_keys($periods));
+        }
+
+        return $readable;
+    }
+
+    public static function formatSlotsForDay(array $slots, string $targetDate): array
+    {
+        $readable = [];
+
+        // Tradução dos dias da semana
+        $diasSemana = [
+            'Monday'    => 'segunda-feira',
+            'Tuesday'   => 'terça-feira',
+            'Wednesday' => 'quarta-feira',
+            'Thursday'  => 'quinta-feira',
+            'Friday'    => 'sexta-feira',
+            'Saturday'  => 'sábado',
+            'Sunday'    => 'domingo',
+        ];
+
+        foreach ($slots as $slot) {
+            $start = new DateTime($slot['start']);
+            $end   = new DateTime($slot['end']);
+            $date  = $start->format('d/m/Y');
+
+            if ($date === $targetDate) {
+                $dayName = $diasSemana[$start->format('l')] ?? $start->format('l');
+
+                $readable[] =
+                    $dayName . ', ' .
+                    $start->format('d/m/Y') . ', das ' .
+                    $start->format('H\hi') . ' às ' .
+                    $end->format('H\hi');
+            }
+        }
+
+        return $readable;
+    }
+
+
+    // public static function formatSlotsForDay(array $slots, string $targetDate): array {
+    //     $readable = [];
+
+    //     foreach ($slots as $slot) {
+    //         $start = new DateTime($slot['start']);
+    //         $end = new DateTime($slot['end']);
+    //         $date = $start->format('d/m/Y');
+
+    //         if ($date === $targetDate) {
+    //             $readable[] = $start->format('l, d/m H:i') . ' às ' . $end->format('H:i');
+    //         }
+    //     }
+
+    //     return $readable;
+    // }
+
+
     // public static function CreateCalendarEvent($calendar_id, $summary, $all_day, $recurrence, $recurrence_end, $event_time, $event_timezone, $access_token, $attendees = [], $use_meet = false)
     // {
     //     $url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events?conferenceDataVersion=1';

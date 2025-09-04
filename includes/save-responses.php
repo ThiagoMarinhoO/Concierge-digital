@@ -32,19 +32,28 @@ function save_responses()
             "type" => "function",
             "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
         ];
+
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_human_flag()
+        ];
     }
 
+    // $validAccessToken = GoogleCalendarController::get_valid_access_token($user_id);
+
+    // error_log("Valid Access Token: " . print_r($validAccessToken, true));
+
     $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+        "type" => "function",
+        "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
     ];
     $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+        "type" => "function",
+        "function" => AssistantHelpers::assistant_tool_create_calendar_event()
     ];
     $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+        "type" => "function",
+        "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
     ];
 
     $data = [

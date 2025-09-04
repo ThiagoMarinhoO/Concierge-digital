@@ -31,7 +31,7 @@ class MessageService
         $new_message->setThreadId($messageObj['thread_id']);
         $new_message->setFromMe($messageObj['from_me']);
         $new_message->setAssistantId($messageObj['assistant_id']);
-        $new_message->setDateTime(new DateTime('now', new DateTimeZone('America/Sao_Paulo')));
+        $new_message->setDateTime(new DateTime('now', new DateTimeZone('UTC')));
 
         $saved_message = $new_message->save();
 
@@ -54,7 +54,7 @@ class MessageService
         $new_message->setThreadId($messageObj['thread_id']);
         $new_message->setFromMe($messageObj['from_me']);
         $new_message->setAssistantId($messageObj['assistant_id']);
-        $new_message->setDateTime(new DateTime('now', new DateTimeZone('America/Sao_Paulo')));
+        $new_message->setDateTime(new DateTime('now', new DateTimeZone('UTC')));
 
         $saved_message = $new_message->save();
 

@@ -68,7 +68,9 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    getAnswers();
+    if (chatContainer) {
+        getAnswers();
+    }
 
     // const storedData = JSON.parse(localStorage.getItem('chatbotRespostas'));
     // if (storedData) {
@@ -1636,7 +1638,24 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    console.log('aa')
+    $('#humanSession').on('click', function () {
+        $.ajax({
+            url: conciergeAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'end_human_session',
+                thread_id: 'thread_rjeQsKPDQK8YeUA8nCi4sToB',
+                instance_name: 'asst_lPNwzFeQhkNnExoeUqckb5ET_dev2_charlie'
+            },
+            success: function (response) {
+                console.log('Sessão encerrada:', response);
+            },
+            error: function (xhr) {
+                console.error('Erro:', xhr.responseText);
+            }
+        });
+    });
+
 });
 
 
@@ -1846,3 +1865,528 @@ window.addEventListener("load", function () {
 
     // const attachmentInstructionsObserver = new MutationObserver(functino)
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Seletores do DOM ---
+    const conversationList = document.getElementById('conversation-list');
+    const searchInput = document.getElementById('search-input');
+    const chatHeader = document.getElementById('chat-header');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const messageSendButton = chatForm?.querySelector('button');
+    const messageSendButtonIcon = messageSendButton?.querySelector('svg');
+
+    if (conversationList) {
+        let conversations = [];
+
+        const fetchConversations = () => {
+            console.log('Fetching conversations...');
+            fetch(ajaxurl + '?action=list_conversations')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Conversations fetched:', data);
+                    if (data.success) {
+                        conversations = data.data.conversations;
+                        if (activeConversationId) {
+                            renderMessages(activeConversationId);
+                        }
+                        renderConversations();
+                        // console.log('Conversations:', conversations);
+                    } else {
+                        alert('Erro ao carregar conversas');
+                    }
+                });
+        };
+
+        let notifications = [];
+
+        const fetchNotifications = () => {
+            console.log('Fetching notifications...');
+            fetch(ajaxurl + '?action=list_human_session_flag')
+                .then(res => res.json())
+                .then(data => {
+                    // console.log('Conversations fetched:', data);
+                    if (data.success) {
+                        notifications = data.data.flags || [];
+                        // if (activeConversationId) {
+                        //     renderMessages(activeConversationId);
+                        // }
+                        renderConversations();
+                        console.log('Flags: ', notifications);
+                    } else {
+                        alert('Erro ao carregar flags');
+                    }
+                });
+        };
+
+        let activeConversationId = null;
+
+        // --- Funções de Renderização ---
+
+        const renderConversations = async () => {
+            const filter = searchInput.value.toLowerCase();
+            conversationList.innerHTML = '';
+
+            const filteredConversations = conversations.filter(c =>
+                c.name?.toLowerCase().includes(filter) || c.id.toString().includes(filter)
+            );
+
+            if (filteredConversations.length === 0) {
+                conversationList.innerHTML = '<p style="padding: 1rem; color: var(--color-secondary-text);">Nenhuma conversa encontrada.</p>';
+                return;
+            }
+
+            filteredConversations.forEach(convo => {
+                const item = document.createElement('div');
+                item.className = 'conversation-item';
+                item.dataset.id = convo.id;
+                if (convo.id === activeConversationId) {
+                    item.classList.add('active');
+                }
+                if (convo.paused) {
+                    item.classList.add('paused');
+                }
+
+                const humanFlag = notifications.find(f => f.remote_jid === convo.id);
+                let humanFlagHTML = '';
+
+                if (humanFlag) {
+                    item.classList.add('relative')
+                    humanFlagHTML = `
+                        <div class="absolute top-1 left-0">
+                            <span class="relative flex size-3">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
+                            </span>
+                        </div>
+                    `
+                }
+
+                item.innerHTML = `
+                    ${humanFlagHTML}
+                    <div class="conversation-details">
+                        <h4>${convo.name}</h4>
+                        <p>${convo.lastMessage}</p>
+                    </div>
+                    <button class="pause-btn ${convo.paused ? 'resume' : ''}">
+                        ${convo.paused ? 'Retomar' : 'Pausar'}
+                    </button>
+                `;
+
+                // Evento para selecionar a conversa
+                item.addEventListener('click', (e) => {
+                    // Impede que o clique no botão de pausa selecione a conversa
+                    if (e.target.closest('.pause-btn')) return;
+                    handleConversationClick(convo.id);
+                });
+
+                // Evento para o botão de pausar/retomar
+                item.querySelector('.pause-btn').addEventListener('click', () => {
+                    handlePauseToggle(convo.id);
+                });
+
+                conversationList.appendChild(item);
+            });
+        };
+
+        const renderMessages = (convoId) => {
+            const conversation = conversations.find(c => c.id === convoId);
+            if (!conversation) return;
+
+            chatHeader.innerHTML = `<h2>${conversation.name}</h2>`;
+            chatMessages.innerHTML = '';
+
+            conversation.messages.forEach(msg => {
+
+                conversation.messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
+                    messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
+
+                    // Criar elemento de texto da mensagem
+                    const messageText = document.createElement('span');
+                    // messageText.classList.add('whitespace-pre-wrap')
+                    messageText.innerHTML = msg.message;
+
+                    // Criar elemento de horário
+                    const messageTime = document.createElement('span');
+                    messageTime.className = 'message-time';
+
+                    // Converter string para Date e formatar HH:mm
+                    const date = new Date(msg.date_time.replace(' ', 'T')); // precisa do 'T' para ser ISO
+                    messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                    // Montar a mensagem
+                    messageDiv.appendChild(messageText);
+                    messageDiv.appendChild(messageTime);
+
+                    // Caso de erro
+                    if (msg.status === 'error') {
+                        messageDiv.classList.add('message-error');
+                        messageDiv.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
+                    }
+
+                    chatMessages.appendChild(messageDiv);
+                });
+
+
+                // const messageDiv = document.createElement('div');
+                // const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
+                // messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
+                // // messageDiv.className = `message ${msg.from_me === true ? 'sent' : 'received'}`;
+                // messageDiv.textContent = msg.message;
+
+                // if (msg.status === 'error') {
+                //     messageEl.classList.add('message-error');
+                //     messageEl.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
+                // }
+
+                // chatMessages.appendChild(messageDiv);
+            });
+
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            messageInput.disabled = false;
+            messageSendButton.disabled = false;
+            messageInput.focus();
+        };
+
+        // --- Funções de Manipulação de Eventos ---
+
+        const handleConversationClick = (convoId) => {
+            activeConversationId = convoId;
+            renderConversations(); // Re-renderiza para mostrar o item ativo
+            renderMessages(convoId);
+        };
+
+        const handlePauseToggle = async (convoId) => {
+            const conversation = conversations.find(c => c.id === convoId);
+
+            if (!conversation) {
+                console.error('Conversa não encontrada:', convoId);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'toggle_human_session');
+            formData.append('remoteJid', conversation.id);
+            formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
+
+            try {
+                const res = await fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // console.log('Sessão alternada com sucesso:', data.data);
+                    conversation.paused = !conversation.paused;
+                    renderConversations();
+                } else {
+                    alert('Erro ao alternar a sessão: ' + (data.data.mensagem || ''));
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Ocorreu um erro ao tentar se conectar com o servidor.');
+            }
+        };
+
+        const sendMessage = async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (text === '' || !activeConversationId) return;
+
+            const conversation = conversations.find(c => c.id === activeConversationId);
+
+            const formData = new FormData();
+            formData.append('action', 'send_whatsapp_message');
+            formData.append('remoteJid', conversation.id);
+            formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
+            formData.append('message', text);
+
+            // const message = {
+            //     sender: 'Atendente',
+            //     text,
+            //     status: 'sending',
+            // };
+
+            // if (conversation) {
+            //     conversation.messages.push(message);
+            //     conversation.lastMessage = text;
+            //     messageInput.value = '';
+            //     renderMessages(activeConversationId);
+            //     renderConversations();
+            // }
+
+            messageInput.disabled = true;
+            messageSendButton.disabled = true;
+            messageSendButtonIcon.classList.add('animate-spin');
+
+            try {
+                const res = await fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                // message.status = data.success ? 'sent' : 'error';
+
+                renderMessages(activeConversationId);
+                renderConversations();
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                message.status = 'error';
+                renderMessages(activeConversationId);
+                renderConversations();
+            }
+
+            messageInput.value = '';
+            messageSendButtonIcon.classList.remove('animate-spin');
+            messageInput.disabled = false;
+        };
+
+        // --- Adicionando Event Listeners ---
+        searchInput.addEventListener('input', renderConversations);
+        chatForm.addEventListener('submit', sendMessage);
+
+        // --- Inicialização ---
+        fetchConversations();
+        fetchNotifications();
+        setInterval(fetchConversations, 8000);
+        setInterval(fetchNotifications, 10000);
+
+    }
+
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    function loadConversations(page = 1, startDate = null, endDate = null) {
+        const body = document.getElementById("conversations-body");
+        const pagination = document.getElementById("pagination");
+
+        if(!body) return;
+
+        body.innerHTML = `<tr><td colspan="7" class="text-center py-4">Carregando...</td></tr>`;
+        pagination.innerHTML = "";
+
+        const params = new URLSearchParams({
+            action: "get_conversations",
+            page: page,
+        });
+
+        if (startDate && endDate) {
+            params.append("startDate", startDate);
+            params.append("endDate", endDate);
+        }
+
+        fetch(ajaxurl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+        })
+            .then(res => res.json())
+            .then(res => {
+                if (!res.success) {
+                    body.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">${res.data.message}</td></tr>`;
+                    return;
+                }
+
+                const { data, page: currentPage, pages } = res.data;
+
+                if (data.length === 0) {
+                    body.innerHTML = `<tr><td colspan="7" class="text-center py-4">Nenhuma conversa encontrada.</td></tr>`;
+                    return;
+                }
+
+                body.innerHTML = data.map(conv => `
+            <tr class="odd:bg-white even:bg-gray-50 border-b border-gray-200">
+                <td class="px-6 py-4">${conv.canal}</td>
+                <td class="px-6 py-4">${conv.id}</td>
+                <td class="px-6 py-4">${conv.status}</td>
+                <td class="px-6 py-4">
+                    ${conv.lead && (conv.lead.nome || conv.lead.telefone)
+                        ? [conv.lead.nome ? "nome" : "", conv.lead.telefone ? "telefone" : ""].filter(Boolean).join(", ")
+                        : "Não informado"}
+                </td>
+                <td class="px-6 py-4">${conv.titulo}</td>
+                <td class="px-6 py-4">${conv.dataHora}</td>
+                <td class="px-6 py-4">
+                    <div class="flex flex-1 h-full space-x-2 items-center">
+                        <a href="#" class="ver-conversa text-blue-600 hover:underline" 
+                        data-id="${conv.id}" 
+                        data-conversa='${JSON.stringify(conv.messages)}'>
+                        Ver
+                        </a>
+                        <a href="#" class="download-conversa text-blue-600 hover:underline ml-2" 
+                        data-id="${conv.id}" 
+                        data-conversa='${JSON.stringify(conv.messages)}'>
+                        Download
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+
+                // Paginação
+                let pagBtns = "";
+                if (currentPage > 1) {
+                    pagBtns += `<button class="px-3 py-1 bg-gray-100 rounded" data-page="${currentPage - 1}">Anterior</button>`;
+                }
+                for (let i = 1; i <= pages; i++) {
+                    pagBtns += `<button class="px-3 py-1 ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-100'} rounded" data-page="${i}">${i}</button>`;
+                }
+                if (currentPage < pages) {
+                    pagBtns += `<button class="px-3 py-1 bg-gray-100 rounded" data-page="${currentPage + 1}">Próxima</button>`;
+                }
+                pagination.innerHTML = pagBtns;
+
+                pagination.querySelectorAll("button").forEach(btn => {
+                    btn.addEventListener("click", () => loadConversations(btn.dataset.page, startDate, endDate));
+                });
+
+                document.querySelectorAll(".ver-conversa").forEach(link => {
+                    link.addEventListener("click", function (e) {
+                        e.preventDefault();
+
+                        // console.log(this)
+                        const mensagens = JSON.parse(this.dataset.conversa);
+                        const conversationId = this.dataset.id;
+
+                        let dataPrimeiraMensagem = '';
+                        if (mensagens.length > 0 && mensagens[0].date) {
+                            // Pega só a parte da data (antes do espaço)
+                            const partes = mensagens[0].date.split(' ')[0].split('/');
+                            if (partes.length === 3) {
+                                // Garante que está no formato dd/mm/yyyy
+                                dataPrimeiraMensagem = `${partes[0]}/${partes[1]}/${partes[2]}`;
+                            } else {
+                                dataPrimeiraMensagem = mensagens[0].date;
+                            }
+                        }
+                        let html = `
+                            <div class="text-left max-h-96 overflow-y-auto flex flex-col space-y-4 p-4">
+                                <div class="flex flex-col space-y-1 mb-5">
+                                    <h1 class="font-bold text-2xl text-black">Conversa do dia ${dataPrimeiraMensagem}</h1>
+                                    <span class="text-gray-500 text-sm">${conversationId}</span>
+                                </div>
+                        `;
+                        mensagens.forEach(msg => {
+                            const fromMe = msg.from_me == 1 || msg.from_me === true;
+                            html += `
+                                    <div class="flex items-start gap-2.5 ${fromMe ? "self-end" : "self-start"}">
+                                    <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 rounded-xl ${fromMe ? "bg-blue-100" : "bg-gray-100"}">
+                                        <p class="text-sm font-normal py-2.5 text-gray-900 whitespace-pre-wrap">${msg.text}</p>
+                                        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                                            <span class="text-sm font-normal text-gray-500">${msg.date}</span>
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                `;
+                        });
+                        html += '</div>';
+
+                        Swal.fire({
+                            // title: `Conversa ${conversationId}`,
+                            html: html,
+                            width: "800px",
+                            showCloseButton: true,
+                            showConfirmButton: false,
+                            scrollbarPadding: false
+                        });
+                    });
+                });
+
+                document.querySelectorAll(".download-conversa").forEach(link => {
+                    link.addEventListener("click", function (e) {
+                        e.preventDefault();
+
+                        const mensagens = JSON.parse(this.dataset.conversa);
+                        const conversationId = this.dataset.id;
+
+                        const formData = new FormData();
+                        formData.append("action", "conversations_download");
+                        formData.append("conversationId", conversationId);
+                        formData.append("messages", JSON.stringify(mensagens));
+
+                        swal.fire({
+                            title: 'Confirmar download',
+                            text: 'Deseja gerar e baixar o PDF desta conversa?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sim, baixar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                swal.fire({
+                                    title: 'Gerando PDF...',
+                                    text: 'Aguarde enquanto o PDF é gerado.',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    },
+                                    showConfirmButton: false,
+                                    showCancelButton: false,
+                                });
+
+                                fetch(ajaxurl, {
+                                    method: "POST",
+                                    body: formData
+                                })
+                                    .then(res => res.blob())
+                                    .then(blob => {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement("a");
+                                        a.href = url;
+                                        a.download = `conversation-${conversationId}.pdf`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                        window.URL.revokeObjectURL(url);
+
+                                        swal.close();
+                                    })
+                                    .catch(err => {
+                                        console.error("Erro ao baixar:", err);
+                                        alert("Erro ao gerar PDF");
+                                    });
+                            }
+                        })
+                    });
+                });
+
+            });
+    }
+
+    // Carregar inicial
+    loadConversations(1);
+
+    const calendar = document.querySelector("#messages-range");
+    if (!calendar) return;
+
+    const fp = flatpickr(calendar,
+        {
+            mode: 'range',
+            dateFormat: "Y-m-d",
+            locale: 'pt'
+        }
+    );
+
+    document.querySelector("#apply-filter").addEventListener("click", () => {
+        const dates = fp.selectedDates; // array de objetos Date
+        if (dates.length === 2) {
+            const startDate = fp.formatDate(dates[0], "Y-m-d");
+            const endDate = fp.formatDate(dates[1], "Y-m-d");
+
+            loadConversations(1, startDate, endDate);
+        } else {
+            alert("Selecione um intervalo de datas completo.");
+        }
+    });
+});
+
