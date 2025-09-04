@@ -94,7 +94,7 @@ class WhatsappController
     {
         $whatsappMessage = json_decode($request->get_body(), true);
         // Log da mensagem
-        // error_log(print_r($whatsappMessage, true));
+        error_log(print_r($whatsappMessage, true));
 
         // Processar a mensagem recebida
         $processedMessage = WhatsappMessageService::processMessage($whatsappMessage);
@@ -103,8 +103,17 @@ class WhatsappController
         if ($processedMessage->getFromMe()) {
             return;
         }
-
         ## error_log('Mensagem salva e processada' . print_r($processedMessage, true));
+
+        /*
+        *   AQUI VERIFICAMOS SE A THREAD ATUAL TEM UMA SESSÃO HUMANA ATIVA
+        *   SE SIM, INTERROMPEMOS O FLUXO
+        */
+        if (HumanSession::isActive($processedMessage->getRemoteJid(), $processedMessage->getInstanceName())) {
+            // $processedMessage->save();
+            error_log('Sessão humana ativa, interrompendo fluxo.');
+            return;
+        }
 
         // Processar a mensagem com o assistente na openAI
         // $assistantResponse = OpenaiService::processMessageFromWhatsapp();
@@ -118,12 +127,19 @@ class WhatsappController
 
         // error_log('with threadId: ' . print_r($processedMessage, true));
 
+
+        //Se não tiver mensagem retornar com erro
+        if (empty($assistantData['ai_response'])) {
+            error_log('Erro na resposta do assistente');
+            return;
+        }
+
         ##
         ## ENVIAR A MENSAGEM PARA O CLIENTE
         ##
         // ENVIAR MENSAGEM DE TEXTO
-
         $sentMessage = WhatsappMessageService::processSendMessage($processedMessage, $assistantData['ai_response']);
+        error_log('Sent message: ' . print_r($sentMessage, true));
 
         // $sentMessage = EvolutionApiService::sendPlainText($processedMessage, $assistantData['ai_response']);
         // ENVIAR MENSAGEM DE AUDIO
@@ -134,7 +150,7 @@ class WhatsappController
 
         //  Salvar a mensagem enviada pelo cliente
         WhatsappMessageService::processCreateFromAssistant($processedMessage, $sentMessage, $assistantData['ai_response']);
-        
+
         return new WP_REST_Response(['status' => 'ok'], 200);
     }
 

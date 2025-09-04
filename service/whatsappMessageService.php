@@ -91,6 +91,24 @@ class WhatsappMessageService
         }
     }
 
+    // public static function create($whatsappMessage, $threadId = null, $textMessage = null)
+    // {
+    //     $newWhatsappMessage = new WhatsappMessage();
+
+    //     $newWhatsappMessage->setMessageId($whatsappMessage['data']['key']['id']);
+    //     $newWhatsappMessage->setRemoteJid($whatsappMessage['data']['key']['remoteJid']);
+    //     $newWhatsappMessage->setInstanceName($whatsappMessage['instance']);
+    //     $newWhatsappMessage->setMessage($textMessage ?? $whatsappMessage['data']['message']['conversation']);
+    //     $newWhatsappMessage->setPushName($whatsappMessage['data']['pushName']);
+    //     $newWhatsappMessage->setFromMe($whatsappMessage['data']['key']['fromMe'] ?? 0);
+    //     $newWhatsappMessage->setThreadId($threadId);
+    //     $newWhatsappMessage->setDateTime($whatsappMessage['date_time']);
+
+    //     $newWhatsappMessage->save();
+
+    //     return $newWhatsappMessage;
+    // }
+
     public static function create($whatsappMessage, $threadId = null, $textMessage = null)
     {
         $newWhatsappMessage = new WhatsappMessage();
@@ -102,7 +120,13 @@ class WhatsappMessageService
         $newWhatsappMessage->setPushName($whatsappMessage['data']['pushName']);
         $newWhatsappMessage->setFromMe($whatsappMessage['data']['key']['fromMe'] ?? 0);
         $newWhatsappMessage->setThreadId($threadId);
-        $newWhatsappMessage->setDateTime($whatsappMessage['date_time']);
+
+        $brazilianTimezone = new DateTimeZone('America/Sao_Paulo');
+        $datetimeString = str_replace('Z', '', $whatsappMessage['date_time']);
+        $localDateTime = new DateTime($datetimeString, $brazilianTimezone);
+        $utcTimezone = new DateTimeZone('UTC');
+        $localDateTime->setTimezone($utcTimezone);
+        $newWhatsappMessage->setDateTime($localDateTime->format('Y-m-d H:i:s'));
 
         $newWhatsappMessage->save();
 
@@ -118,6 +142,7 @@ class WhatsappMessageService
         $newWhatsappMessage->setRemoteJid($sentMessage['key']['remoteJid']);
         $newWhatsappMessage->setMessage($sentMessage['message']['conversation']);
         $newWhatsappMessage->setDateTime((new DateTime())->setTimestamp($sentMessage['messageTimestamp']));
+
 
         $newWhatsappMessage->setThreadId($whatsappMessage->getThreadId());
         $newWhatsappMessage->setInstanceName($whatsappMessage->getInstanceName());
@@ -136,6 +161,25 @@ class WhatsappMessageService
         $newWhatsappMessage->setRemoteJid($sentMessage['key']['remoteJid']);
         $newWhatsappMessage->setMessage($assistantResponse);
         $newWhatsappMessage->setDateTime((new DateTime())->setTimestamp($sentMessage['messageTimestamp']));
+
+        $newWhatsappMessage->setThreadId($whatsappMessage->getThreadId());
+        $newWhatsappMessage->setInstanceName($whatsappMessage->getInstanceName());
+
+        $newWhatsappMessage->save();
+
+        return $newWhatsappMessage;
+    }
+
+    public static function createSendTextFromUser($sentMessage)
+    {
+        $newWhatsappMessage = new WhatsappMessage();
+        $newWhatsappMessage->setFromMe($sentMessage['key']['fromMe']);
+
+        $newWhatsappMessage->setMessageId($sentMessage['key']['id']);
+        $newWhatsappMessage->setRemoteJid($sentMessage['key']['remoteJid']);
+        $newWhatsappMessage->setMessage($sentMessage['message']['conversation']);
+        $newWhatsappMessage->setDateTime((new DateTime())->setTimestamp($sentMessage['messageTimestamp']));
+
 
         $newWhatsappMessage->setThreadId($whatsappMessage->getThreadId());
         $newWhatsappMessage->setInstanceName($whatsappMessage->getInstanceName());
@@ -175,7 +219,7 @@ class WhatsappMessageService
     }
 
 
-    private static function resolveThreadId($whatsappMessage)
+    public static function resolveThreadId($whatsappMessage)
     {
         //  Baseado nas últimas mensagens
         $lastThreadId = null;
@@ -194,7 +238,9 @@ class WhatsappMessageService
 
         //  Mensagem de texto whatsapp
         if (empty($lastThreadId)) {
-            $lastMessages = WhatsappMessage::findByRemoteJid($whatsappMessage['data']['key']['remoteJid']);
+            $remoteJid = isset($whatsappMessage['data']['key']['remoteJid']) ? $whatsappMessage['data']['key']['remoteJid'] : $whatsappMessage['key']['remoteJid'];
+
+            $lastMessages = WhatsappMessage::findByRemoteJid($remoteJid);
 
             if ($lastMessages) {
                 $lastMessage = reset($lastMessages);

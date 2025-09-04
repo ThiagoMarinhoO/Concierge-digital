@@ -37,10 +37,10 @@ class Chatbot
 
         $sql = "CREATE TABLE {$this->table} (
             id VARCHAR(255) PRIMARY KEY,
-            assistant TEXT,
+            assistant LONGTEXT,
             chatbot_name TEXT,
             chatbot_welcome_message TEXT,
-            chatbot_options TEXT,
+            chatbot_options LONGTEXT,
             chatbot_image TEXT,
             user_id BIGINT UNSIGNED NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP

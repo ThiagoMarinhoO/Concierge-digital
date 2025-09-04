@@ -58,6 +58,59 @@ class EvolutionApiService
         return $response;
     }
 
+    public static function sendPlainTextV2(string $instanceName, string $remoteJid, string $text): array
+    {
+        $encodedInstanceName = rawurlencode($instanceName);
+        $number = strstr($remoteJid, '@', true);
+
+        $apiKey = EVOAPI_API_KEY;
+        $apiUrl = EVOAPI_API_URL;
+
+        $data = [
+            "number" => $number,
+            "text" => $text,
+            "delay" => 3000,
+            "linkPreview" => true,
+        ];
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "{$apiUrl}/message/sendText/{$encodedInstanceName}",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json",
+                "apikey: {$apiKey}"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        $response = json_decode($response, true);
+
+        if ($err) {
+            error_log("cURL Error #:" . $err);
+        }
+
+        if (!empty($response['error'])) {
+            error_log("cURL Error # EvolutionApiService::sendPlainText: " . print_r($response['error'], true));
+        }
+
+        error_log("cURL ResponseEvolutionApiService::sendPlainText : " . print_r($response, true));
+
+        return $response;
+    }
+
+
     public static function sendWhatsappAudio(WhatsappMessage $whatsappMessage, string $audio)
     {
         $encodedInstanceName = rawurlencode($whatsappMessage->getInstanceName());

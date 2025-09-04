@@ -38,10 +38,15 @@ require_once CONCIERGE_DIGITAL_PATH . 'model/assistantUsage.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/message.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/humanSession.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/humanSessionFlag.php';
 
 //controllers
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/WhatsappController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/googleCalendarController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/whatsappMessageController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionFlagController.php';
 
 //services
 require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
@@ -63,6 +68,9 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
 
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/chatView.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/conversations.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/dashboard.php';
 
 // Components
 require_once CONCIERGE_DIGITAL_PATH . 'views/components/google-calendar-component.php';
@@ -371,4 +379,19 @@ register_activation_hook(__FILE__, function () {
     WhatsappInstance::createTable();
     WhatsappMessage::createOrUpdateTable();
     Message::createOrUpdateTable();
+    HumanSession::createOrUpdateTable();
+    HumanSessionFlag::createTable();
 });
+
+function flatpicker_jsdelivery() {
+    echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">';
+    echo '<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>';
+    echo '<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>';
+}
+add_action('wp_head', 'flatpicker_jsdelivery');
+
+// CHARTS
+function apexcharts_jsdelivery() {
+    echo '<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>';
+}
+add_action('wp_head', 'apexcharts_jsdelivery');

@@ -311,6 +311,11 @@ function updateOpenaiAssistantsRules()
                 "type" => "function",
                 "function" => AssistantHelpers::assistant_tool_send_to_whatsapp()
             ];
+
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_create_human_flag()
+            ];
         }
 
         $tools[] = [

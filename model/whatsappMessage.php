@@ -76,6 +76,8 @@ class WhatsappMessage
         $stmt->execute([$this->messageId]);
         $exists = $stmt->fetchColumn() > 0;
 
+        error_log('saving message');
+
         if ($exists) {
             $stmt = $pdo->prepare("UPDATE whatsapp_messages 
                 SET remote_jid = ?, instance_name = ?, message = ?, push_name = ?, thread_id = ?, from_me = ?, date_time = ? 
@@ -188,6 +190,30 @@ class WhatsappMessage
         $stmt = $pdo->prepare("DELETE FROM whatsapp_messages WHERE message_id = ?");
         return $stmt->execute([$this->messageId]);
     }
+
+    public static function findByInstanceName(string $instanceName)
+    {
+        $pdo = self::connect();
+        $stmt = $pdo->prepare("SELECT * FROM whatsapp_messages WHERE instance_name = ? ORDER BY date_time ASC");
+        $stmt->execute([$instanceName]);
+        $messages = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $msg = new self();
+            $msg->messageId = $row['message_id'];
+            $msg->remoteJid = $row['remote_jid'];
+            $msg->instanceName = $row['instance_name'];
+            $msg->message = $row['message'];
+            $msg->pushName = $row['push_name'];
+            $msg->threadId = $row['thread_id'];
+            $msg->fromMe = (bool)$row['from_me'];
+            $msg->dateTime = new DateTime($row['date_time']);
+            $messages[] = $msg;
+        }
+
+        return $messages;
+    }
+    
 
     // Getters e Setters
     public function getRemoteJid(): string

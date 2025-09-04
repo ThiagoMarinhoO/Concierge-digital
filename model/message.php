@@ -262,8 +262,6 @@ class Message
         ];
     }
 
-
-
     // === Auxiliar para mapear linha do banco para objeto ===
     private static function mapRowToMessage(array $row): self
     {
@@ -275,7 +273,21 @@ class Message
         $msg->threadId = $row['thread_id'];
         $msg->fromMe = (int)$row['from_me'];
         $msg->assistant_id = $row['assistant_id'];
-        $msg->dateTime = new DateTime($row['date_time']);
+
+        // Tratamento de dados
+        $date = new DateTime($row['date_time'], new DateTimeZone('UTC')); 
+        $date->setTimezone(new DateTimeZone('America/Sao_Paulo')); 
+
+        $msg->dateTime = $date;
         return $msg;
     }
+
+    /**
+     *  Auxiliar para agrupar por Thread ID
+     */
+
+    // public static function groupByThreadId(array $messages): array
+    // {
+
+    // }
 }

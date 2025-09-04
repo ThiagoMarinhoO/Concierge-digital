@@ -44,7 +44,12 @@ class GoogleCalendarController
                 throw new Exception("Refresh token ausente. Reautentique o usuário.");
             }
 
-            $client->fetchAccessTokenWithRefreshToken($token['refresh_token']);
+            $res = $client->fetchAccessTokenWithRefreshToken($token['refresh_token']);
+            if (isset($res['error']) && $res['error'] === 'invalid_grant') {
+                error_log("Refresh token inválido ou revogado. Forçando reautenticação.");
+                delete_user_meta($user_id, 'gcalendar_token');
+                return false;
+            }
             $new_token = $client->getAccessToken();
             $new_token['refresh_token'] = $token['refresh_token'];
             update_user_meta($user_id, 'gcalendar_token', $new_token);
@@ -386,7 +391,7 @@ class GoogleCalendarController
             'available_days' => $availableDays,
             'time_zone' => 'America/Sao_Paulo',
         ];
-        
+
         update_user_meta($user_id, 'gcal_settings', $user_settings);
 
         wp_send_json_success([
