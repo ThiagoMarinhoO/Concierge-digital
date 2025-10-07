@@ -40,6 +40,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'model/questionCategory.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/message.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/humanSession.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/humanSessionFlag.php';
+require_once CONCIERGE_DIGITAL_PATH . 'model/meet.php';
 
 //controllers
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/WhatsappController.php';
@@ -58,6 +59,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/openaiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/googleCalendarService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/messageService.php';
 
+//Repositories
+require_once CONCIERGE_DIGITAL_PATH . 'repository/messageRepository.php';
 
 //Helpers
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/assistantHelpers.php';
@@ -69,8 +72,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
 require_once CONCIERGE_DIGITAL_PATH . 'views/chatView.php';
-require_once CONCIERGE_DIGITAL_PATH . 'views/conversations.php';
 require_once CONCIERGE_DIGITAL_PATH . 'views/dashboard.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/conversations.php';
 
 // Components
 require_once CONCIERGE_DIGITAL_PATH . 'views/components/google-calendar-component.php';
@@ -381,8 +384,11 @@ register_activation_hook(__FILE__, function () {
     Message::createOrUpdateTable();
     HumanSession::createOrUpdateTable();
     HumanSessionFlag::createTable();
+
+    Meet::createTable();
 });
 
+//FLATPICKR
 function flatpicker_jsdelivery() {
     echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">';
     echo '<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>';

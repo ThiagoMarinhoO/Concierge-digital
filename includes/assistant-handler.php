@@ -474,11 +474,7 @@ function manage_usage($usage = null)
 add_action('wp_ajax_handle_assistant_message', 'handle_assistant_message');
 function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, $thread_id = null)
 {
-    plugin_log('--- HANDLE ASSISTANT FUNCTION ---');
-
-    // $message = sanitize_text_field($request->get_param('message'));
-    // $assistant_id = sanitize_text_field($request->get_param('chatbot_id'));
-    // $thread_id = sanitize_text_field($request->get_param('thread_id'));
+    // plugin_log('--- HANDLE ASSISTANT FUNCTION ---');
 
     $message = $_POST['message'] ?? null;
     $thread_id = $_POST['session_id'] ?? $thread_id;
@@ -495,6 +491,11 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         $thread_id = $whatsappMessage->getThreadId() ?? null;
     }
 
+    $assistant = new Chatbot();
+    $assistant = $assistant->getChatbotByIdII($assistant_id);
+
+    $instance = WhatsappInstance::findByAssistant($assistant_id);
+
     $usage = null;
 
     if (empty($assistant_id)) {
@@ -502,6 +503,9 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         return;
     }
 
+    /*
+    *   CRIAR THREAD
+    */
     if (empty($thread_id)) {
         $thread_id = create_thread();
     }
@@ -525,14 +529,37 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     add_message_to_thread($thread_id, $message);
 
+    /**
+     *  Início da RUN
+     */
+    $runInstruction = $assistant['chatbot_options'];
+
+    if ($isWhatsapp) {
+        $runInstruction .= "\n Funções:\n";
+        $runInstruction .= AssistantHelpers::whatsappFunctionsPrompt();
+    }
+    if (!$isWhatsapp) {
+        $webFunctions = AssistantHelpers::webFunctionsPrompt();
+        if (!empty(trim($webFunctions)) || $instance) {
+            $runInstruction .= "\n Funções:\n";
+        }
+        if (!empty(trim($webFunctions))) {
+            $runInstruction .= $webFunctions;
+        }
+        if ($instance) {
+            $runInstruction .= AssistantHelpers::webAndWhatsappPrompt();
+        }
+    }
+
     // plugin_log('--- RUNNNN FUUUUNCTION ---');
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
     $api_url = "https://api.openai.com/v1/threads/$thread_id/runs";
 
-    $data = json_encode([
+    $data = [
         "assistant_id" => $assistant_id,
-        "stream" => true
-    ]);
+        "stream" => true,
+        "instructions" => $runInstruction
+    ];
 
     $headers = [
         "Content-Type: application/json",
@@ -546,7 +573,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
     // Captura toda a resposta da API
     $response = curl_exec($ch);
@@ -560,8 +587,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     // $response = json_decode($response, true);
 
-    // plugin_log('--- Resposta completa da OpenAI ---');
-    // plugin_log(print_r($response, true));
+    // error_log('--- Resposta completa da OpenAI ---');
+    // error_log(print_r($response, true));
 
     $run_id = null;
 
@@ -581,8 +608,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
             if (!empty($jsonData) && $jsonData !== "[DONE]") {
                 $decodedData = json_decode($jsonData, true);
 
-                plugin_log('--- JSON Decodificado ---');
-                plugin_log(print_r($decodedData, true));
+                error_log('--- JSON Decodificado ---');
+                error_log(print_r($decodedData, true));
 
                 if (!$run_id && isset($decodedData['id'])) {
                     $run_id = $decodedData['id'];
@@ -603,36 +630,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
                 if (isset($decodedData['required_action'])) {
                     $required_action = $decodedData['required_action'];
-
-                    // if ($required_action['type'] === 'submit_tool_outputs') {
-
-                    //     $tool_call = $required_action['submit_tool_outputs']['tool_calls'][0];
-                    //     $tool_call_id = $tool_call['id'];
-
-                    //     // Obtém a instância do WhatsApp
-                    //     $instance = WhatsappInstance::findByAssistant($assistant_id);
-                    //     $holeInstance = WhatsappController::fetch_instance_by_name($instance->getInstanceName());
-                    //     $whatsappInstanceNumber = $holeInstance[0]['ownerJid'];
-
-                    //     error_log("WhatsApp Instance Number: " . print_r($whatsappInstanceNumber, true));
-
-                    //     // Gera o link para o WhatsApp (sem precisar de mensagem do usuário)
-                    //     $assistant_message = AssistantHelpers::tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id);
-
-                    //     error_log("Assistant Message: " . print_r($assistant_message, true));
-
-                    //     // Envia o link como output da ferramenta
-                    //     AssistantService::submit_tool_outputs(
-                    //         [
-                    //             [
-                    //                 "tool_call_id" => $tool_call_id,
-                    //                 "output" => $assistant_message
-                    //             ]
-                    //         ],
-                    //         $thread_id,
-                    //         $run_id
-                    //     );
-                    // }
 
                     if ($required_action['type'] === 'submit_tool_outputs') {
                         foreach ($required_action['submit_tool_outputs']['tool_calls'] as $tool_call) {
@@ -665,10 +662,11 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
 
                                     $targetDate = $arguments['target_date'] ?? null;
+                                    $periodOfDay = $arguments['period_of_day'] ?? null;
 
                                     if ($targetDate) {
                                         // Exibir os horários detalhados do dia escolhido
-                                        $readable = GoogleCalendarService::formatSlotsForDay($slots, $targetDate);
+                                        $readable = GoogleCalendarService::formatSlotsForDay($slots, $targetDate, $periodOfDay);
 
                                         if (empty($readable)) {
                                             $output = "Não encontrei horários disponíveis em {$targetDate}. Deseja escolher outro dia?";
@@ -693,39 +691,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                         }
                                     }
                                 }
-
-                                /**
-                                 *  Deprecated
-                                 */
-                                // if (!empty($access_token)) {
-                                //     $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
-
-                                //     $readable = GoogleCalendarService::formatSlotsForMessage(array_slice($slots, 0, 5));
-
-                                //     $output = "Claro! Vou te enviar as datas disponíveis:\n\n" .
-                                //         implode("\n", array_map(
-                                //             fn($i, $slot) => ($i + 1) . ". " . $slot,
-                                //             array_keys($readable),
-                                //             $readable
-                                //         ));
-                                // }
-
-                                /**
-                                 *  Deprecated
-                                 */
-                                // $slots = GoogleCalendarService::getAvailableTimeSlots($access_token, 7, $user_id);
-                                // // error_log(print_r('Slots', true));
-                                // // error_log(print_r($slots, true));
-                                // $readable = GoogleCalendarService::formatSlotsForMessage(array_slice($slots, 0, 5));
-                                // // error_log(print_r('readable', true));
-                                // // error_log(print_r($readable, true));
-
-                                // // $output = "Claro! Vou te enviar as datas disponíveis:\n\n" .
-                                // //     implode("\n", array_map(
-                                // //         fn($i, $slot) => ($i + 1) . ". " . $slot,
-                                // //         array_keys($readable),
-                                // //         $readable
-                                // //     ));
                             } elseif ($function_name === 'create_calendar_event') {
                                 $instance = new Chatbot();
                                 $assistant = $instance->getChatbotByIdII($assistant_id);
@@ -776,21 +741,84 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     true // com Meet
                                 );
 
+                                // if (!empty($event)) {
+                                //     $newMeet = new Meet();
+                                //     $newMeet->setTitle($title);
+                                //     $newMeet->setStartTime((new DateTime($start, new DateTimeZone('UTC'))));
+                                //     $newMeet->setAssistantId($assistant_id);
+                                //     $newMeet->save();
+
+                                //     error_log(print_r($event, true));
+
+                                //     /**
+                                //      * Disparar email para organizador
+                                //      */
+                                //     $emailBody = "Seu evento foi criado no Google Agenda:\n\n" .
+                                //                     "Título: {$title}\n" .
+                                //                     "Início: {$start}\n" .
+                                //                     "Fim: {$end}\n";
+                                //     wp_mail($organizer_email, $title, $emailBody);
+
+                                //     $output = "✅ Evento criado: \"$title\" em " . (new DateTime($start))->format('d/m/Y H:i');
+                                // } 
                                 if (!empty($event)) {
-                                    $output = "✅ Evento criado: \"$title\" em " . (new DateTime($start))->format('d/m/Y H:i');
+                                    $newMeet = new Meet();
+                                    $newMeet->setTitle($title);
+                                    $newMeet->setStartTime((new DateTime($start, new DateTimeZone('UTC'))));
+                                    $newMeet->setAssistantId($assistant_id);
+                                    $newMeet->save();
+
+                                    error_log(print_r($event, true));
+
+                                    // Preparar infos formatadas
+                                    $startDate = (new DateTime($start))->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i');
+                                    $endDate   = (new DateTime($end))->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i');
+
+                                    $attendeesList = "";
+                                    if (!empty($event['attendees'])) {
+                                        foreach ($event['attendees'] as $a) {
+                                            $attendeesList .= "- " . $a['email'] . "\n";
+                                        }
+                                    }
+
+                                    $meetLink = $event['hangoutLink'] ?? '';
+                                    $calendarLink = $event['htmlLink'] ?? '';
+
+                                    /**
+                                     * Disparar email para organizador
+                                     */
+                                    $emailBody  = "✅ Seu evento foi criado no Google Agenda!\n\n";
+                                    $emailBody .= "📌 Título: {$title}\n";
+                                    $emailBody .= "🗓️ Início: {$startDate}\n";
+                                    $emailBody .= "⏰ Fim: {$endDate}\n\n";
+
+                                    if ($attendeesList) {
+                                        $emailBody .= "👥 Convidados:\n{$attendeesList}\n";
+                                    }
+
+                                    if ($meetLink) {
+                                        $emailBody .= "🔗 Link do Google Meet: {$meetLink}\n";
+                                    }
+
+                                    if ($calendarLink) {
+                                        $emailBody .= "📅 Ver no Google Calendar: {$calendarLink}\n";
+                                    }
+
+                                    wp_mail($organizer_email, "Evento confirmado: {$title}", $emailBody);
+
+                                    $output = "✅ Evento criado: \"$title\" em {$startDate}";
                                 } else {
                                     // Adicione um log ou uma mensagem de erro caso o evento não seja criado
                                     $output = "❌ Não foi possível criar o evento. Por favor, tente novamente.";
                                 }
 
                                 // $output = "Confirme novamente o horário, por favor !";
-                            } elseif ($function_name === 'send_whatsapp_message') {
-                                // AQUI entra sua lógica atual
+                            } elseif ($function_name === 'solicitar_conversacao_whatsapp') {
                                 $instance = WhatsappInstance::findByAssistant($assistant_id);
                                 $holeInstance = WhatsappController::fetch_instance_by_name($instance->getInstanceName());
                                 $whatsappInstanceNumber = $holeInstance[0]['ownerJid'];
 
-                                $output = AssistantHelpers::tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id);
+                                $output = "Claro! É só clicar aqui para conversar com a gente no WhatsApp: " . AssistantHelpers::tool_handler_send_to_whatsapp($whatsappInstanceNumber, $thread_id);
                             } elseif ($function_name === 'delete_calendar_event') {
                                 // error_log(print_r('Entrou no delete', true));
 
@@ -869,8 +897,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         }
     }
 
-    plugin_log('--- Mensagem final gerada ---');
-    plugin_log(print_r($assistant_message, true));
+    error_log('--- Mensagem final gerada ---');
+    error_log(print_r($assistant_message, true));
 
     /*
     *
@@ -890,8 +918,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         MessageService::processMessage($assistant_message_obj);
     }
 
-    plugin_log('--- USAGE FINAL da mensagem ---');
-    plugin_log(print_r($usage, true));
+    // plugin_log('--- USAGE FINAL da mensagem ---');
+    // plugin_log(print_r($usage, true));
 
     $usageObj = manage_usage($usage);
 
@@ -909,12 +937,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         'thread_id' => $thread_id,
         'usage' => $usageObj
     ]);
-
-    // return new WP_REST_Response([
-    //     'status' => 'success',
-    //     'response' => $assistant_message,
-    //     'thread_id' => $thread_id
-    // ], 200);
 }
 
 

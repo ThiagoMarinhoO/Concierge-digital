@@ -279,9 +279,35 @@ body.page-id-4653 .e-con-inner {
 .question-block:has(> .attachment-instructions-container) {
     flex-wrap: wrap !important;
 }
-.question-block:has(> .attachment-instructions-container) label {
+/* .question-block:has(> .attachment-instructions-container) label {
     width: fit-content !important;
-}
+} */
 .question-block .attachment-instructions-container {
     width: 100%;
+}
+
+.swal-confirm-blue {
+  background-color: #3085d6 !important; /* azul */
+  color: #ffffff !important;            /* texto branco */
+  border: none !important;
+  box-shadow: none !important;
+  padding: .6rem 1rem !important;
+  border-radius: .35rem !important;
+}
+
+.swal-cancel-red {
+  background-color: transparent !important; /* transparente */
+  color: #e3342f !important;                /* texto vermelho */
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  padding: .6rem 1rem !important;
+  border-radius: .35rem !important;
+}
+
+.swal-confirm-blue:hover {
+    filter: brightness(0.9) !important;
+}
+
+.swal-cancel-red:hover {
+    text-decoration: underline !important;
 }

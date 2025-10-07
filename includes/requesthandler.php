@@ -334,7 +334,7 @@ function updateOpenaiAssistantsRules()
         $data = [
             "name" => $assistant_name,
             "instructions" => $hard_instructions['assistant_instructions'],
-            "model" => "gpt-4.1-mini-2025-04-14",
+            "model" => "gpt-4.1-mini",
             "tools" => $tools,
         ];
 

@@ -94,7 +94,7 @@ class WhatsappController
     {
         $whatsappMessage = json_decode($request->get_body(), true);
         // Log da mensagem
-        error_log(print_r($whatsappMessage, true));
+        // error_log(print_r($whatsappMessage, true));
 
         // Processar a mensagem recebida
         $processedMessage = WhatsappMessageService::processMessage($whatsappMessage);

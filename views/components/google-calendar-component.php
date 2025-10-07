@@ -131,7 +131,7 @@ class GoogleCalendarComponent
                     ?>
                     <a href="<?php echo esc_url($auth_url); ?>" 
                        id="gcalendar-connect" 
-                       class="inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+                       class="gcalendar-tooltip inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
                         Conectar com Google Calendar 🚀
                     </a>
                     <p class="text-sm text-gray-500 mt-2">Você será redirecionado para o Google para autorizar.</p>

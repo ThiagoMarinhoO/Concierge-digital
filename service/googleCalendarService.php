@@ -163,7 +163,7 @@ class GoogleCalendarService
         return $readable;
     }
 
-    public static function formatSlotsForDay(array $slots, string $targetDate): array
+    public static function formatSlotsForDay(array $slots, string $targetDate, ?string $periodOfDay): array
     {
         $readable = [];
 
@@ -184,6 +184,20 @@ class GoogleCalendarService
             $date  = $start->format('d/m/Y');
 
             if ($date === $targetDate) {
+                $hour = (int) $start->format('H');
+
+                if ($hour < 12) {
+                    $period = 'manhã';
+                } elseif ($hour < 18) {
+                    $period = 'tarde';
+                } else {
+                    $period = 'noite';
+                }
+
+                if ($periodOfDay && $period !== strtolower($periodOfDay)) {
+                    continue;
+                }
+                
                 $dayName = $diasSemana[$start->format('l')] ?? $start->format('l');
 
                 $readable[] =
@@ -357,14 +371,82 @@ class GoogleCalendarService
         return $data['email'] ?? null;
     }
 
+    // public static function createEventWithClient($accessToken, $summary, $start, $end, $attendees = [], $description = '', $useMeet = false)
+    // {
+    //     $client = new Google_Client();
+    //     $client->setAccessToken($accessToken);
+
+    //     $service = new Google_Service_Calendar($client);
+
+    //     // Criação do evento
+    //     $event = new Google_Service_Calendar_Event([
+    //         'summary' => $summary,
+    //         'description' => $description,
+    //         'start' => new Google_Service_Calendar_EventDateTime([
+    //             'dateTime' => $start,
+    //             'timeZone' => 'America/Sao_Paulo'
+    //         ]),
+    //         'end' => new Google_Service_Calendar_EventDateTime([
+    //             'dateTime' => $end,
+    //             'timeZone' => 'America/Sao_Paulo'
+    //         ]),
+    //     ]);
+
+    //     // Attendees
+    //     if (!empty($attendees)) {
+    //         $event->setAttendees(array_map(function ($att) {
+    //             $a = new Google_Service_Calendar_EventAttendee();
+    //             $a->setEmail($att['email']);
+    //             if (!empty($att['displayName'])) {
+    //                 $a->setDisplayName($att['displayName']);
+    //             }
+    //             return $a;
+    //         }, $attendees));
+    //     }
+
+    //     // Meet
+    //     if ($useMeet) {
+    //         $conferenceRequest = new Google_Service_Calendar_CreateConferenceRequest([
+    //             'requestId' => uniqid(),
+    //             'conferenceSolutionKey' => new Google_Service_Calendar_ConferenceSolutionKey([
+    //                 'type' => 'hangoutsMeet'
+    //             ])
+    //         ]);
+
+    //         $event->setConferenceData(new Google_Service_Calendar_ConferenceData([
+    //             'createRequest' => $conferenceRequest
+    //         ]));
+    //     }
+
+    //     // Criação do evento
+    //     $createdEvent = $service->events->insert('primary', $event, [
+    //         'conferenceDataVersion' => 1,
+    //         'sendUpdates' => 'all', // para notificar participantes
+    //     ]);
+
+    //     return $createdEvent;
+    // }
     public static function createEventWithClient($accessToken, $summary, $start, $end, $attendees = [], $description = '', $useMeet = false)
     {
         $client = new Google_Client();
         $client->setAccessToken($accessToken);
 
+        $oauth = new Google_Service_Oauth2($client);
+        $info = $oauth->userinfo->get();
+
         $service = new Google_Service_Calendar($client);
 
-        // Criação do evento
+        // Obtém o e-mail do organizador a partir do token de acesso
+        $organizerEmail = $info->email;
+
+        // Adiciona o organizador à lista de participantes se ele ainda não estiver lá
+        $attendeeEmails = array_map(function ($att) {
+            return $att['email'];
+        }, $attendees);
+        if (!in_array($organizerEmail, $attendeeEmails)) {
+            $attendees[] = ['email' => $organizerEmail];
+        }
+
         $event = new Google_Service_Calendar_Event([
             'summary' => $summary,
             'description' => $description,
@@ -376,6 +458,11 @@ class GoogleCalendarService
                 'dateTime' => $end,
                 'timeZone' => 'America/Sao_Paulo'
             ]),
+            // Adiciona o organizador explicitamente ao evento
+            'organizer' => [
+                'email' => $organizerEmail,
+                'self' => true
+            ]
         ]);
 
         // Attendees
@@ -412,6 +499,7 @@ class GoogleCalendarService
 
         return $createdEvent;
     }
+
 
     public static function findEventByAttendee(string $accessToken, string $email, string $name = ''): ?array
     {

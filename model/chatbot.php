@@ -207,8 +207,6 @@ class Chatbot
         if (!$chatbot) {
             global $wpdb;
             plugin_log("Nenhum chatbot encontrado. Erro: " . $wpdb->last_error);
-        } else {
-            $chatbot['chatbot_options'] = json_decode($chatbot['chatbot_options'], true);
         }
 
         return $chatbot;

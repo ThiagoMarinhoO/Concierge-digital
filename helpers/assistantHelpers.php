@@ -61,14 +61,20 @@ class AssistantHelpers
     {
         return [
             "name" => "get_calendar_slots",
-            "description" => "Consulta os horários disponíveis do usuário para agendamento de compromissos.",
+            "description" => "Consulta os horários disponíveis na agenda do Google Calendar. Pode filtrar por data e período do dia.",
             "parameters" => [
                 "type" => "object",
                 "properties" => [
                     "target_date" => [
                         "type" => "string",
                         "description" => "Data no formato dd/mm/YYYY. Quando fornecida, retorna os horários detalhados desse dia. Se omitida, retorna apenas a lista de dias e períodos (manhã/tarde/noite)."
+                    ],
+                    "period_of_day" => [
+                        "type" => "string",
+                        "enum" => ["manhã", "tarde", "noite"],
+                        "description" => "Período do dia: manhã, tarde ou noite. Quando fornecido junto com target_date, filtra os horários disponíveis para esse período específico."
                     ]
+
                 ],
                 "required" => []
             ]
@@ -163,5 +169,25 @@ class AssistantHelpers
                 "required" => []
             ]
         ];
+    }
+
+
+    /**
+     *  PROMPTS FUNÇÕES
+     */
+    // Pra essa entrar ainda deverá ser checado se o assistente possui a função
+    public static function webFunctionsPrompt()
+    {
+        return "";
+    }
+
+    public static function webAndWhatsappPrompt()
+    {
+        return "- Sempre que o usuário demonstrar interesse em falar com um humano, atendente ou pedir contato via WhatsApp — como nas expressões: - \\\"quero falar com um humano\\\" - \\\"tem um número de WhatsApp?\\\" - \\\"me chama no WhatsApp\\\" - \\\"quero falar com alguém\\\" - \\\"pode me passar o WhatsApp?\\\" - \\\"falar com atendente\\\" - \\\"conversar no zap\\\" Você **deve acionar a função 'solicitar_conversacao_whatsapp'** sem argumentos. Não responda diretamente com um link ou mensagem de contato: apenas dispare a função e aguarde o sistema retornar o link. Depois que o sistema retornar o link, apresente-o ao usuário com uma resposta amigável, como: \\\"Claro! É só clicar aqui para conversar com a gente no WhatsApp: [link]\\\"";
+    }
+
+    public static function whatsappFunctionsPrompt()
+    {
+        return "- Quando necessário, você deve transferir a conversa para um humano. Regras para transferência para humano: 1. Se o usuário mencionar que deseja falar com um humano, atendente ou suporte, NÃO transfira imediatamente. 2. Primeiro, confirme a intenção com uma pergunta como: - \\\"Deseja que eu repasse o atendimento para um colaborador humano?\\\" - \\\"Posso chamar um atendente humano para continuar?\\\" 3. Aguarde a resposta do usuário: - Se a resposta for afirmativa (ex.: \\\"sim\\\", \\\"ok\\\", \\\"por favor\\\"), então chame a função 'create_human_flag'. - Se for negativa ou incerta, continue atendendo normalmente. 4. Só chame a função 'create_human_flag' uma vez para cada solicitação. 5. Mantenha sempre um tom educado, amigável e profissional. Importante: - Se o usuário não mencionar humano/atendente, não ofereça proativamente. - Sempre deixe claro quando for transferir que um humano assumirá a conversa.";
     }
 }

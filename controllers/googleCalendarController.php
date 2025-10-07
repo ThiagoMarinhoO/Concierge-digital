@@ -116,9 +116,14 @@ class GoogleCalendarController
 
             update_user_meta($user->ID, 'gcalendar_token', $token);
 
+            error_log('Usuário ' . $user->user_login . ' autenticado com sucesso no Google Calendar.');
+
             wp_redirect(home_url('/assistente'));
+            exit;
         } else {
-            wp_die('Usuário não encontrado no sistema.');
+            error_log('Usuário não encontrado para o e-mail: ' . $info->email);
+            wp_redirect(home_url('/assistente?gcalendar-error=user-not-found'));
+            exit;
         }
     }
 

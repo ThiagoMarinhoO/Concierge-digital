@@ -125,11 +125,6 @@ class ConversationsComponent
         ];
     }
 
-
-    private function hasLeads($messages)
-    {
-    }
-
     public static function download()
     {
         if (!is_user_logged_in()) {
@@ -166,9 +161,6 @@ class ConversationsComponent
             error_log(print_r($msg, true));
             $class = $msg['from_me'] ? 'sent' : 'received';
             $text  = htmlspecialchars($msg['text']);
-            // $dt = new DateTime($msg['date'], new DateTimeZone('UTC'));
-            // $dt->setTimezone(new DateTimeZone('America/Sao_Paulo'));
-            // $time = $dt->format("d/m/Y H:i");
             $dt = DateTime::createFromFormat(
                 'd/m/Y H:i:s',
                 $msg['date'],
@@ -237,7 +229,6 @@ class ConversationsComponent
                     </tr>
                 </thead>
                 <tbody id="conversations-body">
-                    <!-- AJAX preenche aqui -->
                 </tbody>
             </table>
         </div>
