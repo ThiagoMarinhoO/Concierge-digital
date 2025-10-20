@@ -130,11 +130,14 @@
     chatContainer.style.bottom = '20px';
     chatContainer.style.right = '20px';
     chatContainer.style.width = '450px';
+    if(window.innerWidth < 767) {
+        chatContainer.style.width = 'calc(100% - 40px)';
+    }
     chatContainer.style.height = '90vh';
     chatContainer.style.border = 'none';
     chatContainer.style.backgroundColor = '#fff';
     // chatContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-    chatContainer.style.borderRadius = '0';
+    chatContainer.style.borderRadius = '4px';
     chatContainer.style.display = 'none';
     chatContainer.style.flexDirection = 'column';
     chatContainer.style.zIndex = '1000';
@@ -148,6 +151,7 @@
     closeButton.style.right = '10px';
     closeButton.style.background = '#212429';
     closeButton.style.border = 'none';
+    closeButton.style.borderRadius = '4px';
     closeButton.style.fontSize = '18px';
     closeButton.style.cursor = 'pointer';
     closeButton.style.color = '#aaa';
@@ -323,6 +327,8 @@
                             /(^|\s)(https?:\/\/[^\s]+)/g,
                             '$1<a href="$2" target="_blank" class="text-blue-600 underline">Clique aqui</a>'
                         );
+
+                        texto = texto.replace(/[\[【]\d+:\d+†[^\]】]+[\]】]/g, '');
 
                         return texto;
                     }

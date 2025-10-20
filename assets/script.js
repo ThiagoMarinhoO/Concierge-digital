@@ -489,6 +489,8 @@ jQuery(document).ready(function ($) {
                 '$1<a href="$2" target="_blank" class="text-blue-600 underline">Clique aqui</a>'
             );
 
+            texto = texto.replace(/[\[【]\d+:\d+†[^\]】]+[\]】]/g, '');
+
             return texto;
         }
 
@@ -725,7 +727,7 @@ jQuery(document).ready(function ($) {
         const chatbotOptions = [];
         const fileInputs = activeContent.find('input[type="file"]');
 
-        console.log(fileInputs);
+        // console.log(fileInputs);
 
         if (!activeContent.length) {
             console.error("Aba ativa não encontrada");
@@ -870,7 +872,21 @@ jQuery(document).ready(function ($) {
             });
 
             if (hasFiles) {
+                // console.log('Fazendo upload de arquivos...');
+
+                if (!$('input.assistent-name').val()) {
+                    swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Por favor, dê um nome ao assistente antes de fazer upload de arquivos.',
+                    });
+
+                    return;
+                }
+
                 formData.append("action", "upload_files_to_media_library");
+                formData.append("assistant_name", $('input.assistent-name').val());
+                formData.append("assistant_id", $('.chatContainer').data('assistant-id'));
 
                 Swal.fire({
                     title: 'Uploading...',
@@ -890,6 +906,7 @@ jQuery(document).ready(function ($) {
                     contentType: false,
                     success: (data) => {
                         if (data.success) {
+                            console.log(data)
                             processQuestionBlocks(data.data.urls);
                         } else {
                             console.error("Falha ao enviar arquivos:", data.message);
@@ -1051,7 +1068,7 @@ jQuery(document).ready(function ($) {
                                 $field.val(item.resposta);
                             } else {
                                 // $field.siblings('.file-name').text(item.resposta);
-                                if( $field.siblings('.attachment-instructions-container').length > 0 ) {
+                                if ($field.siblings('.attachment-instructions-container').length > 0) {
                                     $field.siblings('.attachment-instructions-container').find('textarea').val(item.training_phrase);
                                 }
 
@@ -1325,23 +1342,93 @@ jQuery(document).ready(function ($) {
         const fileUrl = $container.data('file');
         const tabId = $('.tab-content:not(.hidden)').attr('id')?.replace('-content', '');
 
-        // Remover visualmente
-        $container.remove();
+        const formData = new FormData();
+        formData.append('action', 'delete_vector_store_file');
+        formData.append('file_url', fileUrl);
 
-        // Remover do localStorage
-        const savedData = JSON.parse(localStorage.getItem('chatbotRespostas')) || {};
-        if (tabId && savedData[tabId]) {
-            savedData[tabId] = savedData[tabId].map(entry => {
-                if (entry.field_name === fieldName && Array.isArray(entry.resposta)) {
-                    entry.resposta = entry.resposta.filter(file => file !== fileUrl);
+        const allowedTypes = ['pdf', 'doc', 'docx', 'txt'];
+
+        const fileExtension = fileUrl.split('.').pop().toLowerCase();
+        if (allowedTypes.includes(fileExtension)) {
+            swal.fire({
+                title: 'Remover arquivo',
+                text: 'Tem certeza que deseja remover este arquivo? Esta ação não pode ser desfeita.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, remover',
+                cancelButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    swal.fire({
+                        title: 'Removendo arquivo...',
+                        text: 'Por favor, aguarde.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: conciergeAjax.ajax_url,
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Arquivo removido do vector store com sucesso.');
+
+                                swal.close();
+
+                                // Remover visualmente
+                                $container.remove();
+
+                                // Remover do localStorage
+                                const savedData = JSON.parse(localStorage.getItem('chatbotRespostas')) || {};
+                                if (tabId && savedData[tabId]) {
+                                    savedData[tabId] = savedData[tabId].map(entry => {
+                                        if (entry.field_name === fieldName && Array.isArray(entry.resposta)) {
+                                            entry.resposta = entry.resposta.filter(file => file !== fileUrl);
+                                        }
+                                        return entry;
+                                    });
+
+                                    localStorage.setItem('chatbotRespostas', JSON.stringify(savedData));
+
+                                    handleQuestionsAnswers(savedData);
+                                }
+                            } else {
+                                swal.close();
+                                console.error('Erro ao remover arquivo do vector store:', response.data?.message || response);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            swal.close();
+                            console.error('Erro na requisição AJAX:', error);
+                        }
+                    });
                 }
-                return entry;
             });
+        } else {
+            // Remover visualmente
+            $container.remove();
 
-            localStorage.setItem('chatbotRespostas', JSON.stringify(savedData));
+            // Remover do localStorage
+            const savedData = JSON.parse(localStorage.getItem('chatbotRespostas')) || {};
+            if (tabId && savedData[tabId]) {
+                savedData[tabId] = savedData[tabId].map(entry => {
+                    if (entry.field_name === fieldName && Array.isArray(entry.resposta)) {
+                        entry.resposta = entry.resposta.filter(file => file !== fileUrl);
+                    }
+                    return entry;
+                });
 
-            handleQuestionsAnswers(savedData);
+                localStorage.setItem('chatbotRespostas', JSON.stringify(savedData));
+
+                handleQuestionsAnswers(savedData);
+            }
         }
+
     });
 
     function handleQuestionsAnswers(savedData) {
@@ -2028,52 +2115,52 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.innerHTML = '';
 
             conversation.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
+                messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
 
-                conversation.messages.forEach(msg => {
-                    const messageDiv = document.createElement('div');
-                    const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
-                    messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
+                // Criar elemento de texto da mensagem
+                const messageText = document.createElement('span');
+                // messageText.classList.add('whitespace-pre-wrap')
+                messageText.innerHTML = msg.message;
 
-                    // Criar elemento de texto da mensagem
-                    const messageText = document.createElement('span');
-                    // messageText.classList.add('whitespace-pre-wrap')
-                    messageText.innerHTML = msg.message;
+                // Criar elemento de horário
+                const messageTime = document.createElement('span');
+                messageTime.className = 'message-time';
 
-                    // Criar elemento de horário
-                    const messageTime = document.createElement('span');
-                    messageTime.className = 'message-time';
+                // Converter string para Date e formatar HH:mm
+                const date = new Date(msg.date_time.replace(' ', 'T')); // precisa do 'T' para ser ISO
+                messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-                    // Converter string para Date e formatar HH:mm
-                    const date = new Date(msg.date_time.replace(' ', 'T')); // precisa do 'T' para ser ISO
-                    messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                // Montar a mensagem
+                messageDiv.appendChild(messageText);
+                messageDiv.appendChild(messageTime);
 
-                    // Montar a mensagem
-                    messageDiv.appendChild(messageText);
-                    messageDiv.appendChild(messageTime);
+                // Caso de erro
+                if (msg.status === 'error') {
+                    messageDiv.classList.add('message-error');
+                    messageDiv.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
+                }
 
-                    // Caso de erro
-                    if (msg.status === 'error') {
-                        messageDiv.classList.add('message-error');
-                        messageDiv.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
-                    }
-
-                    chatMessages.appendChild(messageDiv);
-                });
-
-
-                // const messageDiv = document.createElement('div');
-                // const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
-                // messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
-                // // messageDiv.className = `message ${msg.from_me === true ? 'sent' : 'received'}`;
-                // messageDiv.textContent = msg.message;
-
-                // if (msg.status === 'error') {
-                //     messageEl.classList.add('message-error');
-                //     messageEl.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
-                // }
-
-                // chatMessages.appendChild(messageDiv);
+                chatMessages.appendChild(messageDiv);
             });
+            // conversation.messages.forEach(msg => {
+
+
+
+            //     // const messageDiv = document.createElement('div');
+            //     // const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
+            //     // messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
+            //     // // messageDiv.className = `message ${msg.from_me === true ? 'sent' : 'received'}`;
+            //     // messageDiv.textContent = msg.message;
+
+            //     // if (msg.status === 'error') {
+            //     //     messageEl.classList.add('message-error');
+            //     //     messageEl.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
+            //     // }
+
+            //     // chatMessages.appendChild(messageDiv);
+            // });
 
 
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -2476,7 +2563,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!connectButton) return;
 
     connectButton.addEventListener('click', function (e) {
-        if ( !connectButton.classList.contains('gcalendar-tooltip') ) return;
+        if (!connectButton.classList.contains('gcalendar-tooltip')) return;
 
         e.preventDefault();
 
@@ -2484,7 +2571,7 @@ document.addEventListener('DOMContentLoaded', function () {
             icon: 'warning',
             title: 'Atenção',
             html: `Certifique-se de que você está usando um e-mail do Gmail para conectar ao Google Calendar.<br>Se não estiver, por favor, <a href="/minha-conta/edit-account/" target="_blank" class="underline text-blue-950">clique aqui</a> para alterar seu e-mail na página de edição de conta antes de prosseguir.`,
-            
+
         });
 
         connectButton.classList.remove('gcalendar-tooltip');

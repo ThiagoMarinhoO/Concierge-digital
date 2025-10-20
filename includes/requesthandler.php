@@ -318,18 +318,44 @@ function updateOpenaiAssistantsRules()
             ];
         }
 
-        $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
-        ];
-        $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
-        ];
-        $tools[] = [
-            "type" => "function",
-            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
-        ];
+        $is_connected = GoogleCalendarController::get_valid_access_token($assistant_user_id);
+        if ($is_connected) {
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+            ];
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+            ];
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+            ];
+        }
+
+        // $tools[] = [
+        //     "type" => "function",
+        //     "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+        // ];
+        // $tools[] = [
+        //     "type" => "function",
+        //     "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+        // ];
+        // $tools[] = [
+        //     "type" => "function",
+        //     "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+        // ];
+
+        /**
+         * Específico EXPO
+         */
+        if ($assistant_id == "asst_x6lc89gAv4hNlWdeuWGxNANn") {
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_send_file_to_user()
+            ];
+        }
 
         $data = [
             "name" => $assistant_name,
