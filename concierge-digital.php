@@ -28,6 +28,9 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/save-responses.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 
+//Database
+require_once CONCIERGE_DIGITAL_PATH . 'database/schema.php';
+
 //Models
 require_once CONCIERGE_DIGITAL_PATH . 'model/chatbot.php';
 require_once CONCIERGE_DIGITAL_PATH . 'model/assistant.php';
@@ -48,6 +51,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'controllers/googleCalendarController.php'
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/whatsappMessageController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionFlagController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/storageController.php';
 
 //services
 require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
@@ -386,6 +390,8 @@ register_activation_hook(__FILE__, function () {
     HumanSessionFlag::createTable();
 
     Meet::createTable();
+
+    create_vector_tables();
 });
 
 //FLATPICKR

@@ -8,6 +8,7 @@ function create_assistant()
     $chatbot_options = isset($_POST['chatbot_options']) ? json_decode(stripslashes($_POST['chatbot_options']), true) : [];
     $chatbot_name = $_POST['chatbot_name'] ?? '';
     $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
+    $user_id = get_current_user_id();
 
     $api_url = "https://api.openai.com/v1/assistants";
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
@@ -19,18 +20,34 @@ function create_assistant()
         ["type" => "file_search"]
     ];
 
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
-    ];
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_create_calendar_event()
-    ];
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
-    ];
+    $is_connected = GoogleCalendarController::get_valid_access_token($user_id);
+    if ($is_connected) {
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+        ];
+    }
+
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+    // ];
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+    // ];
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+    // ];
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
@@ -42,6 +59,30 @@ function create_assistant()
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
     ];
+
+    /**
+     * Verificar se o assistente já tem um vector store e associar ao file Search
+     */
+    $vector_store_label = "Vector Store para {$assistant_dto['assistant_name']}";
+    global $wpdb;
+
+    // 1️⃣ Buscar vector store existente
+    $table_stores = $wpdb->prefix . 'vector_stores';
+    $vector_store = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_stores WHERE name = %s",
+        $vector_store_label
+    ));
+
+    if ($vector_store) {
+        error_log(print_r('entrou', true));
+        error_log(print_r($vector_store, true));
+        $data['tool_resources'] = [
+            "file_search" => [
+                "vector_store_ids" => [$vector_store->vector_store_id]
+            ]
+        ];
+    }
+
 
     if (!empty($chatbot_welcome_message)) {
         $data['metadata']->welcome_message = $chatbot_welcome_message;
@@ -72,6 +113,14 @@ function create_assistant()
     }
 
     curl_close($ch);
+
+    if ($vector_store) {
+        $wpdb->update(
+            $table_stores,
+            ['assistant_id' => json_decode($response, true)['id']],
+            ['vector_store_id' => $vector_store->vector_store_id]
+        );
+    }
 
     $new_assistant = new Chatbot();
 
@@ -128,14 +177,14 @@ function delete_assistant()
     curl_close($ch);
 
     $response = json_decode($response, true);
-    plugin_log(print_r($response, true));
+    // plugin_log(print_r($response, true));
 
     $deleted_status = isset($response['deleted']) && $response['deleted'] ? $response['deleted'] : 'Assistente não deletado na API';
-    plugin_log(print_r($deleted_status, true));
+    // plugin_log(print_r($deleted_status, true));
 
     $deleted_assistant = new Chatbot();
     $deleted_db_status = $deleted_assistant->adminDeleteChatbot($assistant_id);
-    plugin_log(print_r($deleted_db_status, true));
+    // plugin_log(print_r($deleted_db_status, true));
 
     wp_send_json_success([
         // "assistant" => $response,
@@ -147,111 +196,12 @@ function delete_assistant()
     ]);
 }
 
-// XXXXXXXXXXXXXXXX Anterior XXXXXXXXXXXXXXXXXXXXX
-// function generate_instructions($chatbot_options, $chatbot_name)
-// {
-//     // plugin_log('-------- entrou no generate_instructions --------');
-
-
-//     if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
-//         $file = $_FILES['chatbot_image'];
-
-//         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-//         $max_size = 5 * 1024 * 1024;
-
-//         if (!in_array($file['type'], $allowed_types)) {
-//             wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
-//             exit;
-//         }
-
-//         if ($file['size'] > $max_size) {
-//             wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
-//             exit;
-//         }
-
-//         $upload_dir = wp_upload_dir();
-//         $target_path = $upload_dir['path'] . '/' . basename($file['name']);
-
-//         if (move_uploaded_file($file['tmp_name'], $target_path)) {
-//             $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
-//         } else {
-//             wp_send_json_error(['message' => 'Falha ao salvar o arquivo.']);
-//             exit;
-//         }
-//     } else {
-//         $chatbot_image = null;
-//     }
-
-//     $chatbot_trainning = [];
-
-//     foreach ($chatbot_options as $option) {
-//         $training_phrase = $option['training_phrase'];
-//         $resposta = $option['resposta'];
-
-//         if ($option['field_type'] == 'file') {
-//             // Se a resposta for array (múltiplos arquivos), itera
-//             $respostas = is_array($resposta) ? $resposta : [$resposta];
-
-//             foreach ($respostas as $respostaItem) {
-//                 $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $respostaItem);
-
-//                 if (file_exists($file_path)) {
-//                     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-
-//                     if ($file_extension == 'pdf') {
-//                         $parser = new Parser();
-//                         $pdf = $parser->parseFile($file_path);
-//                         $file_content = $pdf->getText();
-//                     } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
-//                         $file_content = transcribe_audio_with_whisper($file_path);
-//                     } else {
-//                         $file_content = file_get_contents($file_path);
-//                     }
-
-//                     if (!empty($file_content)) {
-//                         $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
-//                         $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
-
-//                         $sanitized_file_content = substr($file_content, 0);
-//                         $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
-//                     }
-//                 }
-//             }
-//         } elseif ($option['pergunta'] == "Adicione Links de conhecimento:") {
-//             plugin_log('-------- entrou no elseif do generate_instructions --------');
-//             $url = $resposta;
-//             $depth = 2;
-//             if (!empty($url)) {
-//                 $text = crawl_page($url, $depth);
-//                 $chatbot_trainning[] = $training_phrase . ' ' . $text;
-//             }
-//         } else {
-//             $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
-//         }
-//     }
-
-//     $question = new Question();
-//     $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
-
-//     foreach ($chatbotFixedQuestions as $question) {
-//         array_unshift($chatbot_trainning, $question['response']);
-//     }
-
-//     $training_context = implode("\n", $chatbot_trainning);
-
-//     plugin_log('-------- TRAINING CONTEXT --------');
-//     plugin_log(print_r($training_context, true));
-
-//     return ([
-//         "assistant_name" => $chatbot_name,
-//         "assistant_instructions" => $training_context,
-//         "assistant_image" => $chatbot_image,
-//     ]);
-// }
 function generate_instructions($chatbot_options, $chatbot_name)
 {
     // plugin_log('-------- entrou no generate_instructions --------');
     // plugin_log(print_r($chatbot_options, true));
+
+    global $wpdb;
 
     $behavior_instructions = [];
     $knowledge_base = [];
@@ -316,13 +266,37 @@ function generate_instructions($chatbot_options, $chatbot_name)
                     if (file_exists($file_path)) {
                         $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
                         if ($file_extension == 'pdf') {
-                            $parser = new Parser();
-                            $pdf = $parser->parseFile($file_path);
-                            $file_content = $pdf->getText();
+                            $vector_store_label = "Vector Store para {$chatbot_name}";
+
+                            $vector_store = $wpdb->get_row(
+                                $wpdb->prepare(
+                                    'SELECT * FROM wp_vector_stores WHERE name = %s',
+                                    $vector_store_label
+                                )
+                            );
+
+                            error_log("Encontrei vector store: " . print_r($vector_store, true));
+
+                            if (empty($vector_store)) {
+                                $parser = new Parser();
+                                $pdf = $parser->parseFile($file_path);
+                                $file_content = $pdf->getText();
+                            }
                         } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
                             $file_content = transcribe_audio_with_whisper($file_path);
                         } else {
-                            $file_content = file_get_contents($file_path);
+                            $vector_store_label = "Vector Store para {$chatbot_name}";
+
+                            $vector_store = $wpdb->get_row(
+                                $wpdb->prepare(
+                                    'SELECT * FROM wp_vector_stores WHERE name = %s',
+                                    $vector_store_label
+                                )
+                            );
+
+                            if (empty($vector_store)) {
+                                $file_content = file_get_contents($file_path);
+                            }
                         }
                         if (!empty($file_content)) {
                             $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
@@ -426,7 +400,6 @@ function upload_image()
     wp_send_json_success(['url' => $image_url]);
 }
 
-
 // add_action('wp_ajax_manage_usage', 'manage_usage');
 function manage_usage($usage = null)
 {
@@ -435,16 +408,16 @@ function manage_usage($usage = null)
         $usage = $_POST['usage'] ?? null;
     }
 
-    plugin_log("----Usage----");
-    plugin_log(print_r($usage, true));
+    // plugin_log("----Usage----");
+    // plugin_log(print_r($usage, true));
 
     UsageService::updateUsage($usage);
     // $updatedUsagePercentages = UsageService::usagePercentages();
 
     $usage_check = UsageService::usageControl();
 
-    plugin_log('-------- USAGE CHECK --------');
-    plugin_log(print_r($usage_check, true));
+    // plugin_log('-------- USAGE CHECK --------');
+    // plugin_log(print_r($usage_check, true));
 
     $warning_message = null;
     if (is_array($usage_check) && isset($usage_check['message'])) {
@@ -475,6 +448,7 @@ add_action('wp_ajax_handle_assistant_message', 'handle_assistant_message');
 function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, $thread_id = null)
 {
     // plugin_log('--- HANDLE ASSISTANT FUNCTION ---');
+    global $wpdb;
 
     $message = $_POST['message'] ?? null;
     $thread_id = $_POST['session_id'] ?? $thread_id;
@@ -551,6 +525,23 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         }
     }
 
+    // Google client e funções
+    $is_connected = GoogleCalendarController::get_valid_access_token($user_id);
+    if ($is_connected) {
+        $runInstruction .= "\n Funções Calendar:\n";
+        $runInstruction .= AssistantHelpers::calendarFunctionPrompt();
+    }
+
+    // APAGAR ASSISTENTE EXPO
+    if ($assistant_id == "asst_x6lc89gAv4hNlWdeuWGxNANn") {
+        $runInstruction .= "\n Funções EXPO:\n";
+        $runInstruction .= AssistantHelpers::sendFileToUser();
+    }
+
+    // error_log('--- Run instruction ---');
+    // error_log(print_r($runInstruction, true));
+
+
     // plugin_log('--- RUNNNN FUUUUNCTION ---');
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
     $api_url = "https://api.openai.com/v1/threads/$thread_id/runs";
@@ -569,6 +560,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     $assistant_message = "";
 
+    // error_log("Enviando mensagem para o assistente: $message");
+
     $ch = curl_init($api_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -577,6 +570,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     // Captura toda a resposta da API
     $response = curl_exec($ch);
+    // error_log(print_r($response, true));
 
     if (curl_errno($ch)) {
         throw new Exception('Erro no cURL: ' . curl_error($ch));
@@ -587,8 +581,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     // $response = json_decode($response, true);
 
-    // error_log('--- Resposta completa da OpenAI ---');
-    // error_log(print_r($response, true));
+    error_log('--- Resposta completa da OpenAI ---');
+    error_log(print_r($response, true));
 
     $run_id = null;
 
@@ -608,8 +602,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
             if (!empty($jsonData) && $jsonData !== "[DONE]") {
                 $decodedData = json_decode($jsonData, true);
 
-                error_log('--- JSON Decodificado ---');
-                error_log(print_r($decodedData, true));
+                // error_log('--- JSON Decodificado ---');
+                // error_log(print_r($decodedData, true));
 
                 if (!$run_id && isset($decodedData['id'])) {
                     $run_id = $decodedData['id'];
@@ -877,6 +871,28 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     $output = "Um atendente entrará em contato em instantes";
                                 }
                                 error_log('Flag: ' . print_r($flag, true));
+                            } elseif ($function_name === 'send_file_to_user') {
+                                // error_log('entrou send_file_to_user');
+                                $output = "Desculpe. Não encontrei o documento.";
+
+                                $fileId = $arguments['file_id'] ?? null;
+                                $fileName = $arguments['file_name'] ?? null;
+                                // error_log('Instance: ' . print_r($fileId, true));
+                                // error_log('Remote: ' . print_r($fileName, true));
+
+                                if (!empty($fileId)) {
+                                    $file = StorageController::getFileContent($fileId);
+                                    // error_log('File: ' . print_r($file, true));
+
+                                    $localFile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}vector_files WHERE file_id = %s", $file['id']));
+                                    // error_log('Local file: ' . print_r($localFile, true));
+
+                                    if (empty($localFile)) {
+                                        return;
+                                    }
+
+                                    $output = "Aqui está o documento: " . $localFile->file_url;
+                                }
                             }
 
                             $assistant_message = $output;
@@ -897,8 +913,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         }
     }
 
-    error_log('--- Mensagem final gerada ---');
-    error_log(print_r($assistant_message, true));
+    // error_log('--- Mensagem final gerada ---');
+    // error_log(print_r($assistant_message, true));
 
     /*
     *
@@ -938,20 +954,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         'usage' => $usageObj
     ]);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1247,108 +1249,60 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 // }
 
 
-function treat_assistant_instructions($assistant)
-{
-
-    $as = new Chatbot();
-
-    // $question = new Question();
-    // $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
-
-    $chatbot_trainning = [];
-
-    foreach ($assistant['chatbot_options'] as $option) {
-        $training_phrase = $option['training_phrase'];
-        $resposta = $option['resposta'];
-
-        if ($option['field_type'] == 'file') {
-            $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $resposta);
-
-            if (file_exists($file_path)) {
-                $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-
-                if ($file_extension == 'pdf') {
-                    $parser = new Parser();
-                    $pdf = $parser->parseFile($file_path);
-                    $file_content = $pdf->getText();
-                    // plugin_log(print_r($file_content , true));
-                } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
-                    $file_content = $as->transcribe_audio_with_whisper($file_path);
-                    // plugin_log(print_r($file_content , true));
-                } else {
-                    $file_content = file_get_contents($file_path);
-                }
-
-                if (!empty($file_content)) {
-                    $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
-                    $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
-                }
-
-                $sanitized_file_content = substr($file_content, 0, 5000);
-                $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
-            }
-        } else {
-            $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
-        }
-    }
-
-    // foreach ($chatbotFixedQuestions as $question) {
-    //     $chatbot_trainning[] = $question['response'];
-    // }
-
-    $chatbot_trainning[] = 'seu nome é ' . $assistant['chatbot_name'];
-
-    $training_context = implode("\n", $chatbot_trainning);
-
-    return $training_context;
-}
-
-// function transcribe_audio_with_whisper($file_path)
+// function treat_assistant_instructions($assistant)
 // {
 
-//     plugin_log('file path');
-//     plugin_log(print_r($file_path, true));
+//     $as = new Chatbot();
 
-//     $url = 'https://api.openai.com/v1/audio/transcriptions';
-//     $boundary = uniqid();
-//     $delimiter = '--------------------------' . $boundary;
+//     // $question = new Question();
+//     // $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
 
-//     $file_content = file_get_contents($file_path);
-//     $file_name = basename($file_path);
-//     $file_mime = mime_content_type($file_path); // Detecta o tipo correto do arquivo
+//     $chatbot_trainning = [];
 
-//     $file_data = "--$delimiter\r\n" .
-//         "Content-Disposition: form-data; name=\"file\"; filename=\"$file_name\"\r\n" .
-//         "Content-Type: $file_mime\r\n\r\n" .
-//         $file_content . "\r\n" .
-//         "--$delimiter\r\n" .
-//         "Content-Disposition: form-data; name=\"model\"\r\n\r\n" .
-//         "whisper-1\r\n" .
-//         "--$delimiter--\r\n";
+//     foreach ($assistant['chatbot_options'] as $option) {
+//         $training_phrase = $option['training_phrase'];
+//         $resposta = $option['resposta'];
 
-//     $headers = [
-//         "Authorization: Bearer " . OPENAI_API_KEY,
-//         "Content-Type: multipart/form-data; boundary=$delimiter",
-//     ];
+//         if ($option['field_type'] == 'file') {
+//             $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $resposta);
 
-//     $context = stream_context_create([
-//         'http' => [
-//             'method' => 'POST',
-//             'header' => implode("\r\n", $headers),
-//             'content' => $file_data,
-//         ],
-//     ]);
+//             if (file_exists($file_path)) {
+//                 $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
 
-//     $response = file_get_contents($url, false, $context);
+//                 if ($file_extension == 'pdf') {
+//                     $parser = new Parser();
+//                     $pdf = $parser->parseFile($file_path);
+//                     $file_content = $pdf->getText();
+//                     // plugin_log(print_r($file_content , true));
+//                 } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
+//                     $file_content = $as->transcribe_audio_with_whisper($file_path);
+//                     // plugin_log(print_r($file_content , true));
+//                 } else {
+//                     $file_content = file_get_contents($file_path);
+//                 }
 
-//     if ($response === false) {
-//         plugin_log('Erro na solicitação ao Whisper API');
+//                 if (!empty($file_content)) {
+//                     $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
+//                     $file_content = preg_replace('/[^\x20-\x7E\n\r\t]/u', '', $file_content);
+//                 }
+
+//                 $sanitized_file_content = substr($file_content, 0, 5000);
+//                 $chatbot_trainning[] = $training_phrase . ' ' . $sanitized_file_content;
+//             }
+//         } else {
+//             $chatbot_trainning[] = $training_phrase . ' ' . $resposta;
+//         }
 //     }
 
-//     $result = json_decode($response, true);
+//     // foreach ($chatbotFixedQuestions as $question) {
+//     //     $chatbot_trainning[] = $question['response'];
+//     // }
 
+//     $chatbot_trainning[] = 'seu nome é ' . $assistant['chatbot_name'];
 
-//     return $result['text'] ?? '';
+//     $training_context = implode("\n", $chatbot_trainning);
+
+//     return $training_context;
 // }
 
 function transcribe_audio_with_whisper($file_path)

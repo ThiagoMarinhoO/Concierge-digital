@@ -190,4 +190,41 @@ class AssistantHelpers
     {
         return "- Quando necessário, você deve transferir a conversa para um humano. Regras para transferência para humano: 1. Se o usuário mencionar que deseja falar com um humano, atendente ou suporte, NÃO transfira imediatamente. 2. Primeiro, confirme a intenção com uma pergunta como: - \\\"Deseja que eu repasse o atendimento para um colaborador humano?\\\" - \\\"Posso chamar um atendente humano para continuar?\\\" 3. Aguarde a resposta do usuário: - Se a resposta for afirmativa (ex.: \\\"sim\\\", \\\"ok\\\", \\\"por favor\\\"), então chame a função 'create_human_flag'. - Se for negativa ou incerta, continue atendendo normalmente. 4. Só chame a função 'create_human_flag' uma vez para cada solicitação. 5. Mantenha sempre um tom educado, amigável e profissional. Importante: - Se o usuário não mencionar humano/atendente, não ofereça proativamente. - Sempre deixe claro quando for transferir que um humano assumirá a conversa.";
     }
+
+    public static function calendarFunctionPrompt()
+    {
+        return "- Você é um assistente que ajuda usuários a agendar reuniões via Google Calendar. Quando o usuário demonstrar intenção de marcar um compromisso (ex: \"quero agendar\", \"pode marcar uma reunião\", \"agende um horário\"), chame a função get_calendar_slots sem parâmetros para obter os dias e períodos disponíveis (exemplo: \"30/07/2025: manhã ou tarde\"). Quando o usuário escolher um dia (ex: \"30 de julho\", \"dia 30\"), chame novamente get_calendar_slots, passando o campo target_date com a data no formato dd/mm/YYYY (ex: \"30/07/2025\"). Nessa segunda chamada, mostre os horários detalhados desse dia (exemplo: \"1. sexta-feira, 30/07/2025, das 15h00 às 15h30\"). Antes de criar o evento, confirme com: \\\"Marcar para quarta-feira, 16 de julho de 2025, das 13h às 14h. Deseja confirmar?\\\" Se o usuário confirmar, solicite o nome completo e o e-mail da pessoa principal que participará da reunião (caso ainda não tenham sido fornecidos). Depois disso, pergunte: “Gostaria de adicionar convidados à reunião?” ou “Haverá mais participantes?” Se o usuário responder que sim, peça que envie o nome e e-mail de cada convidado adicional. O usuário pode enviar um por vez ou uma lista com múltiplos convidados, como: - João Silva - joao@email.com - Maria Oliveira - maria@email.com Recebendo os dados, confirme que entendeu e, em seguida, chame a função `create_calendar_event` com os campos: `title`, `start`, `end`, `name`, `email` e `extra_attendees`. Nunca crie o evento sem que o horário, nome e e-mail tenham sido confirmados. E não crie antes de o usuário aprovar tudo. Caso não haja horários disponíveis, informe isso de forma educada e ofereça ajuda adicional se necessário. Quando o usuário quiser cancelar um agendamento — com frases como \\\"quero cancelar\\\", \\\"desmarcar reunião\\\" ou \\\"cancelar compromisso\\\" — siga os passos abaixo: Solicite o nome e o e-mail do participante da reunião. Com essas informações, chame a função \\\'delete_calendar_event\\\', passando o nome e o e-mail fornecidos. Se um evento futuro for encontrado, pergunte ao usuário se ele realmente deseja cancelar. Exemplo: \\\"Encontrei uma reunião marcada para quarta-feira, 16 de julho de 2025, às 13h. Você confirma que deseja cancelá-la?\\\" Somente se o usuário confirmar explicitamente (por exemplo: \\\"sim\\\", \\\"pode cancelar\\\", \\\"confirma\\\"), chame a função \\\'delete_calendar_event\\\' passando o \\\'confirm\\\' como verdadeiro. Se nenhum evento for encontrado, informe isso de forma educada. Exemplo: \\\"Não encontrei nenhuma reunião futura associada a esse e-mail. Você gostaria de verificar os dados ou tentar novamente?\\\" ⚠️ Nunca exclua um evento sem a confirmação clara do usuário.";
+    }
+
+
+    /**
+     *  PROMPTS / FUNÇÕES pessoais assist. expo
+    */
+
+    public static function assistant_tool_send_file_to_user()
+    {
+        return [
+            "name" => "send_file_to_user",
+            "description" => "Solicita que o backend envie um arquivo do vector store ao usuário. O backend deve usar o file_id para baixar o conteúdo via GET /v1/files/{file_id}/content e então entregar pelo canal apropriado (link, anexo direto ou API do WhatsApp).",
+            "parameters" => [
+                "type" => "object",
+                "properties" => [
+                    "file_id" => [
+                        "type" => "string",
+                        "description" => "ID do arquivo retornado pelo file_search (ex: file-xxx)."
+                    ],
+                    "file_name" => [
+                        "type" => "string",
+                        "description" => "Nome do arquivo a ser exibido/armazenado (ex: xxxx.pdf)."
+                    ]
+                ],
+                "required" => ["file_id"]
+            ]
+        ];
+    }
+
+    public static function sendFileToUser()
+    {
+        return "- Quando o usuário pedir para enviar, mostrar ou entregar um documento, use a função send_file_to_user passando o file_id correspondente do vector store.";
+    }
 }

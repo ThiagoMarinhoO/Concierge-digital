@@ -1,23 +1,29 @@
 <?php
+function create_vector_tables() {
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
 
-class CharlieTables {
-    public static function createTables() {}
+    $table_vector_stores = $wpdb->prefix . 'vector_stores';
+    $table_vector_files  = $wpdb->prefix . 'vector_files';
 
-    public static function createMeetTable() {
-        global $wpdb;
-        
-        $table_name = 'charlie' . 'meet';
-        $charset_collate = $wpdb->get_charset_collate();
+    $sql = "
+        CREATE TABLE $table_vector_stores (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            assistant_id VARCHAR(255),
+            vector_store_id VARCHAR(255),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;
 
-        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
-            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-            title VARCHAR(255) NOT NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id)
-        ) $charset_collate;";
+        CREATE TABLE $table_vector_files (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            file_id VARCHAR(255) NOT NULL,
+            vector_store_id VARCHAR(255),
+            file_url TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;
+    ";
 
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
-    }
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
 }

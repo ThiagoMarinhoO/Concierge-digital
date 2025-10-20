@@ -39,22 +39,44 @@ function save_responses()
         ];
     }
 
-    // $validAccessToken = GoogleCalendarController::get_valid_access_token($user_id);
+    $is_connected = GoogleCalendarController::get_valid_access_token($user_id);
+    if ($is_connected) {
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+        ];
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+        ];
+    }
 
-    // error_log("Valid Access Token: " . print_r($validAccessToken, true));
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
+    // ];
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_create_calendar_event()
+    // ];
+    // $tools[] = [
+    //     "type" => "function",
+    //     "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+    // ];
 
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
-    ];
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_create_calendar_event()
-    ];
-    $tools[] = [
-        "type" => "function",
-        "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
-    ];
+    /**
+     * Específico EXPO
+    */
+    if ($chatbot_id == "asst_x6lc89gAv4hNlWdeuWGxNANn") {
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_send_file_to_user()
+        ];
+    }
 
     $data = [
         "instructions" => $assistant_dto['assistant_instructions'],
@@ -65,6 +87,30 @@ function save_responses()
             "assistant_image" => $assistant_dto['assistant_image']
         ] : (object) []
     ];
+
+    /**
+     * Verificar se o assistente já tem um vector store e associar ao file Search
+     */
+    $vector_store_label = "Vector Store para {$assistant_dto['assistant_name']}";
+    global $wpdb;
+
+    // 1️⃣ Buscar vector store existente
+    $table_stores = $wpdb->prefix . 'vector_stores';
+    $vector_store = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_stores WHERE assistant_id = %s",
+        $chatbot_id
+    ));
+
+    if ($vector_store) {
+        // error_log('Entroooou');
+
+        $data['tool_resources'] = [
+            "file_search" => [
+                "vector_store_ids" => [$vector_store->vector_store_id]
+            ]
+        ];
+    }
+
 
     if (!empty($chatbot_welcome_message)) {
         $data['metadata']->welcome_message = $chatbot_welcome_message;
@@ -107,6 +153,7 @@ function save_responses()
     );
 
     $response = json_decode($response, true);
+    error_log(print_r($response, true));
 
 
     if ($update_success) {

@@ -1,60 +1,180 @@
 <?php
 add_action('wp_ajax_upload_files_to_media_library', 'handle_file_upload');
 
-function handle_file_upload() {
+function handle_file_upload()
+{
+    if (empty($_FILES['files'])) {
+        wp_send_json_error(['message' => 'Nenhum arquivo enviado']);
+    }
 
-	if (empty($_FILES['files'])) {
-		wp_send_json_success(['message' => 'Nenhum arquivo enviado']);
-		return;
-	}
+    $assistant_id = isset($_POST['assistant_id']) ? sanitize_text_field($_POST['assistant_id']) : null;
+    $assistant_id = (!empty($assistant_id) && $assistant_id !== 'undefined' && $assistant_id !== 'null') ? $assistant_id : null;
+    $assistant_name = isset($_POST['assistant_name']) ? sanitize_text_field($_POST['assistant_name']) : null;
+    if (!$assistant_name) {
+        wp_send_json_error(['message' => 'Por favor, informe o nome do assistente antes de enviar arquivos.']);
+    }
 
-	$uploaded_urls = [];
+    $vector_store_label = "Vector Store para {$assistant_name}";
+    global $wpdb;
 
-	$question_ids = isset($_POST['questionIds']) ? $_POST['questionIds'] : [];
+    $table_stores = $wpdb->prefix . 'vector_stores';
 
-	foreach ($_FILES['files']['name'] as $index => $name) {
-		// Montar corretamente cada arquivo
-		$file = [
-			'name'     => $_FILES['files']['name'][$index],
-			'type'     => $_FILES['files']['type'][$index],
-			'tmp_name' => $_FILES['files']['tmp_name'][$index],
-			'error'    => $_FILES['files']['error'][$index],
-			'size'     => $_FILES['files']['size'][$index],
-		];
+    $vector_store_id = null;
 
-		// Função segura para manusear o upload
-		$upload = wp_handle_sideload($file, ['test_form' => false]);
+    if ($assistant_id) {
+        error_log("Buscando vector store para assistente ID: $assistant_id");
 
-		if (!isset($upload['error'])) {
-			$file_url = $upload['url'];
+        $vector_store_id = null;
 
-			// Inserir na biblioteca de mídia
-			$attachment = [
-				'post_mime_type' => $upload['type'],
-				'post_title'     => sanitize_file_name($file['name']),
-				'post_content'   => '',
-				'post_status'    => 'inherit',
-			];
+        $vector_store = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_stores WHERE assistant_id = %s",
+            $assistant_id
+        ));
 
-			$attachment_id = wp_insert_attachment($attachment, $upload['file']);
+        $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
 
-			if (!is_wp_error($attachment_id)) {
-				require_once ABSPATH . 'wp-admin/includes/image.php';
-				wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $upload['file']));
-				// $uploaded_urls[] = wp_get_attachment_url($attachment_id);
 
-				$uploaded_urls[] = array(
-					'url' => wp_get_attachment_url($attachment_id),
-					'id'  => isset($question_ids[$index]) ? $question_ids[$index] : null
-				);
+        if (!$vector_store) {
+            error_log("Criando vector store para assistente ID: $assistant_id");
+            // Criar novo
+            $created = StorageController::createVectorStore($vector_store_label);
+            if (!$created || empty($created['id'])) {
+                wp_send_json_error(['message' => 'Falha ao criar vector store.']);
+            }
+            
+            $vector_store_id = $created['id'];
+            
+            $wpdb->insert($table_stores, [
+                'name' => $vector_store_label,
+                'assistant_id' => $assistant_id,
+                'vector_store_id' => $vector_store_id
+            ]);
+        }
+    } else {
+        error_log("Buscando vector store para Name: $vector_store_label");
+        $vector_store = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_stores WHERE name = %s",
+            $vector_store_label
+        ));
 
-			} else {
-				wp_send_json_error(['message' => 'Erro ao inserir anexo na biblioteca de mídia']);
-			}
-		} else {
-			wp_send_json_error(['message' => $upload['error']]);
-		}
-	}
+        if ($vector_store) {
+            $vector_store_id = $vector_store->vector_store_id;
+        } else {
+            error_log("Criando vector store para Name: $vector_store_label");
+            // Criar novo
+            $created = StorageController::createVectorStore($vector_store_label);
+            if (!$created || empty($created['id'])) {
+                wp_send_json_error(['message' => 'Falha ao criar vector store.']);
+            }
+            $vector_store_id = $created['id'];
+            $wpdb->insert($table_stores, [
+                'name' => $vector_store_label,
+                'vector_store_id' => $vector_store_id
+            ]);
+        }
+    }
 
-	wp_send_json_success(['urls' => $uploaded_urls]);
+
+    $uploaded_urls = [];
+    $table_files = $wpdb->prefix . 'vector_files';
+
+    $question_ids = isset($_POST['questionIds']) ? $_POST['questionIds'] : [];
+
+    foreach ($_FILES['files']['name'] as $index => $name) {
+        $file = [
+            'name'     => $_FILES['files']['name'][$index],
+            'type'     => $_FILES['files']['type'][$index],
+            'tmp_name' => $_FILES['files']['tmp_name'][$index],
+            'error'    => $_FILES['files']['error'][$index],
+            'size'     => $_FILES['files']['size'][$index],
+        ];
+
+        $upload = wp_handle_sideload($file, ['test_form' => false]);
+        if (isset($upload['error'])) {
+            wp_send_json_error(['message' => $upload['error']]);
+        }
+
+        $allowed_types = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+        if (in_array($file['type'], $allowed_types)) {
+
+            if (!$vector_store_id) {
+                wp_send_json_error(['message' => 'Vector store não encontrado ou criado.']);
+            }
+
+            // 2️⃣ Upload para OpenAI
+            $fileResponse = StorageController::uploadFile($upload['file']);
+            if (!$fileResponse || empty($fileResponse['id'])) {
+                wp_send_json_error(['message' => 'Erro ao enviar arquivo para o vector store']);
+            }
+
+            $file_id = $fileResponse['id'];
+
+            // 3️⃣ Adicionar ao vector store
+            StorageController::createVectorStoreFile($vector_store_id, $file_id);
+
+            // 4️⃣ Registrar no banco
+            $wpdb->insert($table_files, [
+                'file_id' => $file_id,
+                'vector_store_id' => $vector_store_id,
+                'file_url' => $upload['url']
+            ]);
+        }
+
+        $uploaded_urls[] = [
+            'url' => $upload['url'],
+            'id'  => isset($question_ids[$index]) ? $question_ids[$index] : null,
+            'file_id' => $file_id
+        ];
+    }
+
+    wp_send_json_success([
+        'message' => 'Arquivos enviados e vinculados ao Vector Store com sucesso!',
+        'vector_store_id' => $vector_store_id,
+        'urls' => $uploaded_urls
+    ]);
+}
+
+add_action('wp_ajax_delete_vector_store_file', 'delete_vector_store_file');
+
+function delete_vector_store_file()
+{
+    error_log('Deletando arquivo do vector store...');
+
+    global $wpdb;
+    $table_files = $wpdb->prefix . 'vector_files';
+
+    if (empty($_POST['file_url'])) {
+        wp_send_json_error(['message' => 'Nenhum file_id fornecido']);
+    }
+
+    $file_url = sanitize_text_field($_POST['file_url']);
+    error_log("Deletando arquivo do vector store: $file_url");
+
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$table_files} WHERE file_url = %s",
+        $file_url
+    ));
+    error_log(print_r($row, true));
+
+    if (!$row) {
+        wp_send_json_success(['message' => 'Arquivo não encontrado no banco de dados']);
+    }
+
+    $file_id = $row->file_id;
+    error_log("Deletando arquivo do vector store: $file_id");
+
+    $res = StorageController::deleteVectorStoreFile($row->vector_store_id, $file_id);
+    error_log(print_r($res, true));
+
+    $deleted = $wpdb->delete($table_files, ['file_url' => $file_url]);
+    error_log(print_r($deleted, true));
+
+    if ($deleted === false) {
+        wp_send_json_error(['message' => 'Erro ao deletar o arquivo do banco de dados']);
+    } elseif ($deleted === 0) {
+        wp_send_json_error(['message' => 'Nenhum arquivo encontrado com o file_url fornecido']);
+    } else {
+        wp_send_json_success(['message' => 'Arquivo deletado com sucesso']);
+    }
 }
