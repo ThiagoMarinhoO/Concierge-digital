@@ -4,6 +4,9 @@ add_action('wp_ajax_save_responses', 'save_responses');
 
 function save_responses()
 {
+    global $wpdb;
+
+
     $chatbot_id = $_POST['chatbot_id'];
     $chatbot_name = $_POST['chatbot_name'];
     $chatbot_image = $_POST['chatbot_image'];
@@ -62,6 +65,21 @@ function save_responses()
         ];
     }
 
+    
+    // ActiveCampaign funções
+    $activeCampaignSettings = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}active_campaign_variables WHERE assistant_id = %s",
+            $chatbot_id
+        )
+    );
+    if ($activeCampaignSettings) {
+        $tools[] = [
+            "type" => "function",
+            "function" => AssistantHelpers::assistant_tool_create_lead()
+        ];
+    }
+
     // $tools[] = [
     //     "type" => "function",
     //     "function" => AssistantHelpers::assistant_tool_get_calendar_slots()
@@ -99,7 +117,6 @@ function save_responses()
      * Verificar se o assistente já tem um vector store e associar ao file Search
      */
     $vector_store_label = "Vector Store para {$assistant_dto['assistant_name']}";
-    global $wpdb;
 
     // 1️⃣ Buscar vector store existente
     $table_stores = $wpdb->prefix . 'vector_stores';

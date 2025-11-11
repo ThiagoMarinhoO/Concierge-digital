@@ -17,6 +17,7 @@ function create_assistant()
                 'message' => 'Você não está autorizado a realizar esta ação.'
             ], 401 );
     }
+    global $wpdb;
 
     $api_url = "https://api.openai.com/v1/assistants";
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
@@ -514,7 +515,21 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     /**
      *  Início da RUN
      */
-    $runInstruction = $assistant['chatbot_options'];
+    $runInstruction = "";
+
+    // ActiveCampaign funções
+    $activeCampaignSettings = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}active_campaign_variables WHERE assistant_id = %s",
+            $assistant_id
+        )
+    );
+    if ($activeCampaignSettings) {
+        $runInstruction .= "\n Função ActiveCampaign coleta de leads:\n";
+        $runInstruction .= AssistantHelpers::createLeadsFunctionPrompt();
+    }
+
+    $runInstruction .= "\n {$assistant['chatbot_options']}\n";
 
     if ($isWhatsapp) {
         $runInstruction .= "\n Funções:\n";
@@ -534,7 +549,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     }
 
     // Google client e funções
-    $is_connected = GoogleCalendarController::get_valid_access_token($user_id);
+    $is_connected = GoogleCalendarController::get_valid_access_token($assistant['user_id']);
     if ($is_connected) {
         $runInstruction .= "\n Funções Calendar:\n";
         $runInstruction .= AssistantHelpers::calendarFunctionPrompt();
@@ -548,7 +563,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     // error_log('--- Run instruction ---');
     // error_log(print_r($runInstruction, true));
-
 
     // plugin_log('--- RUNNNN FUUUUNCTION ---');
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
@@ -892,14 +906,65 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     $file = StorageController::getFileContent($fileId);
                                     // error_log('File: ' . print_r($file, true));
 
-                                    $localFile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}vector_files WHERE file_id = %s", $file['id']));
-                                    // error_log('Local file: ' . print_r($localFile, true));
+                                    if (!empty($file)) {
+                                        $localFile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}vector_files WHERE file_id = %s", $file['id']));
+                                        // error_log('Local file: ' . print_r($localFile, true));
+    
+                                        if (empty($localFile)) {
+                                            return;
+                                        }
 
-                                    if (empty($localFile)) {
-                                        return;
+                                        $output = "Aqui está o documento: " . $localFile->file_url;
+                                    } else {
+                                        $output = "Desculpe. Não encontrei o documento.";
                                     }
+                                }
+                            } elseif ($function_name === 'create_leads') {
+                                // error_log('entrou create_leads');
+                                $output = "Me desculpe. Não consegui criar o lead."; // Output padrão (de falha)
 
-                                    $output = "Aqui está o documento: " . $localFile->file_url;
+                                $activeCampaignSettings = $wpdb->get_row(
+                                    $wpdb->prepare(
+                                        "SELECT * FROM {$wpdb->prefix}active_campaign_variables WHERE assistant_id = %s",
+                                        $assistant_id
+                                    )
+                                );
+
+
+                                $name = $arguments['name'] ?? null;
+                                $email = $arguments['email'] ?? null;
+                                $phone = $arguments['phone'] ?? null;
+
+                                error_log('Nome: ' . print_r($name, true));
+                                error_log('Email: ' . print_r($email, true));
+                                error_log('Telefone: ' . print_r($phone, true));
+
+                                if ($activeCampaignSettings) {
+                                    $api_url = $activeCampaignSettings->api_url;
+                                    $api_key = $activeCampaignSettings->api_key;
+
+                                    if (!empty($name) && !empty($email) && !empty($phone)) {
+                                        $service = new ActiveCampaignService($api_url, $api_key);
+                                        $firstName = explode(' ', $name)[0] ?? $name;
+
+                                        $contactId = $service->createOrUpdateContact($firstName, $email, $phone);
+
+                                        if ($contactId) {
+                                            // Tenta criar o Deal SOMENTE se o contato foi criado/encontrado
+                                            $dealName = "Lead - CharlieApp - " . $name;
+                                            $dealId = $service->createDealForContact($contactId, $dealName);
+
+                                            if ($dealId) {
+                                                $output = "✅ Obrigado. Suas informações foram salvas. Como posso ajudar agora?";
+                                            } else {
+                                                error_log('Não foi possível criar ou atualizar o deal.');
+                                                $output = "Houve um problema ao criar o registro de atendimento no sistema. Por favor, tente novamente mais tarde.";
+                                            }
+                                        } else {
+                                            error_log('Não foi possível criar ou atualizar o contato.');
+                                            $output = "Me desculpe. Não consegui salvar suas informações de contato. Verifique o email ou telefone e tente novamente.";
+                                        }
+                                    }
                                 }
                             }
 
@@ -962,7 +1027,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         'usage' => $usageObj
     ]);
 }
-
 
 
 // add_action('wp_ajax_create_thread', 'create_thread');

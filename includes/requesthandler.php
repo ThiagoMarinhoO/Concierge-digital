@@ -284,6 +284,8 @@ add_action('wp_ajax_nopriv_edit_question', 'edit_question');
 
 function updateOpenaiAssistantsRules()
 {
+    global $wpdb;
+
     $assistants = new Chatbot();
     $assistants = $assistants->getAllChatbotsInDB();
 
@@ -331,6 +333,20 @@ function updateOpenaiAssistantsRules()
             $tools[] = [
                 "type" => "function",
                 "function" => AssistantHelpers::assistant_tool_delete_calendar_event()
+            ];
+        }
+
+        // ActiveCampaign funções
+        $activeCampaignSettings = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}active_campaign_variables WHERE assistant_id = %s",
+                $assistant_id
+            )
+        );
+        if ($activeCampaignSettings) {
+            $tools[] = [
+                "type" => "function",
+                "function" => AssistantHelpers::assistant_tool_create_lead()
             ];
         }
 

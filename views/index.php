@@ -306,6 +306,23 @@ if (!empty($resource_user_id)) {
 							<?php if (strtolower($category['title']) === 'integrações'): ?>
 								<?php echo do_shortcode('[google_calendar_component]'); ?>
 							<?php endif; ?>
+						<?php endforeach; ?>
+
+						<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
+						<?php if (strtolower($category['title']) === 'integrações'): ?>
+							<?php echo do_shortcode('[google_calendar_component]'); ?>
+							<?php echo do_shortcode('[active_campaign_component]'); ?>
+						<?php endif; ?>
+					</div>
+					<?php if ($category['video_url'] != ''): ?>
+						<div class="">
+							<div class="video-container mb-4">
+								<video controls class="w-full rounded-lg size-64">
+									<source
+										src="<?php echo $category['video_url'] ?>"
+										type="video/mp4">
+								</video>
+							</div>
 						</div>
 						<?php if ($category['video_url'] != ''): ?>
 							<div class="">

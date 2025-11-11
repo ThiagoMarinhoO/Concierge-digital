@@ -54,6 +54,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'controllers/whatsappMessageController.php
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionFlagController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/storageController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/OrganizationController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/ActiveCampaignController.php';
 
 //services
 require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
@@ -65,6 +66,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/openaiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/googleCalendarService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/messageService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/OrganizationService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/ActiveCampaignService.php';
 
 //Repositories
 require_once CONCIERGE_DIGITAL_PATH . 'repository/messageRepository.php';
@@ -87,6 +89,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'views/organizations.php';
 
 // Components
 require_once CONCIERGE_DIGITAL_PATH . 'views/components/google-calendar-component.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/components/ActiveCampaignComponent.php';
 
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -408,6 +411,7 @@ register_activation_hook(__FILE__, function () {
      * Registrar papéis personalizados
      */
     charlie_register_custom_roles();
+    create_active_campaign_tables();
 });
 
 //FLATPICKR
