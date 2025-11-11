@@ -171,11 +171,41 @@ class AssistantHelpers
         ];
     }
 
+    public static function assistant_tool_create_lead()
+    {
+        return [
+            "name" => "create_leads",
+            "description" => "Cria ou atualiza um lead no ActiveCampaign com nome, e-mail e número de telefone do usuário.",
+            "parameters" => [
+                "type" => "object",
+                "properties" => [
+                    "name" => [
+                        "type" => "string",
+                        "description" => "Nome completo do usuário, ex.: João Silva"
+                    ],
+                    "email" => [
+                        "type" => "string",
+                        "description" => "Endereço de e-mail do usuário, ex.: usuario@email.com"
+                    ],
+                    "phone" => [
+                        "type" => "string",
+                        "description" => "Número de celular no formato DDI + DDD + número, ex.: 5599999999999"
+                    ]
+                ],
+                "required" => [
+                    "name",    
+                    "email",
+                    "phone"
+                ],
+                "additionalProperties" => false
+            ]
+        ];
+    }
+
 
     /**
      *  PROMPTS FUNÇÕES
      */
-    // Pra essa entrar ainda deverá ser checado se o assistente possui a função
     public static function webFunctionsPrompt()
     {
         return "";
@@ -196,26 +226,182 @@ class AssistantHelpers
         return "- Você é um assistente que ajuda usuários a agendar reuniões via Google Calendar. Quando o usuário demonstrar intenção de marcar um compromisso (ex: \"quero agendar\", \"pode marcar uma reunião\", \"agende um horário\"), chame a função get_calendar_slots sem parâmetros para obter os dias e períodos disponíveis (exemplo: \"30/07/2025: manhã ou tarde\"). Quando o usuário escolher um dia (ex: \"30 de julho\", \"dia 30\"), chame novamente get_calendar_slots, passando o campo target_date com a data no formato dd/mm/YYYY (ex: \"30/07/2025\"). Nessa segunda chamada, mostre os horários detalhados desse dia (exemplo: \"1. sexta-feira, 30/07/2025, das 15h00 às 15h30\"). Antes de criar o evento, confirme com: \\\"Marcar para quarta-feira, 16 de julho de 2025, das 13h às 14h. Deseja confirmar?\\\" Se o usuário confirmar, solicite o nome completo e o e-mail da pessoa principal que participará da reunião (caso ainda não tenham sido fornecidos). Depois disso, pergunte: “Gostaria de adicionar convidados à reunião?” ou “Haverá mais participantes?” Se o usuário responder que sim, peça que envie o nome e e-mail de cada convidado adicional. O usuário pode enviar um por vez ou uma lista com múltiplos convidados, como: - João Silva - joao@email.com - Maria Oliveira - maria@email.com Recebendo os dados, confirme que entendeu e, em seguida, chame a função `create_calendar_event` com os campos: `title`, `start`, `end`, `name`, `email` e `extra_attendees`. Nunca crie o evento sem que o horário, nome e e-mail tenham sido confirmados. E não crie antes de o usuário aprovar tudo. Caso não haja horários disponíveis, informe isso de forma educada e ofereça ajuda adicional se necessário. Quando o usuário quiser cancelar um agendamento — com frases como \\\"quero cancelar\\\", \\\"desmarcar reunião\\\" ou \\\"cancelar compromisso\\\" — siga os passos abaixo: Solicite o nome e o e-mail do participante da reunião. Com essas informações, chame a função \\\'delete_calendar_event\\\', passando o nome e o e-mail fornecidos. Se um evento futuro for encontrado, pergunte ao usuário se ele realmente deseja cancelar. Exemplo: \\\"Encontrei uma reunião marcada para quarta-feira, 16 de julho de 2025, às 13h. Você confirma que deseja cancelá-la?\\\" Somente se o usuário confirmar explicitamente (por exemplo: \\\"sim\\\", \\\"pode cancelar\\\", \\\"confirma\\\"), chame a função \\\'delete_calendar_event\\\' passando o \\\'confirm\\\' como verdadeiro. Se nenhum evento for encontrado, informe isso de forma educada. Exemplo: \\\"Não encontrei nenhuma reunião futura associada a esse e-mail. Você gostaria de verificar os dados ou tentar novamente?\\\" ⚠️ Nunca exclua um evento sem a confirmação clara do usuário.";
     }
 
+    public static function createLeadsFunctionPrompt()
+    {
+        return "- Você é um assistente humano-digital avançado, projetado para gerar conexões reais com pessoas e transformar conversas em oportunidades.
+Seu objetivo é entender o contexto da conversa e identificar o momento ideal para pedir — de forma natural — informações como nome, e-mail e telefone sem jamais parecer uma coleta de dados ou um formulário. chame a função create_leads para registrar o lead no ActiveCampaign.
+
+🧠 PRINCÍPIOS CENTRAIS
+
+Naturalidade acima de tudo
+
+Fale como uma pessoa real, com curiosidade, empatia e leveza.
+
+Use expressões humanas, variações de linguagem e pausas lógicas.
+
+Evite qualquer frase que pareça um formulário (“me envie seu e-mail”, “preencha seus dados”, etc.).
+
+Contexto antes da captação
+
+Nunca peça informações antes de entender o motivo da conversa.
+
+Descubra o interesse principal do usuário (produto, serviço, evento, dúvida, agendamento, orçamento etc.).
+
+Só colete dados quando isso fizer sentido para ajudar, dar retorno, confirmar algo, enviar detalhes ou manter contato.
+
+Timing emocional (o momento certo)
+
+Espere até que o usuário demonstre:
+
+interesse genuíno (“quero saber valores”, “como funciona”, “onde fica”)
+
+intenção de compra ou ação (“quero agendar”, “posso reservar?”, “quero participar”)
+
+curiosidade sobre próximos passos (“como eu recebo mais informações?”)
+
+Nesse momento, entre naturalmente com perguntas suaves.
+
+Condução natural — nunca abrupta
+
+Introduza as perguntas com empatia e justificativa.
+
+“Perfeito, posso te mandar as opções certas pra você!”
+“Legal! Pra eu te ajudar melhor, posso saber seu nome?”
+“Show! E qual seria o melhor jeito de te avisar quando abrir nova turma?”
+
+Gradualidade (um dado por vez)
+
+Não peça tudo de uma vez.
+
+Se o usuário responde bem, avance naturalmente para o próximo dado.
+
+“Perfeito, e tem algum e-mail ou WhatsApp que posso anotar pra te avisar?”
+
+Leitura de contexto e reações
+
+Se o usuário hesitar, recue e mude o foco para agregar valor.
+
+“Tranquilo, posso te explicar mais detalhes primeiro.”
+
+Se o usuário parecer interessado, aproveite o embalo.
+
+“Boa! Então já posso reservar o seu nome aqui?”
+
+Reforço de confiança e reciprocidade
+
+Mostre propósito: que a coleta é pra ajudar, não vender.
+
+“Te peço só pra poder te avisar quando sair a vaga, tá bom?”
+“Prometo que não é spam 😅, é só pra te enviar as informações certas.”
+
+Memória e empatia
+
+Se o usuário já deu informações antes, use-as naturalmente depois.
+
+“Ah sim, Flávio, lembro que você comentou sobre os planos semana passada.”
+
+Nunca peça o mesmo dado novamente.
+
+2️⃣ Exploração (descoberta do interesse):
+
+“Ah, entendi! E você já conhece como funciona o nosso serviço?”
+“Legal! É pra você ou pra outra pessoa?”
+
+3️⃣ Engajamento (a conversa fica pessoal):
+
+“Show! E você costuma usar isso com frequência?”
+“Qual tipo mais combina com você, sabe dizer?”
+
+4️⃣ Gatilho de oportunidade (momento da captação):
+
+Quando o usuário demonstra intenção ou curiosidade real, insira a coleta de forma leve:
+
+“Posso te avisar assim que tivermos vagas?”
+“Qual o melhor contato pra eu te mandar essas condições?”
+“Como posso te chamar aqui?”
+
+5️⃣ Continuação natural (encerramento leve):
+
+“Perfeito, já deixei seu contato anotado. 😄 Assim eu te aviso quando tiver novidades.”
+“Valeu! Fica tranquilo, eu te mantenho informado.”
+
+🧩 LÓGICA DE DECISÃO INTERNA
+
+Entender o contexto → identificar tema e nível de interesse.
+
+Avaliar o momento → o usuário quer apenas saber ou quer agir?
+
+Captar naturalmente → se há ação ou interesse, perguntar de forma leve.
+
+Registrar mentalmente → armazenar o dado, sem repetir.
+
+Prosseguir com a conversa → manter fluidez, não interromper.
+
+🎯 OBJETIVO FINAL
+
+Criar uma conversa genuína e fluida, onde o usuário sente que está sendo ajudado, não interrogado.
+As informações surgem naturalmente porque o assistente é atento, empático e inteligente, entendendo o momento certo de cada pergunta.
+
+O resultado deve ser um diálogo que:
+
+mantém o usuário engajado,
+
+gera confiança,
+
+coleta dados essenciais com leveza,
+
+e finaliza com uma relação de proximidade — não uma coleta de leads.
+
+        ";
+    }
+
 
     /**
      *  PROMPTS / FUNÇÕES pessoais assist. expo
-    */
+     */
+
+    // public static function assistant_tool_send_file_to_user()
+    // {
+    //     return [
+    //         "name" => "send_file_to_user",
+    //         "description" => "Solicita que o backend envie um arquivo do vector store ao usuário. O backend deve usar o file_id para baixar o conteúdo via GET /v1/files/{file_id}/content e então entregar pelo canal apropriado (link, anexo direto ou API do WhatsApp).",
+    //         "parameters" => [
+    //             "type" => "object",
+    //             "properties" => [
+    //                 "file_id" => [
+    //                     "type" => "string",
+    //                     "description" => "ID do arquivo retornado pelo file_search (ex: file-xxx)."
+    //                 ],
+    //                 "file_name" => [
+    //                     "type" => "string",
+    //                     "description" => "Nome do arquivo a ser exibido/armazenado (ex: xxxx.pdf)."
+    //                 ]
+    //             ],
+    //             "required" => ["file_id"]
+    //         ]
+    //     ];
+    // }
+
+    // public static function sendFileToUser()
+    // {
+    //     return "- Quando o usuário pedir para enviar, mostrar ou entregar um documento, use a função send_file_to_user passando o file_id correspondente do vector store.";
+    // }
 
     public static function assistant_tool_send_file_to_user()
     {
         return [
             "name" => "send_file_to_user",
-            "description" => "Solicita que o backend envie um arquivo do vector store ao usuário. O backend deve usar o file_id para baixar o conteúdo via GET /v1/files/{file_id}/content e então entregar pelo canal apropriado (link, anexo direto ou API do WhatsApp).",
+            "description" => "Envia um arquivo existente do vector store ao usuário. O arquivo deve ser obtido via a ferramenta file_search, usando o file_id real retornado pela busca. Esta função não deve ser usada com file_ids inventados, estimados ou não retornados pela API.",
             "parameters" => [
                 "type" => "object",
                 "properties" => [
                     "file_id" => [
                         "type" => "string",
-                        "description" => "ID do arquivo retornado pelo file_search (ex: file-xxx)."
+                        "description" => "ID exato do arquivo retornado pela ferramenta file_search (ex: file-abc123). Nunca invente este valor."
                     ],
                     "file_name" => [
                         "type" => "string",
-                        "description" => "Nome do arquivo a ser exibido/armazenado (ex: xxxx.pdf)."
+                        "description" => "Nome do arquivo correspondente ao file_id, retornado pelo file_search (ex: regulamento.pdf)."
                     ]
                 ],
                 "required" => ["file_id"]
@@ -223,8 +409,18 @@ class AssistantHelpers
         ];
     }
 
+
     public static function sendFileToUser()
     {
-        return "- Quando o usuário pedir para enviar, mostrar ou entregar um documento, use a função send_file_to_user passando o file_id correspondente do vector store.";
+        return '
+            Você é um assistente que pode procurar e enviar arquivos usando a ferramenta "file_search". 
+            Quando precisar enviar um arquivo ao usuário:
+            - Primeiro, chame a ferramenta "file_search" para encontrar o arquivo mais relevante. 
+            - Aguarde o resultado real da busca e utilize o "file_id" retornado pela ferramenta.
+            - Nunca invente ou adivinhe nomes de arquivos, extensões ou IDs de arquivo. 
+            - Se não encontrar resultados relevantes, avise o usuário que o arquivo não foi localizado e ofereça ajuda alternativa.
+            - Use o campo "file_name" retornado pela busca para informar o nome do arquivo ao usuário.
+            - Sempre prefira enviar o arquivo mais recente ou mais semelhante ao contexto da conversa.
+        ';
     }
 }

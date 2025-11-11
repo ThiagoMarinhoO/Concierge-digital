@@ -203,6 +203,7 @@ $whatsappInstance = WhatsappInstance::findByUserId($user_id);
 						<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
 						<?php if (strtolower($category['title']) === 'integrações'): ?>
 							<?php echo do_shortcode('[google_calendar_component]'); ?>
+							<?php echo do_shortcode('[active_campaign_component]'); ?>
 						<?php endif; ?>
 					</div>
 					<?php if ($category['video_url'] != ''): ?>
