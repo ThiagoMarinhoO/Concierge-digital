@@ -167,6 +167,17 @@ class WhatsappController
         $current_user = wp_get_current_user();
         $username = $current_user->user_login ?? 'user';
         $newInstanceName = $assistant_id . '_' . $username;
+        $user_id = get_current_user_id();
+
+        $user_policy = user_can($user_id, 'edit_assistants');
+        if (empty($user_policy)) {
+            wp_send_json_error(
+                [
+                    'message' => 'Você não está autorizado a realizar esta ação.'
+                ],
+                401
+            );
+        }
 
         $apiKey = EVOAPI_API_KEY;
         $apiUrl = EVOAPI_API_URL;

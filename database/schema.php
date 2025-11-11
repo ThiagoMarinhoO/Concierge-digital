@@ -1,5 +1,6 @@
 <?php
-function create_vector_tables() {
+function create_vector_tables()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -26,6 +27,66 @@ function create_vector_tables() {
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+}
+
+function create_organizations_table()
+{
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $table_organizations = $wpdb->prefix . 'organizations';
+
+    $sql = "
+        CREATE TABLE $table_organizations (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            owner_user_id BIGINT UNSIGNED NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;
+    ";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+function alter_users_table()
+{
+    global $wpdb;
+    $table_users = $wpdb->prefix . 'users';
+
+    // Verifique se a coluna já existe para evitar erros na primeira vez
+    $column_exists = $wpdb->query("SHOW COLUMNS FROM `$table_users` LIKE 'charlie_organization_id'");
+
+    if ($column_exists == 0) {
+        $sql = "
+            ALTER TABLE $table_users
+            ADD organization_id BIGINT UNSIGNED NULL;
+        ";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        // Para ALTER TABLE simples no core do WP, $wpdb->query pode ser mais confiável
+        $wpdb->query($sql);
+    }
+}
+
+function alter_assistants_table()
+{
+    global $wpdb;
+    $table_users = $wpdb->prefix . 'chatbot';
+
+    // Verifique se a coluna já existe para evitar erros na primeira vez
+    $column_exists = $wpdb->query("SHOW COLUMNS FROM `$table_users` LIKE 'organization_id'");
+
+    if ($column_exists == 0) {
+        $sql = "
+            ALTER TABLE $table_users
+            ADD organization_id BIGINT UNSIGNED NULL;
+        ";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        // Para ALTER TABLE simples no core do WP, $wpdb->query pode ser mais confiável
+        $wpdb->query($sql);
+    }
 }
 
 function create_active_campaign_tables() {

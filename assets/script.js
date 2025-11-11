@@ -38,6 +38,7 @@ jQuery(document).ready(function ($) {
 
     function getAnswers() {
         // const assistant_name = $('.assistent-name').val();
+        localStorage.setItem('chatbotRespostas', JSON.stringify([]));
 
         $.ajax({
             url: conciergeAjax.ajax_url,
@@ -694,12 +695,22 @@ jQuery(document).ready(function ($) {
                 console.error("Erro ao atualizar assistente:", data.data.message);
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro!',
-                text: 'Erro na requisição do assistente.',
-            });
-            console.error("Erro na requisição do assistente:", error);
+            
+            if(error.status == 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: error.data.message,
+                });
+                console.log(error);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro na requisição do assistente.',
+                });
+                console.error("Erro na requisição do assistente:", error);
+            }
         }
     }
 
