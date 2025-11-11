@@ -2,6 +2,33 @@
 
 class WhatsappMessageController
 {
+    /**
+     * Deprecated
+     */
+    // public static function listConversations()
+    // {
+    //     if (!is_user_logged_in()) {
+    //         wp_send_json_error(['mensagem' => 'Usuário não autenticado'], 401);
+    //     }
+
+    //     $userId = get_current_user_id();
+    //     $instance = WhatsappInstance::findByUserId($userId);
+
+    //     if (!$instance) {
+    //         wp_send_json_error(['mensagem' => 'Instância não encontrada'], 404);
+    //     }
+
+    //     $messages = WhatsappMessage::findByInstanceName($instance->getInstanceName());
+
+    //     $conversations = self::groupByRemoteJid($messages);
+
+    //     $conversations = self::checkActiveSession($conversations, $instance->getInstanceName());
+
+    //     // error_log('conversations: ' . print_r($conversations, true));
+
+    //     // wp_send_json_success();
+    //     wp_send_json_success(['conversations' => array_values($conversations)]);
+    // }
     public static function listConversations()
     {
         if (!is_user_logged_in()) {
@@ -15,16 +42,27 @@ class WhatsappMessageController
             wp_send_json_error(['mensagem' => 'Instância não encontrada'], 404);
         }
 
+        // As mensagens vêm ordenadas da mais recente para a mais antiga (DESC)
         $messages = WhatsappMessage::findByInstanceName($instance->getInstanceName());
 
+        // Agrupa por remoteJid e threadId, e define 'lastMessageDateTime'
         $conversations = self::groupByRemoteJid($messages);
 
         $conversations = self::checkActiveSession($conversations, $instance->getInstanceName());
+        
+        // NOVO PASSO: Ordenar as conversas pela data/hora da última mensagem (mais recente primeiro)
+        usort($conversations, function ($a, $b) {
+            // Comparar as datas/horas da última mensagem. Retorna negativo se 'a' for mais recente que 'b'.
+            return strtotime($b['lastMessageDateTime']) - strtotime($a['lastMessageDateTime']);
+        });
+        
+        // Remove a chave de ordenação extra antes de enviar
+        $conversations = array_map(function($conv) {
+            unset($conv['lastMessageDateTime']);
+            return $conv;
+        }, $conversations);
 
-        // error_log('conversations: ' . print_r($conversations, true));
-
-        // wp_send_json_success();
-        wp_send_json_success(['conversations' => array_values($conversations)]);
+        wp_send_json_success(['conversations' => $conversations]);
     }
 
     public static function sendMessage()
@@ -57,7 +95,7 @@ class WhatsappMessageController
             $newWhatsappMessage->setDateTime((new DateTime())->setTimestamp($sentMessage['messageTimestamp']));
 
             $thread_id = WhatsappMessageService::resolveThreadId($sentMessage);
-            
+
             $newWhatsappMessage->setThreadId($thread_id);
             $newWhatsappMessage->setInstanceName($instanceName);
 
@@ -69,7 +107,49 @@ class WhatsappMessageController
         }
     }
 
+    /**
+     * Deprecated
+     */
+    // public static function groupByRemoteJid(array $messages): array
+    // {
+    //     $conversations = [];
 
+    //     foreach ($messages as $msg) {
+    //         if (is_object($msg)) {
+    //             $msg = (array)$msg;
+    //         }
+
+    //         $remoteJid = $msg['remoteJid'];
+
+    //         // Se a conversa ainda não existir, cria a estrutura inicial.
+    //         if (!isset($conversations[$remoteJid])) {
+    //             $conversations[$remoteJid] = [
+    //                 'id' => $remoteJid,
+    //                 'lastMessage' => '',
+    //                 'messages' => [],
+    //                 'name' => $msg['pushName'] ?? null,
+    //                 // 'paused' => (bool)$paused,
+    //             ];
+    //         }
+
+    //         // Adiciona a mensagem atual ao array de mensagens da conversa.
+    //         $conversations[$remoteJid]['messages'][] = [
+    //             'message_id' => $msg['messageId'],
+    //             'message' => $msg['message'],
+    //             'from_me' => (bool)$msg['fromMe'],
+    //             'date_time' => $msg['dateTime']->format('Y-m-d H:i:s'),
+    //         ];
+
+    //         // Atualiza a última mensagem.
+    //         $conversations[$remoteJid]['lastMessage'] = $msg['message'];
+
+    //         // Se o nome ainda não foi definido, usa o push_name da mensagem.
+    //         if (empty($conversations[$remoteJid]['name']) && !empty($msg['pushName'])) {
+    //             $conversations[$remoteJid]['name'] = $msg['pushName'];
+    //         }
+    //     }
+    //     return $conversations;
+    // }
     public static function groupByRemoteJid(array $messages): array
     {
         $conversations = [];
@@ -80,32 +160,38 @@ class WhatsappMessageController
             }
 
             $remoteJid = $msg['remoteJid'];
+            // Usamos o threadId. Se ele for NULL ou vazio, use uma string padrão.
+            $threadId = !empty($msg['threadId']) ? $msg['threadId'] : 'default_thread';
 
-            // Se a conversa ainda não existir, cria a estrutura inicial.
-            if (!isset($conversations[$remoteJid])) {
-                $conversations[$remoteJid] = [
+            // Chave composta para agrupar por RemoteJid e ThreadId
+            $key = $remoteJid . '-' . $threadId;
+
+            // Se a conversa (thread) ainda não existir, cria a estrutura inicial.
+            if (!isset($conversations[$key])) {
+                $conversations[$key] = [
                     'id' => $remoteJid,
-                    'lastMessage' => '',
+                    'threadId' => $threadId,
+                    // Como a consulta está ordenada por DESC, a primeira mensagem é a última da thread.
+                    'lastMessage' => $msg['message'],
+                    'lastMessageDateTime' => $msg['dateTime']->format('Y-m-d H:i:s'), // Armazena a data/hora para ordenação
                     'messages' => [],
                     'name' => $msg['pushName'] ?? null,
-                    // 'paused' => (bool)$paused,
                 ];
             }
 
             // Adiciona a mensagem atual ao array de mensagens da conversa.
-            $conversations[$remoteJid]['messages'][] = [
+            // **IMPORTANTE**: As mensagens dentro do 'messages' ainda estão em ordem DESC. 
+            // Você pode precisar reordenar isso no frontend ou na próxima seção.
+            $conversations[$key]['messages'][] = [
                 'message_id' => $msg['messageId'],
                 'message' => $msg['message'],
                 'from_me' => (bool)$msg['fromMe'],
                 'date_time' => $msg['dateTime']->format('Y-m-d H:i:s'),
             ];
 
-            // Atualiza a última mensagem.
-            $conversations[$remoteJid]['lastMessage'] = $msg['message'];
-
             // Se o nome ainda não foi definido, usa o push_name da mensagem.
-            if (empty($conversations[$remoteJid]['name']) && !empty($msg['pushName'])) {
-                $conversations[$remoteJid]['name'] = $msg['pushName'];
+            if (empty($conversations[$key]['name']) && !empty($msg['pushName'])) {
+                $conversations[$key]['name'] = $msg['pushName'];
             }
         }
         return $conversations;

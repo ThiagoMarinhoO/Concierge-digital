@@ -10,6 +10,14 @@ function create_assistant()
     $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
     $user_id = get_current_user_id();
 
+    $user_policy = user_can( $user_id, 'edit_assistants' );
+    if(empty($user_policy)) {
+        wp_send_json_error(
+            [
+                'message' => 'Você não está autorizado a realizar esta ação.'
+            ], 401 );
+    }
+
     $api_url = "https://api.openai.com/v1/assistants";
     $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 

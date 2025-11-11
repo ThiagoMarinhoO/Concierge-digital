@@ -13,6 +13,13 @@ function save_responses()
     // Decodificar as opções enviadas
     $chatbot_options = isset($_POST['chatbot_options']) ? json_decode(stripslashes($_POST['chatbot_options']), true) : [];
 
+    $user_policy = user_can( $user_id, 'edit_assistants' );
+    if(empty($user_policy)) {
+        wp_send_json_error(
+            [
+                'message' => 'Você não está autorizado a realizar esta ação.'
+            ], 401 );
+    }
 
     // Obter os dados atuais do chatbot no banco
     $chatbot_instance = new Chatbot();
