@@ -72,6 +72,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/whatsappMessageHelpers.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/clientEvolutionApi.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/checkSubscription.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/sendEmail.php';
 
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
@@ -108,7 +110,7 @@ function concierge_enqueue_assets()
         'nonce' => wp_create_nonce('concierge_nonce'),
     ]);
 
-    
+
     wp_localize_script('concierge-script', 'envVars', [
         'OPENAI_API_KEY' => 'aaa',
         'nonce' => wp_create_nonce('concierge_nonce'),
@@ -395,7 +397,8 @@ register_activation_hook(__FILE__, function () {
 });
 
 //FLATPICKR
-function flatpicker_jsdelivery() {
+function flatpicker_jsdelivery()
+{
     echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">';
     echo '<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>';
     echo '<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>';
@@ -403,7 +406,8 @@ function flatpicker_jsdelivery() {
 add_action('wp_head', 'flatpicker_jsdelivery');
 
 // CHARTS
-function apexcharts_jsdelivery() {
+function apexcharts_jsdelivery()
+{
     echo '<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>';
 }
 add_action('wp_head', 'apexcharts_jsdelivery');

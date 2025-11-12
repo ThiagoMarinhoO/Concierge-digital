@@ -200,9 +200,22 @@ $whatsappInstance = WhatsappInstance::findByUserId($user_id);
 							<?php endif; ?>
 						<?php endforeach; ?>
 
-						<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
 						<?php if (strtolower($category['title']) === 'integrações'): ?>
-							<?php echo do_shortcode('[google_calendar_component]'); ?>
+							<?php 
+							$benefits = get_user_subscription_benefits();
+							$canIntegrate = (
+								!empty($benefits['integracao_google_agenda']) && $benefits['integracao_google_agenda'] === true
+							) || (
+								!empty($benefits['integracao_crm']) && $benefits['integracao_crm'] === true
+							);
+							if (!$canIntegrate) {
+								echo '<p class="text-center font-bold text-white">Integrações estão disponíveis apenas em planos superiores.<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+								continue;
+							}
+							?>
+							
+							<?php  echo do_shortcode('[google_calendar_component]'); ?>
+
 						<?php endif; ?>
 					</div>
 					<?php if ($category['video_url'] != ''): ?>

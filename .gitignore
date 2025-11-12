@@ -2,3 +2,9 @@
 /.env
 /storage/*.key
 *.log
+package-lock.json
+vendor/autoload.php
+vendor/composer/autoload_real.php
+vendor/composer/ClassLoader.php
+vendor/composer/installed.php
+vendor/composer/InstalledVersions.php

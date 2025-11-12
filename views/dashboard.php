@@ -8,6 +8,18 @@ class Dashboard
             return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
+        if(!get_active_subscription_product_id()){
+            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+        }
+
+        $benefits = get_user_subscription_benefits(get_current_user_ID());
+
+        $is_Chat = $benefits['dashboard_completo'];
+
+        if(!$is_Chat){
+            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+        }
+
         // if( get_current_user_id() !== 52 ) {
         //     return '<p class="text-black font-bold">Você não tem permissão para acessar esta página.</p>';
         // }
