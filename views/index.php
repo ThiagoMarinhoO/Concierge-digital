@@ -2,42 +2,27 @@
 // Instanciação
 $question = new Question();
 $chatbot = new Chatbot();
-$orgRepo = new OrganizationRepository(); // Usaremos este para obter o ID da Organização
+$orgRepo = new OrganizationRepository();
 
 $user_id = get_current_user_id();
 $currentUser = wp_get_current_user();
 $organization_id = 0;
-// ID que será usado para buscar recursos (owner_id da Org ou user_id do usuário simples)
 $resource_user_id = 0; 
-// Variável unificada para checar se há um chatbot ativo
 $has_active_chatbot = false; 
 $assistant = null; 
 $categories = [];
 $questionsByCategory = [];
 $whatsappInstance = null;
 
-// 1. OBTENÇÃO DO ID DA ORGANIZAÇÃO E DO RESOURCE_USER_ID
 if (!empty($user_id)) {
-    // Usa o repositório para buscar a organização à qual o usuário está vinculado.
-    // Espera-se que \$orgData inclua 'id' e 'owner_user_id'
     $orgData = $orgRepo->findByUserId($user_id);
     $organization_id = $orgData ? (int) $orgData->id : 0;
 
-    // Define o ID principal para busca: Owner_ID da Organização ou ID do Usuário Simples
     $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id) 
         ? (int) $orgData->owner_user_id 
         : $user_id;
 }
 
-// =======================================================
-// 2. BUSCA DE RECURSOS (LÓGICA UNIFICADA)
-// =======================================================
-
-// --- Perguntas e Categorias --- 
-// Se houver organização, passamos o organization_id. Se não, não passamos nada (código original).
-
-// Se houver organização, usa-se o organization_id para filtrar as categorias. 
-// Caso contrário, usa-se o método sem parâmetro para o modo fallback.
 $categories = $organization_id > 0 
     ? $question->getAllCategories($organization_id)
     : $question->getAllCategories();
@@ -48,24 +33,16 @@ $categories = array_filter($categories, function ($category) {
 
 foreach ($categories as $category) {
     $categoryTitle = $category['title'];
-    // Se houver organização, passa-se o organization_id para filtrar as perguntas. 
-    // Caso contrário, usa-se o método sem parâmetro para o modo fallback.
     $questionsByCategory[$categoryTitle] = $organization_id > 0
         ? $question->getQuestionsByCategory($categoryTitle, $organization_id)
         : $question->getQuestionsByCategory($categoryTitle);
 }
 
-// --- Chatbot / Assistente & Whatsapp ---
 if (!empty($resource_user_id)) {
-    // ASSUME-SE que estes métodos AGORA lidam com a nova lógica:
-    // Se \$resource_user_id for o owner de uma org, eles buscam o recurso da ORG.
-    // Se for um usuário simples, buscam o recurso do USUÁRIO.
-    // Chatbot / Assistente
     $userchatbot_id = $chatbot->getChatbotIdByUser($resource_user_id);
     $assistant = $chatbot->getChatbotById($userchatbot_id, $resource_user_id);
     $has_active_chatbot = $chatbot->userHasChatbot($resource_user_id);
 
-    // Instancia do WhatsApp
     $whatsappInstance = WhatsappInstance::findByUserId($resource_user_id);
 }
 
@@ -73,38 +50,6 @@ if (!empty($resource_user_id)) {
 // error_log('Resouce user id: '. print_r($resource_user_id, true));
 // error_log('Organization: '. print_r($organization_id, true));
 // error_log('Assistant: '. print_r($assistant, true));
-
-/**
- * OLD
- */
-// $question = new Question();
-// $chatbot = new Chatbot();
-// $user_id = get_current_user_id();
-
-// $categories = array_filter($question->getAllCategories(), function ($category) {
-// 	return $category['title'] !== 'Regras gerais';
-// });
-
-
-// $questionsByCategory = [];
-// foreach ($categories as $category) {
-// 	$categoryTitle = $category['title'];
-// 	$questionsByCategory[$categoryTitle] = $question->getQuestionsByCategory($categoryTitle);
-// }
-
-// if (!empty($user_id)) {
-// 	$userchatbot_id = $chatbot->getChatbotIdByUser($user_id);
-// 	$assistant = $chatbot->getChatbotById($userchatbot_id, $user_id);
-// }
-
-// $user_has_chatbot = $chatbot->userHasChatbot($user_id);
-
-
-// // 
-// // Instancias do whatsapp
-// // 
-
-// $whatsappInstance = WhatsappInstance::findByUserId($user_id);
 
 ?>
 
@@ -305,24 +250,8 @@ if (!empty($resource_user_id)) {
 							<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
 							<?php if (strtolower($category['title']) === 'integrações'): ?>
 								<?php echo do_shortcode('[google_calendar_component]'); ?>
+								<?php echo do_shortcode('[active_campaign_component]'); ?>
 							<?php endif; ?>
-						<?php endforeach; ?>
-
-						<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
-						<?php if (strtolower($category['title']) === 'integrações'): ?>
-							<?php echo do_shortcode('[google_calendar_component]'); ?>
-							<?php echo do_shortcode('[active_campaign_component]'); ?>
-						<?php endif; ?>
-					</div>
-					<?php if ($category['video_url'] != ''): ?>
-						<div class="">
-							<div class="video-container mb-4">
-								<video controls class="w-full rounded-lg size-64">
-									<source
-										src="<?php echo $category['video_url'] ?>"
-										type="video/mp4">
-								</video>
-							</div>
 						</div>
 						<?php if ($category['video_url'] != ''): ?>
 							<div class="">

@@ -185,7 +185,7 @@ class OrganizationsPage
                         // 🚀 Alerta de Carregamento (Criação)
                         Swal.fire({
                             title: 'Criando organização...',
-                            text: `Por favor, aguarde enquanto criamos a organização **${orgName}**.`,
+                            text: `Por favor, aguarde enquanto criamos a organização`,
                             icon: 'info', // 'info' é mais adequado para carregamento do que o padrão
                             allowOutsideClick: false,
                             showConfirmButton: false, // Não mostrar botão
@@ -204,26 +204,18 @@ class OrganizationsPage
                                 return response.json();
                             })
                             .then(result => {
-                                if (result.status == 201 || result.status == 200) {
+                                if (result.data.success) {
                                     // 🎉 Sucesso
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Organização criada com sucesso!',
-                                        text: `A organização **${orgName}** foi criada. Redirecionando...`,
+                                        text: `A organização foi criada. Redirecionando...`,
                                         timer: 2000,
                                         showConfirmButton: false,
                                     }).then(() => {
                                         location.reload();
                                     });
-                                } else if (result.status == 409) {
-                                    // ⚠️ Conflito (Organização já existe ou erro no servidor)
-                                    Swal.fire({
-                                        icon: 'warning',
-                                        title: 'Conflito na Criação',
-                                        text: result.data.message || 'Já existe uma organização com este nome ou houve um conflito.',
-                                    });
                                 } else {
-                                    // ❌ Erro Geral ou 400/401
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Erro ao Criar Organização',
@@ -233,9 +225,7 @@ class OrganizationsPage
                             })
                             .catch(error => {
                                 console.error('Erro de Fetch:', error);
-                                // Garante que o alerta de carregamento feche mesmo em erro de rede
                                 Swal.close();
-                                // 💥 Erro de Rede/Conexão
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Erro de Conexão',
@@ -254,14 +244,13 @@ class OrganizationsPage
 
                         const userIsOperator = <?php echo $user->roles && in_array('charlie_operator', $user->roles) ? 'true' : 'false' ?>;
 
-                        if(userIsOperator) {
+                        if (userIsOperator) {
                             swal.fire({
                                 icon: 'warning',
                                 title: 'Não autorizado',
                                 text: 'Somente organizadores podem adicionar membros',
-                                didOpen: () => {
-                                    swal.showLoading();
-                                }
+                                timer: 1500,
+                                showConfirmButton: false,
                             });
 
                             return
@@ -300,12 +289,12 @@ class OrganizationsPage
                                     return response.json();
                                 })
                                 .then(result => {
-                                    if (result.status == 200 || result.status == 201) {
+                                    if (result.data.success) {
                                         // 🎉 Sucesso
                                         Swal.fire({
                                             icon: 'success',
                                             title: 'Membro Adicionado!',
-                                            text: `**${memberEmail}** foi adicionado à organização. Redirecionando...`,
+                                            text: `Membro adicionado à organização. Redirecionando...`,
                                             timer: 1500,
                                             showConfirmButton: false,
                                         }).then(() => {
@@ -316,7 +305,7 @@ class OrganizationsPage
                                         Swal.fire({
                                             icon: 'error',
                                             title: 'Erro ao Adicionar Membro',
-                                            text: result.data || 'Não foi possível adicionar o membro. Tente novamente.',
+                                            text: result.data.message || 'Não foi possível adicionar o membro. Tente novamente.',
                                         });
                                     }
                                 })
@@ -378,7 +367,7 @@ class OrganizationsPage
                                                 return response.json();
                                             })
                                             .then(result => {
-                                                if (result.status == 200 || result.status == 201) {
+                                                if (result.data.success) {
                                                     // 🎉 Sucesso
                                                     Swal.fire({
                                                         icon: 'success',
@@ -394,7 +383,7 @@ class OrganizationsPage
                                                     Swal.fire({
                                                         icon: 'error',
                                                         title: 'Erro ao Remover Membro',
-                                                        text: result.data || 'Não foi possível remover o membro. Tente novamente.',
+                                                        text: result.data.message || 'Não foi possível remover o membro. Tente novamente.',
                                                     });
                                                 }
                                             })

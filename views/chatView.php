@@ -10,17 +10,40 @@ class ChatViewComponent
             return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
-        $instance = WhatsappInstance::findByUserId(get_current_user_id());
+        $orgRepo = new OrganizationRepository();
 
-        error_log('Instancia ' . print_r($instance, true));
+        $user_id = get_current_user_id();
+        $currentUser = wp_get_current_user();
+        $organization_id = 0;
+        $resource_user_id = 0;
+        $whatsappInstance = null;
 
-        if (empty($instance)) {
+        if (!empty($user_id)) {
+            $orgData = $orgRepo->findByUserId($user_id);
+            $organization_id = $orgData ? (int) $orgData->id : 0;
+
+            $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+                ? (int) $orgData->owner_user_id
+                : $user_id;
+        }
+
+        if (!empty($resource_user_id)) {
+            $whatsappInstance = WhatsappInstance::findByUserId($resource_user_id);
+        }
+
+        // $instance = WhatsappInstance::findByUserId(get_current_user_id());
+
+        error_log('Instancia ' . print_r($whatsappInstance, true));
+        error_log('Organization id: ' . print_r($organization_id, true));
+        error_log('Resource id: ' . print_r($resource_user_id, true));
+
+        if (empty($whatsappInstance)) {
             return '<p class="text-white font-bold">Você precisa ter uma instancia cadastrada.</p>';
         }
 
         ob_start();
 ?>
-        <div class="chat-container" data-instance="<?php echo esc_attr($instance->getInstanceName()); ?>">
+        <div class="chat-container" data-instance="<?php echo esc_attr($whatsappInstance->getInstanceName()); ?>">
             <!-- Coluna da Esquerda: Lista de Conversas -->
             <div class="sidebar">
                 <div class="sidebar-header">

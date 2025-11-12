@@ -34,7 +34,7 @@ function create_organizations_table()
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
-    $table_organizations = $wpdb->prefix . 'organizations';
+    $table_organizations = $wpdb->prefix . 'charlie_organizations';
 
     $sql = "
         CREATE TABLE $table_organizations (

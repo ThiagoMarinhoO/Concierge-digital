@@ -35,8 +35,29 @@ class WhatsappMessageController
             wp_send_json_error(['mensagem' => 'Usuário não autenticado'], 401);
         }
 
+        $orgRepo = new OrganizationRepository();
+
         $userId = get_current_user_id();
-        $instance = WhatsappInstance::findByUserId($userId);
+        $currentUser = wp_get_current_user();
+        $organization_id = 0;
+        $resource_user_id = 0;
+        $instance = null;
+
+        if (!empty($userId)) {
+            $orgData = $orgRepo->findByUserId($userId);
+            $organization_id = $orgData ? (int) $orgData->id : 0;
+
+            $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+                ? (int) $orgData->owner_user_id
+                : $userId;
+        }
+
+        if (!empty($resource_user_id)) {
+            $instance = WhatsappInstance::findByUserId($resource_user_id);
+        }
+
+        // $userId = get_current_user_id();
+        // $instance = WhatsappInstance::findByUserId($userId);
 
         if (!$instance) {
             wp_send_json_error(['mensagem' => 'Instância não encontrada'], 404);
@@ -49,15 +70,15 @@ class WhatsappMessageController
         $conversations = self::groupByRemoteJid($messages);
 
         $conversations = self::checkActiveSession($conversations, $instance->getInstanceName());
-        
+
         // NOVO PASSO: Ordenar as conversas pela data/hora da última mensagem (mais recente primeiro)
         usort($conversations, function ($a, $b) {
             // Comparar as datas/horas da última mensagem. Retorna negativo se 'a' for mais recente que 'b'.
             return strtotime($b['lastMessageDateTime']) - strtotime($a['lastMessageDateTime']);
         });
-        
+
         // Remove a chave de ordenação extra antes de enviar
-        $conversations = array_map(function($conv) {
+        $conversations = array_map(function ($conv) {
             unset($conv['lastMessageDateTime']);
             return $conv;
         }, $conversations);
@@ -194,6 +215,12 @@ class WhatsappMessageController
                 $conversations[$key]['name'] = $msg['pushName'];
             }
         }
+
+        foreach ($conversations as $key => $conv) {
+            // Usa array_reverse para colocar as mensagens na ordem ASC (mais antiga para a mais nova)
+            $conversations[$key]['messages'] = array_reverse($conversations[$key]['messages']);
+        }
+
         return $conversations;
     }
 

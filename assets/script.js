@@ -2068,8 +2068,8 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredConversations.forEach(convo => {
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
-                item.dataset.id = convo.id;
-                if (convo.id === activeConversationId) {
+                item.dataset.id = convo.threadId;
+                if (convo.threadId === activeConversationId) {
                     item.classList.add('active');
                 }
                 if (convo.paused) {
@@ -2106,12 +2106,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.addEventListener('click', (e) => {
                     // Impede que o clique no botão de pausa selecione a conversa
                     if (e.target.closest('.pause-btn')) return;
-                    handleConversationClick(convo.id);
+                    handleConversationClick(convo.threadId);
                 });
 
                 // Evento para o botão de pausar/retomar
                 item.querySelector('.pause-btn').addEventListener('click', () => {
-                    handlePauseToggle(convo.id);
+                    handlePauseToggle(convo.threadId);
                 });
 
                 conversationList.appendChild(item);
@@ -2119,7 +2119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const renderMessages = (convoId) => {
-            const conversation = conversations.find(c => c.id === convoId);
+            const conversation = conversations.find(c => c.threadId === convoId);
             if (!conversation) return;
 
             chatHeader.innerHTML = `<h2>${conversation.name}</h2>`;
@@ -2189,7 +2189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const handlePauseToggle = async (convoId) => {
-            const conversation = conversations.find(c => c.id === convoId);
+            const conversation = conversations.find(c => c.threadId === convoId);
 
             if (!conversation) {
                 console.error('Conversa não encontrada:', convoId);
@@ -2227,7 +2227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = messageInput.value.trim();
             if (text === '' || !activeConversationId) return;
 
-            const conversation = conversations.find(c => c.id === activeConversationId);
+            const conversation = conversations.find(c => c.threadId === activeConversationId);
 
             const formData = new FormData();
             formData.append('action', 'send_whatsapp_message');

@@ -50,7 +50,7 @@ class OrganizationRepository
      * @param int $userId O ID do usuário.
      * @return int O ID da Organização ou 0 se não encontrar.
      */
-    public function findByOwnerUserId(int $userId): object
+    public function findByOwnerUserId(int $userId): ?object
     {
         $sql = $this->wpdb->prepare(
             "SELECT * FROM {$this->table_name_full} WHERE owner_user_id = %d LIMIT 1",
@@ -59,7 +59,7 @@ class OrganizationRepository
 
         $organization = $this->wpdb->get_row($sql);
 
-        return $organization;
+        return $organization ?: null;
     }
 
     public function findByUserId(int $userId): ?object
