@@ -24,9 +24,22 @@ function handle_questions_answers()
 add_action('wp_ajax_get_questions_answers', 'get_questions_answers');
 function get_questions_answers()
 {
-    // $assistant_name = isset($_POST['assistant_name']) ? $_POST['assistant_name'] : "1";
+    $orgRepo = new OrganizationRepository();
 
-    $assistant_answers = get_user_meta(get_current_user_id(), "assistant_answers", true);
+    $user_id = get_current_user_id();
+    $organization_id = 0;
+    $resource_user_id = 0;
+
+    if (!empty($user_id)) {
+        $orgData = $orgRepo->findByUserId($user_id);
+        $organization_id = $orgData ? (int) $orgData->id : 0;
+
+        $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+            ? (int) $orgData->owner_user_id
+            : $user_id;
+    }
+
+    $assistant_answers = get_user_meta($resource_user_id, "assistant_answers", true);
 
     $assistant_answers = json_decode($assistant_answers, true);
 

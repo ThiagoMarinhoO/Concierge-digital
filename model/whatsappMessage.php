@@ -191,10 +191,36 @@ class WhatsappMessage
         return $stmt->execute([$this->messageId]);
     }
 
+    /**
+     * Deprecated
+     */
+    // public static function findByInstanceName(string $instanceName)
+    // {
+    //     $pdo = self::connect();
+    //     $stmt = $pdo->prepare("SELECT * FROM whatsapp_messages WHERE instance_name = ? ORDER BY date_time ASC");
+    //     $stmt->execute([$instanceName]);
+    //     $messages = [];
+
+    //     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    //         $msg = new self();
+    //         $msg->messageId = $row['message_id'];
+    //         $msg->remoteJid = $row['remote_jid'];
+    //         $msg->instanceName = $row['instance_name'];
+    //         $msg->message = $row['message'];
+    //         $msg->pushName = $row['push_name'];
+    //         $msg->threadId = $row['thread_id'];
+    //         $msg->fromMe = (bool)$row['from_me'];
+    //         $msg->dateTime = new DateTime($row['date_time']);
+    //         $messages[] = $msg;
+    //     }
+
+    //     return $messages;
+    // }
     public static function findByInstanceName(string $instanceName)
     {
         $pdo = self::connect();
-        $stmt = $pdo->prepare("SELECT * FROM whatsapp_messages WHERE instance_name = ? ORDER BY date_time ASC");
+        // MUDANÇA AQUI: ORDER BY date_time DESC
+        $stmt = $pdo->prepare("SELECT * FROM whatsapp_messages WHERE instance_name = ? ORDER BY date_time DESC");
         $stmt->execute([$instanceName]);
         $messages = [];
 
@@ -205,7 +231,7 @@ class WhatsappMessage
             $msg->instanceName = $row['instance_name'];
             $msg->message = $row['message'];
             $msg->pushName = $row['push_name'];
-            $msg->threadId = $row['thread_id'];
+            $msg->threadId = $row['thread_id']; // Certifique-se de que thread_id está no DB
             $msg->fromMe = (bool)$row['from_me'];
             $msg->dateTime = new DateTime($row['date_time']);
             $messages[] = $msg;

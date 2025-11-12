@@ -20,14 +20,37 @@ class Dashboard
             return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
         }
 
-        // if( get_current_user_id() !== 52 ) {
-        //     return '<p class="text-black font-bold">Você não tem permissão para acessar esta página.</p>';
-        // }
-
         $assistant = new Chatbot();
-        $assistantId = $assistant->getChatbotIdByUser(get_current_user_id());
+        $orgRepo = new OrganizationRepository();
 
-        $instance = WhatsappInstance::findByUserId(get_current_user_id());
+        $user_id = get_current_user_id();
+        $currentUser = wp_get_current_user();
+        $organization_id = 0;
+        $resource_user_id = 0;
+        $assistantId = 0;
+        $instance = null;
+
+        if (!empty($user_id)) {
+            // Usa o repositório para buscar a organização à qual o usuário está vinculado.
+            // Espera-se que \$orgData inclua 'id' e 'owner_user_id'
+            $orgData = $orgRepo->findByUserId($user_id);
+            $organization_id = $orgData ? (int) $orgData->id : 0;
+
+            // Define o ID principal para busca: Owner_ID da Organização ou ID do Usuário Simples
+            $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+                ? (int) $orgData->owner_user_id
+                : $user_id;
+        }
+
+        if(!empty($resource_user_id)) {
+            $assistantId = $assistant->getChatbotIdByUser($resource_user_id);
+            $instance = WhatsappInstance::findByUserId($resource_user_id);          
+        }
+
+        // $assistant = new Chatbot();
+        // $assistantId = $assistant->getChatbotIdByUser(get_current_user_id());
+
+        // $instance = WhatsappInstance::findByUserId(get_current_user_id());
 
         /**
          * Métricas de chats

@@ -27,6 +27,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/fileHandler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/save-responses.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/roles.php';
 
 //Database
 require_once CONCIERGE_DIGITAL_PATH . 'database/schema.php';
@@ -52,6 +53,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/whatsappMessageController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/humanSessionFlagController.php';
 require_once CONCIERGE_DIGITAL_PATH . 'controllers/storageController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/OrganizationController.php';
+require_once CONCIERGE_DIGITAL_PATH . 'controllers/ActiveCampaignController.php';
 
 //services
 require_once CONCIERGE_DIGITAL_PATH . 'service/usageService.php';
@@ -62,9 +65,13 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/evolutionApiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/openaiService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/googleCalendarService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'service/messageService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/OrganizationService.php';
+require_once CONCIERGE_DIGITAL_PATH . 'service/ActiveCampaignService.php';
 
 //Repositories
 require_once CONCIERGE_DIGITAL_PATH . 'repository/messageRepository.php';
+require_once CONCIERGE_DIGITAL_PATH . 'repository/OrganizationRepository.php';
+require_once CONCIERGE_DIGITAL_PATH . 'repository/UserRepository.php';
 
 //Helpers
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/assistantHelpers.php';
@@ -80,9 +87,11 @@ require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
 require_once CONCIERGE_DIGITAL_PATH . 'views/chatView.php';
 require_once CONCIERGE_DIGITAL_PATH . 'views/dashboard.php';
 require_once CONCIERGE_DIGITAL_PATH . 'views/conversations.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/organizations.php';
 
 // Components
 require_once CONCIERGE_DIGITAL_PATH . 'views/components/google-calendar-component.php';
+require_once CONCIERGE_DIGITAL_PATH . 'views/components/ActiveCampaignComponent.php';
 
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -124,7 +133,6 @@ function concierge_enqueue_admin_assets()
     // wp_enqueue_script('tailwind', 'https://cdn.tailwindcss.com');
     wp_enqueue_script('alpine-js', 'https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js', [], '3.12.0', true);
     wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', [], '11', true);
-
 }
 
 // session_start();
@@ -394,6 +402,18 @@ register_activation_hook(__FILE__, function () {
     Meet::createTable();
 
     create_vector_tables();
+
+    create_organizations_table();
+
+    alter_users_table();
+
+    alter_assistants_table();
+
+    /**
+     * Registrar papéis personalizados
+     */
+    charlie_register_custom_roles();
+    create_active_campaign_tables();
 });
 
 //FLATPICKR
@@ -411,3 +431,8 @@ function apexcharts_jsdelivery()
     echo '<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>';
 }
 add_action('wp_head', 'apexcharts_jsdelivery');
+
+register_deactivation_hook(__FILE__, function () {
+    remove_role('charlie_organizer');
+    remove_role('charlie_operator');
+});

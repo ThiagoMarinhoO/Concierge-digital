@@ -217,7 +217,7 @@ class ConversationsComponent
         }
 
         ob_start();
-        ?>
+?>
         <div id="conversations-wrapper" class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <div class="flex">
                 <div id="filters" class="mb-4 flex gap-2">
@@ -248,7 +248,7 @@ class ConversationsComponent
         <!-- Paginação -->
         <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
 
-        <?php
+<?php
         return ob_get_clean();
     }
 }
@@ -262,10 +262,35 @@ add_action('wp_ajax_get_conversations', function () {
         wp_send_json_error(['message' => 'Você precisa estar logado.']);
     }
 
-    $assistant = new Chatbot();
-    $assistantId = $assistant->getChatbotIdByUser(get_current_user_id());
+    $chatbot = new Chatbot();
+    $orgRepo = new OrganizationRepository();
 
-    $instance = WhatsappInstance::findByUserId(get_current_user_id());
+
+    $user_id = get_current_user_id();
+    $currentUser = wp_get_current_user();
+    $organization_id = 0;
+    $resource_user_id = 0;
+    $assistantId = null;
+    $instance = null;
+
+    if (!empty($user_id)) {
+        $orgData = $orgRepo->findByUserId($user_id);
+        $organization_id = $orgData ? (int) $orgData->id : 0;
+
+        $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+            ? (int) $orgData->owner_user_id
+            : $user_id;
+    }
+
+    if (!empty($resource_user_id)) {
+        $assistantId = $chatbot->getChatbotIdByUser($resource_user_id);
+        $instance = WhatsappInstance::findByUserId($resource_user_id);
+    }
+
+    // $assistant = new Chatbot();
+    // $assistantId = $assistant->getChatbotIdByUser(get_current_user_id());
+
+    // $instance = WhatsappInstance::findByUserId(get_current_user_id());
 
     $startDate = $_POST['startDate'] ?? null;
     $endDate   = $_POST['endDate'] ?? null;

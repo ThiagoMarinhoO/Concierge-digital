@@ -53,14 +53,13 @@ class StorageController {
         }
     }
 
-    public static function createVectorStore($name, ?array $file_ids = []) {
+    public static function createVectorStore($name,) {
         try {
             $client = self::getClient();
 
             $res = $client->request('POST', 'https://api.openai.com/v1/vector_stores', [
                 'json' => [
                     'name'      => $name,
-                    'file_ids'  => $file_ids
                 ]
             ]);
 
