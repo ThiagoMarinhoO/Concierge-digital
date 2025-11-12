@@ -79,6 +79,8 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/whatsappMessageHelpers.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/clientEvolutionApi.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/checkSubscription.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/sendEmail.php';
 
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';

@@ -3,7 +3,7 @@
         'name' => 'devhouse/chatbot-openai',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'f25261fd6cfd1b4421558458222e2cf5f9e95f01',
+        'reference' => 'a0e4ec826664879b6e7453793e55188a0aa994c5',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'devhouse/chatbot-openai' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'f25261fd6cfd1b4421558458222e2cf5f9e95f01',
+            'reference' => 'a0e4ec826664879b6e7453793e55188a0aa994c5',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

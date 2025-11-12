@@ -285,6 +285,16 @@ class Chatbot
         return $count > 0;
     }
 
+    public function getUserIdByChatbotId($assistant_id)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'chatbots';
+
+        return $wpdb->get_var(
+            $wpdb->prepare("SELECT user_id FROM $table WHERE id = %d", $assistant_id)
+        );
+    }
+
     public function enviarMensagem(string $mensagem, $chatbot_id, $user_id)
     {
         $chatbot = new Chatbot();
