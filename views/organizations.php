@@ -12,7 +12,7 @@ class OrganizationsPage
     public static function render()
     {
         if (!is_user_logged_in()) {
-            return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
+            return '<p class="font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
         $user = wp_get_current_user();
@@ -204,7 +204,7 @@ class OrganizationsPage
                                 return response.json();
                             })
                             .then(result => {
-                                if (result.data.success) {
+                                if (result.success) {
                                     // 🎉 Sucesso
                                     Swal.fire({
                                         icon: 'success',
@@ -289,7 +289,7 @@ class OrganizationsPage
                                     return response.json();
                                 })
                                 .then(result => {
-                                    if (result.data.success) {
+                                    if (result.success) {
                                         // 🎉 Sucesso
                                         Swal.fire({
                                             icon: 'success',
@@ -340,8 +340,10 @@ class OrganizationsPage
                                     text: "Você irá remover este membro da organização. Esta ação é reversível, mas pode exigir que o membro seja adicionado novamente.",
                                     icon: 'warning',
                                     showCancelButton: true,
-                                    confirmButtonColor: '#d33',
-                                    cancelButtonColor: '#3085d6',
+                                    customClass: {
+                                        confirmButton: 'swal-confirm-blue',
+                                        cancelButton: 'swal-cancel-red'
+                                    },
                                     confirmButtonText: 'Sim, remover!',
                                     cancelButtonText: 'Cancelar'
                                 }).then((result) => {
@@ -367,7 +369,7 @@ class OrganizationsPage
                                                 return response.json();
                                             })
                                             .then(result => {
-                                                if (result.data.success) {
+                                                if (result.success) {
                                                     // 🎉 Sucesso
                                                     Swal.fire({
                                                         icon: 'success',

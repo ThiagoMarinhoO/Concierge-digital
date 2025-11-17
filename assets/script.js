@@ -695,8 +695,8 @@ jQuery(document).ready(function ($) {
                 console.error("Erro ao atualizar assistente:", data.data.message);
             }
         } catch (error) {
-            
-            if(error.status == 401) {
+
+            if (error.status == 401) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro!',
@@ -1995,7 +1995,7 @@ window.addEventListener("load", function () {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Seletores do DOM ---
+    // --- Variáveis Globais ---
     const conversationList = document.getElementById('conversation-list');
     const searchInput = document.getElementById('search-input');
     const chatHeader = document.getElementById('chat-header');
@@ -2005,54 +2005,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageSendButton = chatForm?.querySelector('button');
     const messageSendButtonIcon = messageSendButton?.querySelector('svg');
 
+    // MUDANÇA PRINCIPAL: Usaremos activeConvoKey para ser o identificador principal (id-threadId)
+    let activeConvoKey = null;
+    let conversations = [];
+    let notifications = [];
+
     if (conversationList) {
-        let conversations = [];
 
-        const fetchConversations = () => {
+        // --- Funções Auxiliares ---
+        // Função para obter a chave única (id-threadId) de uma conversa
+        const getConvoKey = (convo) => convo.id + '-' + convo.threadId;
+
+        const getLatestDateTime = (convo) => {
+            if (!convo.messages || convo.messages.length === 0) {
+                // Retorna um valor baixo para conversas sem mensagens para que elas não sejam consideradas as "mais recentes"
+                return new Date(0);
+            }
+
+            // Mapeia todas as datas de mensagem e encontra a mais recente
+            const latestDate = convo.messages.reduce((latest, current) => {
+                const currentDate = new Date(current.date_time.replace(' ', 'T'));
+                return (latest === null || currentDate > latest) ? currentDate : latest;
+            }, null);
+
+            return latestDate;
+        };
+
+        // --- Funções de Fetch (Busca de Dados) ---
+
+        const fetchConversations = async () => {
             console.log('Fetching conversations...');
-            fetch(ajaxurl + '?action=list_conversations')
-                .then(res => res.json())
-                .then(data => {
-                    console.log('Conversations fetched:', data);
-                    if (data.success) {
-                        conversations = data.data.conversations;
-                        if (activeConversationId) {
-                            renderMessages(activeConversationId);
-                        }
-                        renderConversations();
-                        // console.log('Conversations:', conversations);
-                    } else {
-                        alert('Erro ao carregar conversas');
+            try {
+                const res = await fetch(ajaxurl + '?action=list_conversations');
+                const data = await res.json();
+
+                if (data.success) {
+                    conversations = data.data.conversations;
+                    if (activeConvoKey) {
+                        // Re-renderiza as mensagens usando a CHAVE COMPLETA ativa
+                        renderMessages(activeConvoKey);
                     }
-                });
+                    renderConversations();
+                } else {
+                    alert('Erro ao carregar conversas');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar conversas:', error);
+            }
         };
 
-        let notifications = [];
-
-        const fetchNotifications = () => {
+        const fetchNotifications = async () => {
             console.log('Fetching notifications...');
-            fetch(ajaxurl + '?action=list_human_session_flag')
-                .then(res => res.json())
-                .then(data => {
-                    // console.log('Conversations fetched:', data);
-                    if (data.success) {
-                        notifications = data.data.flags || [];
-                        // if (activeConversationId) {
-                        //     renderMessages(activeConversationId);
-                        // }
-                        renderConversations();
-                        console.log('Flags: ', notifications);
-                    } else {
-                        alert('Erro ao carregar flags');
-                    }
-                });
-        };
+            try {
+                const res = await fetch(ajaxurl + '?action=list_human_session_flag');
+                const data = await res.json();
 
-        let activeConversationId = null;
+                if (data.success) {
+                    notifications = data.data.flags || [];
+                    // Re-renderiza apenas a lista para mostrar as flags atualizadas
+                    renderConversations();
+                    console.log('Flags: ', notifications);
+                } else {
+                    alert('Erro ao carregar flags');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar flags:', error);
+            }
+        };
 
         // --- Funções de Renderização ---
 
-        const renderConversations = async () => {
+        const renderConversations = () => {
             const filter = searchInput.value.toLowerCase();
             conversationList.innerHTML = '';
 
@@ -2064,31 +2087,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 conversationList.innerHTML = '<p style="padding: 1rem; color: var(--color-secondary-text);">Nenhuma conversa encontrada.</p>';
                 return;
             }
+            const latestConvoPerJid = { };
 
             filteredConversations.forEach(convo => {
+                const jid = convo.id;
+                // *** CORRIGIDO: Usa a nova função auxiliar para extrair a data ***
+                const currentDateTime = getLatestDateTime(convo);
+
+                if (!latestConvoPerJid[jid] || latestConvoPerJid[jid].lastMessageDateTime < currentDateTime) {
+                    // Armazena a chave COMPLETA (convoKey) da conversa mais recente
+                    latestConvoPerJid[jid] = {
+                        key: getConvoKey(convo),
+                        lastMessageDateTime: currentDateTime
+                    };
+                }
+            });
+
+            filteredConversations.forEach(convo => {
+                // NOVO: Usa a chave completa como identificador único para o Front-end
+                const convoKey = getConvoKey(convo);
+                const jid = convo.id;
+
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
-                item.dataset.id = convo.threadId;
-                if (convo.threadId === activeConversationId) {
+                // Usa convoKey (JID-threadId) como o ID do dataset
+                item.dataset.id = convoKey;
+
+                // Usa activeConvoKey para marcar o item ativo
+                if (convoKey === activeConvoKey) {
                     item.classList.add('active');
                 }
+
+                // Adiciona a classe 'paused' se a conversa estiver pausada
                 if (convo.paused) {
                     item.classList.add('paused');
                 }
 
-                const humanFlag = notifications.find(f => f.remote_jid === convo.id);
+                const humanFlag = notifications.find(f => f.remote_jid === jid);
                 let humanFlagHTML = '';
 
-                if (humanFlag) {
-                    item.classList.add('relative')
+                // if (humanFlag) {
+                //     item.classList.add('relative')
+                //     humanFlagHTML = `
+                //         <div class="absolute top-1 left-0">
+                //             <span class="relative flex size-3">
+                //                 <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                //                 <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
+                //             </span>
+                //         </div>
+                //     `
+                // }
+                // Renderiza a flag SOMENTE se:
+                // 1. Há uma flag para este JID (humanFlag existe).
+                // 2. E a chave completa desta conversa (convoKey) é a mesma da chave mais recente encontrada.
+                if (humanFlag && latestConvoPerJid[jid] && latestConvoPerJid[jid].key === convoKey) {
+                    item.classList.add('relative');
                     humanFlagHTML = `
-                        <div class="absolute top-1 left-0">
-                            <span class="relative flex size-3">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
-                            </span>
-                        </div>
-                    `
+                    <div class="absolute top-1 left-0">
+                        <span class="relative flex size-3">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
+                        </span>
+                    </div>
+                `
+                } else {
+                    item.classList.remove('relative');
                 }
 
                 item.innerHTML = `
@@ -2102,26 +2165,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     </button>
                 `;
 
-                // Evento para selecionar a conversa
+                // Evento para selecionar a conversa (usa convoKey)
                 item.addEventListener('click', (e) => {
                     // Impede que o clique no botão de pausa selecione a conversa
                     if (e.target.closest('.pause-btn')) return;
-                    handleConversationClick(convo.threadId);
+                    handleConversationClick(convoKey);
                 });
 
                 // Evento para o botão de pausar/retomar
                 item.querySelector('.pause-btn').addEventListener('click', () => {
-                    handlePauseToggle(convo.threadId);
+                    // Passa o JID puro para o backend e a chave completa para atualização
+                    handlePauseToggle(convo.id, convoKey);
                 });
 
                 conversationList.appendChild(item);
             });
         };
 
-        const renderMessages = (convoId) => {
-            const conversation = conversations.find(c => c.threadId === convoId);
+        const renderMessages = (convoKey) => {
+            // Busca a conversa usando a chave COMPLETA
+            const conversation = conversations.find(c => getConvoKey(c) === convoKey);
             if (!conversation) return;
 
+            // --- Header e Mensagens ---
             chatHeader.innerHTML = `<h2>${conversation.name}</h2>`;
             chatMessages.innerHTML = '';
 
@@ -2130,24 +2196,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
                 messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
 
-                // Criar elemento de texto da mensagem
                 const messageText = document.createElement('span');
-                // messageText.classList.add('whitespace-pre-wrap')
                 messageText.innerHTML = msg.message;
 
-                // Criar elemento de horário
                 const messageTime = document.createElement('span');
                 messageTime.className = 'message-time';
 
-                // Converter string para Date e formatar HH:mm
-                const date = new Date(msg.date_time.replace(' ', 'T')); // precisa do 'T' para ser ISO
+                const date = new Date(msg.date_time.replace(' ', 'T'));
                 messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-                // Montar a mensagem
                 messageDiv.appendChild(messageText);
                 messageDiv.appendChild(messageTime);
 
-                // Caso de erro
                 if (msg.status === 'error') {
                     messageDiv.classList.add('message-error');
                     messageDiv.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
@@ -2155,24 +2215,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 chatMessages.appendChild(messageDiv);
             });
-            // conversation.messages.forEach(msg => {
-
-
-
-            //     // const messageDiv = document.createElement('div');
-            //     // const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
-            //     // messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
-            //     // // messageDiv.className = `message ${msg.from_me === true ? 'sent' : 'received'}`;
-            //     // messageDiv.textContent = msg.message;
-
-            //     // if (msg.status === 'error') {
-            //     //     messageEl.classList.add('message-error');
-            //     //     messageEl.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
-            //     // }
-
-            //     // chatMessages.appendChild(messageDiv);
-            // });
-
 
             chatMessages.scrollTop = chatMessages.scrollHeight;
             messageInput.disabled = false;
@@ -2182,23 +2224,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Funções de Manipulação de Eventos ---
 
-        const handleConversationClick = (convoId) => {
-            activeConversationId = convoId;
-            renderConversations(); // Re-renderiza para mostrar o item ativo
-            renderMessages(convoId);
+        const handleConversationClick = (convoKey) => {
+            // Usa a CHAVE COMPLETA como a ID ativa
+            activeConvoKey = convoKey;
+            renderConversations(); // Re-renderiza para marcar o item ativo
+            renderMessages(convoKey);
         };
 
-        const handlePauseToggle = async (convoId) => {
-            const conversation = conversations.find(c => c.threadId === convoId);
-
-            if (!conversation) {
-                console.error('Conversa não encontrada:', convoId);
-                return;
-            }
+        // Recebe o JID PURO (para o backend) e a CHAVE COMPLETA (para o front)
+        const handlePauseToggle = async (remoteJid, convoKey) => {
+            // Opcional: Busca a conversa para garantir que o JID puro é correto, 
+            // mas o JID puro já é passado como remoteJid.
+            const conversation = conversations.find(c => getConvoKey(c) === convoKey);
+            if (!conversation) return;
 
             const formData = new FormData();
             formData.append('action', 'toggle_human_session');
-            formData.append('remoteJid', conversation.id);
+            formData.append('remoteJid', remoteJid); // Usa o JID PURO para o backend
             formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
 
             try {
@@ -2210,9 +2252,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.success) {
-                    // console.log('Sessão alternada com sucesso:', data.data);
-                    conversation.paused = !conversation.paused;
-                    renderConversations();
+                    // Força a busca completa para pegar o estado correto do backend
+                    await fetchConversations();
                 } else {
                     alert('Erro ao alternar a sessão: ' + (data.data.mensagem || ''));
                 }
@@ -2225,9 +2266,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const sendMessage = async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
-            if (text === '' || !activeConversationId) return;
+            if (text === '' || !activeConvoKey) return; // Verifica a chave completa
 
-            const conversation = conversations.find(c => c.threadId === activeConversationId);
+            // Busca a conversa usando a CHAVE COMPLETA
+            const conversation = conversations.find(c => getConvoKey(c) === activeConvoKey);
+            if (!conversation) return;
 
             const formData = new FormData();
             formData.append('action', 'send_whatsapp_message');
@@ -2235,61 +2278,43 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
             formData.append('message', text);
 
-            // const message = {
-            //     sender: 'Atendente',
-            //     text,
-            //     status: 'sending',
-            // };
-
-            // if (conversation) {
-            //     conversation.messages.push(message);
-            //     conversation.lastMessage = text;
-            //     messageInput.value = '';
-            //     renderMessages(activeConversationId);
-            //     renderConversations();
-            // }
-
             messageInput.disabled = true;
             messageSendButton.disabled = true;
-            messageSendButtonIcon.classList.add('animate-spin');
+            messageSendButtonIcon?.classList.add('animate-spin');
 
             try {
-                const res = await fetch(ajaxurl, {
+                await fetch(ajaxurl, {
                     method: 'POST',
                     body: formData,
                 });
 
-                const data = await res.json();
-
-                // message.status = data.success ? 'sent' : 'error';
-
-                renderMessages(activeConversationId);
-                renderConversations();
-
+                // Após o envio (sucesso ou falha), forçamos o fetch para atualizar a conversa e a lista.
+                await fetchConversations();
             } catch (error) {
                 console.error('Erro na requisição:', error);
-                message.status = 'error';
-                renderMessages(activeConversationId);
-                renderConversations();
+                // No caso de erro total na requisição, apenas reabilita o input e tenta buscar o estado.
+                messageInput.disabled = false;
+                messageSendButton.disabled = false;
+                alert('Erro ao enviar mensagem.');
+            } finally {
+                messageInput.value = '';
+                messageSendButtonIcon?.classList.remove('animate-spin');
+                // O estado final de disabled será definido por renderMessages após o fetch.
             }
-
-            messageInput.value = '';
-            messageSendButtonIcon.classList.remove('animate-spin');
-            messageInput.disabled = false;
         };
 
         // --- Adicionando Event Listeners ---
         searchInput.addEventListener('input', renderConversations);
         chatForm.addEventListener('submit', sendMessage);
 
-        // --- Inicialização ---
+        // --- Inicialização e Polling ---
         fetchConversations();
         fetchNotifications();
+        // Os intervalos de busca garantem a atualização periódica do estado
         setInterval(fetchConversations, 8000);
         setInterval(fetchNotifications, 10000);
 
     }
-
 });
 
 document.addEventListener("DOMContentLoaded", function () {

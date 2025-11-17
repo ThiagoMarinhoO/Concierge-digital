@@ -225,42 +225,51 @@ class WhatsappMessageController
     }
 
     private static function checkActiveSession(array $conversations, string $instanceName): array
-    {
-        global $wpdb;
+{
+    global $wpdb;
+    
+    $rawKeys = array_keys($conversations);
+    $remoteJids = [];
+    foreach ($rawKeys as $key) {
+        $parts = explode('-', $key, 2); 
+        $remoteJids[] = $parts[0];
+    }
+    $remoteJids = array_unique($remoteJids);
 
-        // Extrai os remote_jids únicos
-        $remoteJids = array_keys($conversations);
+    if (empty($remoteJids)) {
+        return $conversations;
+    }
 
-        if (empty($remoteJids)) {
-            return $conversations;
-        }
+    // Prepara os valores para o IN (...) de forma segura
+    $placeholders = implode(',', array_fill(0, count($remoteJids), '%s'));
+    $table = 'human_sessions'; // Assumindo que a variável $table está correta ou que é uma constante
 
-        // Prepara os valores para o IN (...) de forma segura
-        $placeholders = implode(',', array_fill(0, count($remoteJids), '%s'));
-        $table = 'human_sessions';
-
-        // Cria a query com wpdb::prepare
-        $query = $wpdb->prepare(
-            "
+    $query = $wpdb->prepare(
+        "
         SELECT remote_jid
         FROM $table
         WHERE instance_name = %s
           AND ended_at IS NULL
           AND remote_jid IN ($placeholders)
         ",
-            array_merge([$instanceName], $remoteJids)
-        );
+        array_merge([$instanceName], $remoteJids)
+    );
 
-        // Executa a query
-        $activeJids = $wpdb->get_col($query);
+    // Executa a query
+    $activeJids = $wpdb->get_col($query);
 
-        // Marca paused como true ou false
-        foreach ($conversations as $remoteJid => &$conv) {
-            $conv['paused'] = (bool) in_array($remoteJid, $activeJids, true);
-        }
+    error_log('Active JIDs (Sessões Ativas): ');
+    error_log(print_r($activeJids, true));
 
-        return $conversations;
+    foreach ($conversations as $fullKey => &$conv) {
+        $jidParts = explode('-', $fullKey, 2);
+        $remoteJid = $jidParts[0];
+
+        $conv['paused'] = (bool) in_array($remoteJid, $activeJids, true);
     }
+
+    return $conversations;
+}
 }
 
 add_action('wp_ajax_list_conversations', ['WhatsappMessageController', 'listConversations']);
