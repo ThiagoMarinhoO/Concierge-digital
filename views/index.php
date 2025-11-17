@@ -56,8 +56,8 @@ if (!empty($resource_user_id)) {
 <script>
 	window.addEventListener('DOMContentLoaded', (event) => {
 		const userIsOperator = <?php
-		echo $currentUser->roles && in_array('charlie_operator', $currentUser->roles) ? 'true' : 'false'
-			?>;
+								echo $currentUser->roles && in_array('charlie_operator', $currentUser->roles) ? 'true' : 'false'
+								?>;
 
 		if (userIsOperator) {
 			swal.fire({
@@ -269,20 +269,26 @@ if (!empty($resource_user_id)) {
 							<!-- MOSTRAR O CONECTAR COM O CALENDAR -->
 							<?php if (strtolower($category['title']) === 'integrações'): ?>
 								<?php
-								$benefits = get_user_subscription_benefits();
+								$benefits = get_user_subscription_benefits($resource_user_id);
 								$canIntegrate = (
 									!empty($benefits['integracao_google_agenda']) && $benefits['integracao_google_agenda'] === true
 								) || (
 									!empty($benefits['integracao_crm']) && $benefits['integracao_crm'] === true
 								);
-								if (!$canIntegrate) {
-									echo '<p class="text-center font-bold text-white">Integrações estão disponíveis apenas em planos superiores.<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
-									continue;
-								}
 								?>
 
-								<?php echo do_shortcode('[google_calendar_component]'); ?>
-
+								<?php if (!$canIntegrate): ?>
+									<p class="text-center font-bold">
+										Integrações estão disponíveis apenas em planos superiores.<br>
+										<a href="<?= get_home_url() . '/#planos' ?>"
+											class="underline text-lime-400 hover:text-lime-300">
+											Faça upgrade agora
+										</a>.
+									</p>
+								<?php else: ?>
+									<?php echo do_shortcode('[google_calendar_component]'); ?>
+									<?php echo do_shortcode('[active_campaign_component]'); ?>
+								<?php endif; ?>
 							<?php endif; ?>
 						</div>
 						<?php if ($category['video_url'] != ''): ?>
@@ -322,7 +328,7 @@ if (!empty($resource_user_id)) {
 			<?php
 			// $existing_assistant = new Chatbot();
 			// $assistants = $existing_assistant->getAllChatbots();
-			
+
 			$usage = UsageService::usagePercentages();
 			$total_usage = $usage['total'];
 
@@ -431,7 +437,7 @@ if (!empty($resource_user_id)) {
 					<div class="video-container mb-4">
 						<video controls class="w-full rounded-lg size-64">
 							<source
-								src="<?php echo esc_url(plugin_dir_url(dirname(_FILE_)) . 'assets/videos/download.mp4'); ?>"
+								src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__)) . 'assets/videos/download.mp4'); ?>"
 								type="video/mp4">
 						</video>
 					</div>

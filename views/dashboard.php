@@ -5,19 +5,7 @@ class Dashboard
     public static function render()
     {
         if (!is_user_logged_in()) {
-            return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
-        }
-
-        if(!get_active_subscription_product_id()){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
-        }
-
-        $benefits = get_user_subscription_benefits(get_current_user_ID());
-
-        $is_Chat = $benefits['dashboard_completo'];
-
-        if(!$is_Chat){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+            return '<p class="font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
         $assistant = new Chatbot();
@@ -47,10 +35,17 @@ class Dashboard
             $instance = WhatsappInstance::findByUserId($resource_user_id);          
         }
 
-        // $assistant = new Chatbot();
-        // $assistantId = $assistant->getChatbotIdByUser(get_current_user_id());
+        if(!get_active_subscription_product_id($resource_user_id)){
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+        }
+        
+        $benefits = get_user_subscription_benefits($resource_user_id);
 
-        // $instance = WhatsappInstance::findByUserId(get_current_user_id());
+        $is_Chat = $benefits['dashboard_completo'];
+
+        if(!$is_Chat){
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+        }
 
         /**
          * Métricas de chats

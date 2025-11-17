@@ -288,7 +288,7 @@ class Chatbot
     public function getUserIdByChatbotId($assistant_id)
     {
         global $wpdb;
-        $table = $wpdb->prefix . 'chatbots';
+        $table = $wpdb->prefix . 'chatbot';
 
         return $wpdb->get_var(
             $wpdb->prepare("SELECT user_id FROM $table WHERE id = %d", $assistant_id)

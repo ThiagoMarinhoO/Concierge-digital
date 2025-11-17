@@ -7,20 +7,9 @@ class ChatViewComponent
     public static function render()
     {
         if (!is_user_logged_in()) {
-            return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
+            return '<p class="font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
-        if(!get_active_subscription_product_id()){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
-        }
-        
-        $benefits = get_user_subscription_benefits(get_current_user_ID());
-
-        $is_Chat = $benefits['dashboard_completo'];
-
-        if(!$is_Chat){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
-        }
         $orgRepo = new OrganizationRepository();
 
         $user_id = get_current_user_id();
@@ -44,12 +33,24 @@ class ChatViewComponent
 
         // $instance = WhatsappInstance::findByUserId(get_current_user_id());
 
-        error_log('Instancia ' . print_r($whatsappInstance, true));
-        error_log('Organization id: ' . print_r($organization_id, true));
-        error_log('Resource id: ' . print_r($resource_user_id, true));
+        // error_log('Instancia ' . print_r($whatsappInstance, true));
+        // error_log('Organization id: ' . print_r($organization_id, true));
+        // error_log('Resource id: ' . print_r($resource_user_id, true));
+
+        if(!get_active_subscription_product_id($resource_user_id)){
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+        }
+        
+        $benefits = get_user_subscription_benefits($resource_user_id);
+
+        $is_Chat = $benefits['dashboard_completo'];
+
+        if(!$is_Chat){
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+        }
 
         if (empty($whatsappInstance)) {
-            return '<p class="text-white font-bold">Você precisa ter uma instancia cadastrada.</p>';
+            return '<p class="font-bold">Você precisa ter uma instancia cadastrada.</p>';
         }
 
         ob_start();
@@ -91,12 +92,6 @@ class ChatViewComponent
                 </div>
             </div>
         </div>
-
-        <!-- <div class="w-full">
-            <button id="humanSession" class="human-session-button bg-blue-500 text-white px-4 py-2 rounded ">
-                Atendimento humano
-            </button>
-        </div> -->
 
 <?php
         return ob_get_clean();

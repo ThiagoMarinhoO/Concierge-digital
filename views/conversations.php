@@ -201,19 +201,44 @@ class ConversationsComponent
     public static function render()
     {
         if (!is_user_logged_in()) {
-            return '<p class="text-white font-bold">Você precisa estar logado para acessar esta página.</p>';
+            return '<p class="font-bold">Você precisa estar logado para acessar esta página.</p>';
         }
 
-        if(!get_active_subscription_product_id()){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+        $chatbot = new Chatbot();
+        $orgRepo = new OrganizationRepository();
+
+
+        $user_id = get_current_user_id();
+        $currentUser = wp_get_current_user();
+        $organization_id = 0;
+        $resource_user_id = 0;
+        $assistantId = null;
+        $instance = null;
+
+        if (!empty($user_id)) {
+            $orgData = $orgRepo->findByUserId($user_id);
+            $organization_id = $orgData ? (int) $orgData->id : 0;
+
+            $resource_user_id = $organization_id > 0 && isset($orgData->owner_user_id)
+                ? (int) $orgData->owner_user_id
+                : $user_id;
         }
 
-        $benefits = get_user_subscription_benefits(get_current_user_ID());
+        if (!empty($resource_user_id)) {
+            $assistantId = $chatbot->getChatbotIdByUser($resource_user_id);
+            $instance = WhatsappInstance::findByUserId($resource_user_id);
+        }
+
+        if (!get_active_subscription_product_id($resource_user_id)) {
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+        }
+
+        $benefits = get_user_subscription_benefits($resource_user_id);
 
         $is_Chat = $benefits['dashboard_completo'];
 
-        if(!$is_Chat){
-            return '<p class="text-white font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+        if (!$is_Chat) {
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
         }
 
         ob_start();

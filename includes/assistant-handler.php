@@ -474,6 +474,9 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
         $thread_id = $whatsappMessage->getThreadId() ?? null;
     }
 
+    /**
+     * FALTA O ISWHATSAPP PARA WHATSAPP
+     */
     if(!check_user_message_quota($assistant_id)){
         wp_send_json_error(['message' => 'Limite de mensagens atingido']);
         return;

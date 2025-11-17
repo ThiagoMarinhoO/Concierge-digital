@@ -102,19 +102,30 @@ class WhatsappMessageService
     //     $newWhatsappMessage->setPushName($whatsappMessage['data']['pushName']);
     //     $newWhatsappMessage->setFromMe($whatsappMessage['data']['key']['fromMe'] ?? 0);
     //     $newWhatsappMessage->setThreadId($threadId);
-    //     $newWhatsappMessage->setDateTime($whatsappMessage['date_time']);
+
+    //     $brazilianTimezone = new DateTimeZone('America/Sao_Paulo');
+    //     $datetimeString = str_replace('Z', '', $whatsappMessage['date_time']);
+    //     $localDateTime = new DateTime($datetimeString, $brazilianTimezone);
+    //     $utcTimezone = new DateTimeZone('UTC');
+    //     $localDateTime->setTimezone($utcTimezone);
+    //     $newWhatsappMessage->setDateTime($localDateTime->format('Y-m-d H:i:s'));
 
     //     $newWhatsappMessage->save();
 
     //     return $newWhatsappMessage;
     // }
-
     public static function create($whatsappMessage, $threadId = null, $textMessage = null)
     {
+        $remoteJid = $whatsappMessage['data']['key']['remoteJid'];
+
+        if( $whatsappMessage['data']['key']['addressingMode'] == 'lid' ) {
+            $remoteJid = $whatsappMessage['data']['key']['remoteJidAlt'];
+        }
+
         $newWhatsappMessage = new WhatsappMessage();
 
         $newWhatsappMessage->setMessageId($whatsappMessage['data']['key']['id']);
-        $newWhatsappMessage->setRemoteJid($whatsappMessage['data']['key']['remoteJid']);
+        $newWhatsappMessage->setRemoteJid($remoteJid);
         $newWhatsappMessage->setInstanceName($whatsappMessage['instance']);
         $newWhatsappMessage->setMessage($textMessage ?? $whatsappMessage['data']['message']['conversation']);
         $newWhatsappMessage->setPushName($whatsappMessage['data']['pushName']);
