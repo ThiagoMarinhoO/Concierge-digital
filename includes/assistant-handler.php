@@ -297,19 +297,12 @@ function generate_instructions($chatbot_options, $chatbot_name)
             elseif (($option['pergunta'] ?? '') == "Adicione Links de conhecimento:") {
                 $url = $resposta;
                 if (!empty($url)) {
-                    // Usa o novo método de limpeza do PromptBuilder
-                    // Mas precisamos pegar o HTML bruto primeiro. 
-                    // A função crawl_page original já retorna texto, mas queremos o HTML para limpar melhor?
-                    // O PromptBuilder::addScrapedContent espera HTML.
-                    // Vamos usar file_get_contents aqui para passar pro builder limpar.
+                    // USA O CRAWLER RECURSIVO + LIMPEZA AVANÇADA
+                    // Agora o crawl_page já retorna o texto limpo e de múltiplas páginas (profundidade 2)
+                    $text = crawl_page($url, 2);
                     
-                    $html = @file_get_contents($url);
-                    if ($html) {
-                        $builder->addScrapedContent($html);
-                    } else {
-                        // Fallback para o crawl_page antigo se file_get_contents falhar (ex: bloqueio)
-                        $text = crawl_page($url, 2);
-                        $builder->addKnowledge("Conteúdo do site {$url}: " . $text);
+                    if (!empty($text)) {
+                        $builder->addKnowledge("Conteúdo extraído do site (e sub-links):\n" . $text);
                     }
                 }
             } 
@@ -1391,46 +1384,94 @@ function transcribe_audio_with_whisper($file_path)
 }
 
 
-function crawl_page($url, $depth = 5)
+function crawl_page($url, $depth = 2)
 {
     static $seen = array();
-    if (isset($seen[$url]) || $depth === 0) {
-        return;
+    
+    // Evita loop infinito e respeita profundidade
+    if ($depth === 0 || isset($seen[$url])) {
+        return "";
     }
 
     $seen[$url] = true;
 
+    // 1. Obter conteúdo da página
+    $html = @file_get_contents($url);
+    if (empty($html)) {
+        return "";
+    }
+
     $dom = new DOMDocument('1.0', 'UTF-8');
-    @$dom->loadHTMLFile($url);
-
-    // Extrair texto puro
+    libxml_use_internal_errors(true);
+    @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+    libxml_clear_errors();
+    
+    // 2. Extrair Texto Limpo (Usando a lógica do PromptBuilder)
+    // Precisamos instanciar o builder ou usar uma função estática?
+    // Como PromptBuilder está disponível, vamos usar uma versão simplificada da limpeza aqui
+    // ou apenas extrair o texto principal.
+    
     $text = extract_text($dom);
+    $final_content = "URL: {$url}\nCONTENT: {$text}\n\n";
 
-    // echo "URL:", $url, PHP_EOL, "CONTENT:", PHP_EOL, $text, PHP_EOL, PHP_EOL;
-    return $text;
+    // 3. Recursão (Se depth > 0)
+    if ($depth > 1) {
+        $xpath = new DOMXPath($dom);
+        $links = $xpath->query('//a/@href');
+        
+        $base_url_parts = parse_url($url);
+        $base_host = $base_url_parts['host'] ?? '';
+        $scheme = $base_url_parts['scheme'] ?? 'http';
+
+        foreach ($links as $link) {
+            $href = $link->nodeValue;
+            
+            // Normalização de URL básica
+            if (strpos($href, 'http') === 0) {
+                // URL absoluta
+                $href_parts = parse_url($href);
+                if (($href_parts['host'] ?? '') !== $base_host) continue; // Só links internos
+            } else {
+                // URL relativa
+                $href = $scheme . '://' . $base_host . '/' . ltrim($href, '/');
+            }
+
+            // Ignorar âncoras e arquivos não-html
+            if (strpos($href, '#') !== false) continue;
+            if (preg_match('/\.(jpg|jpeg|png|gif|pdf|zip)$/i', $href)) continue;
+
+            $final_content .= crawl_page($href, $depth - 1);
+        }
+    }
+
+    return $final_content;
 }
 
 function extract_text($dom)
 {
     $xpath = new DOMXPath($dom);
     
-    $scripts = $xpath->query('//script');
+    // Remover scripts e estilos
+    $scripts = $xpath->query('//script | //style | //noscript | //header | //footer | //nav');
     foreach ($scripts as $script) {
         $script->parentNode->removeChild($script);
     }
 
-    $nodes = $xpath->query('//body//text()');
-
-    $textContent = [];
-    foreach ($nodes as $node) {
-        $trimmedText = trim($node->nodeValue);
-        
-        if (!empty($trimmedText) && !preg_match('/^(@|document|[^a-zA-Z0-9])/', $trimmedText)) {
-            $textContent[] = $trimmedText;
-        }
+    // Tentar pegar apenas o conteúdo principal
+    $main = $xpath->query('//main | //article | //div[@id="content"] | //div[@class="content"]');
+    if ($main->length > 0) {
+        $content_node = $main->item(0);
+    } else {
+        $content_node = $dom->getElementsByTagName('body')->item(0);
     }
 
-    return implode("\n", $textContent);
+    if (!$content_node) return '';
+
+    // Extrair texto
+    $textContent = trim($content_node->textContent);
+    
+    // Limpar espaços múltiplos
+    return preg_replace('/\s+/', ' ', $textContent);
 }
 
 // function extract_text($dom)
