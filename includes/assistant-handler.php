@@ -10,12 +10,14 @@ function create_assistant()
     $chatbot_welcome_message = $_POST['chatbot_welcome_message'] ?? '';
     $user_id = get_current_user_id();
 
-    $user_policy = user_can( $user_id, 'edit_assistants' );
-    if(empty($user_policy)) {
+    $user_policy = user_can($user_id, 'edit_assistants');
+    if (empty($user_policy)) {
         wp_send_json_error(
             [
                 'message' => 'Você não está autorizado a realizar esta ação.'
-            ], 401 );
+            ],
+            401
+        );
     }
     global $wpdb;
 
@@ -83,8 +85,8 @@ function create_assistant()
     ));
 
     if ($vector_store) {
-        error_log(print_r('entrou', true));
-        error_log(print_r($vector_store, true));
+        // error_log(print_r('entrou', true));
+        // error_log(print_r($vector_store, true));
         $data['tool_resources'] = [
             "file_search" => [
                 "vector_store_ids" => [$vector_store->vector_store_id]
@@ -263,6 +265,14 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 continue;
             }
 
+            if ($option['pergunta'] === 'Qual o estilo da comunicação?') {
+                $destino[] = $training_phrase . ' ' . PersonalitiesHelper::getPersonality($resposta);
+                continue;
+            }
+
+            /**
+             * Tratamento especial para injeção dinâmica
+             */
             if ($option['pergunta'] === 'Documentos anexos') {
                 $destino[] = $training_phrase . ' ' . $resposta[0];
                 continue;
@@ -284,7 +294,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
                                 )
                             );
 
-                            error_log("Encontrei vector store: " . print_r($vector_store, true));
+                            // error_log("Encontrei vector store: " . print_r($vector_store, true));
 
                             if (empty($vector_store)) {
                                 $parser = new Parser();
@@ -336,27 +346,59 @@ function generate_instructions($chatbot_options, $chatbot_name)
     // Junta instruções de comportamento e base de conhecimento
     $training_context = implode("\n", array_merge($behavior_instructions, $knowledge_base));
 
-    $formatted_output = "Seu nome é {$chatbot_name}.\n\n";
+    /**
+     * DEPRECATED
+     */
+    // $formatted_output = "Seu nome é {$chatbot_name}.\n\n";
 
-    $formatted_output .= "Instruções de comportamento:\n";
+    // // $formatted_output .= "Instruções de comportamento:\n";
+    // $formatted_output .= "<regras_de_comportamento>\n";
+    // foreach ($behavior_instructions as $instruction) {
+    //     $instruction = trim($instruction);
+    //     if ($instruction !== '') {
+    //         $formatted_output .= "- {$instruction}\n";
+    //     }
+    // }
+    // $formatted_output .= "</regras_de_comportamento>\n";
+
+    // // $formatted_output .= "\nBase de conhecimento:\n";
+    // $formatted_output .= "<base_de_conhecimento>\n";
+    // foreach ($knowledge_base as $knowledge) {
+    //     $knowledge = trim($knowledge);
+    //     if ($knowledge !== '') {
+    //         $formatted_output .= "- {$knowledge}\n";
+    //     }
+    // }
+    // $formatted_output .= "</base_de_conhecimento>\n";
+
+
+    // plugin_log('-------- OUTPUT FORMATADO FINAL --------');
+    // plugin_log($formatted_output);
+    /**
+     * DEPRECATED
+     */
+
+    // $formatted_output = "Seu nome é {$chatbot_name}.\n\n";
+    $formatted_output = " <identidade>Seu nome é {$chatbot_name}.</identidade>\n\n";
+
+    $formatted_output .= "<comportamento>\n";
     foreach ($behavior_instructions as $instruction) {
         $instruction = trim($instruction);
         if ($instruction !== '') {
             $formatted_output .= "- {$instruction}\n";
         }
     }
+    $formatted_output .= "</comportamento>\n";
 
-    $formatted_output .= "\nBase de conhecimento:\n";
+    // $formatted_output .= "\nBase de conhecimento:\n";
+    $formatted_output .= "\n<base_de_conhecimento>\n";
     foreach ($knowledge_base as $knowledge) {
         $knowledge = trim($knowledge);
         if ($knowledge !== '') {
             $formatted_output .= "- {$knowledge}\n";
         }
     }
-
-
-    plugin_log('-------- OUTPUT FORMATADO FINAL --------');
-    plugin_log($formatted_output);
+    $formatted_output .= "</base_de_conhecimento>\n";
 
     return ([
         "assistant_name" => $chatbot_name,
@@ -477,8 +519,11 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     /**
      * FALTA O ISWHATSAPP PARA WHATSAPP
      */
-    if(!check_user_message_quota($assistant_id)){
-        wp_send_json_error(['message' => 'Limite de mensagens atingido']);
+    if (!check_user_message_quota($assistant_id)) {
+        wp_send_json_error([
+            'ai_response' => 'Desculpe. Não consigo ajudar no momento. Por favor tente mais tarde.',
+            'message' => 'Limite de mensagens atingido'
+        ]);
         return;
     }
 
@@ -579,7 +624,10 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     $data = [
         "assistant_id" => $assistant_id,
         "stream" => true,
-        "instructions" => $runInstruction
+        "instructions" => $runInstruction,
+        "tool_choice" => [
+            "type" => "file_search"
+        ]
     ];
 
     $headers = [
@@ -611,8 +659,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     // $response = json_decode($response, true);
 
-    error_log('--- Resposta completa da OpenAI ---');
-    error_log(print_r($response, true));
+    // error_log('--- Resposta completa da OpenAI ---');
+    // error_log(print_r($response, true));
 
     $run_id = null;
 
@@ -765,26 +813,6 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     true // com Meet
                                 );
 
-                                // if (!empty($event)) {
-                                //     $newMeet = new Meet();
-                                //     $newMeet->setTitle($title);
-                                //     $newMeet->setStartTime((new DateTime($start, new DateTimeZone('UTC'))));
-                                //     $newMeet->setAssistantId($assistant_id);
-                                //     $newMeet->save();
-
-                                //     error_log(print_r($event, true));
-
-                                //     /**
-                                //      * Disparar email para organizador
-                                //      */
-                                //     $emailBody = "Seu evento foi criado no Google Agenda:\n\n" .
-                                //                     "Título: {$title}\n" .
-                                //                     "Início: {$start}\n" .
-                                //                     "Fim: {$end}\n";
-                                //     wp_mail($organizer_email, $title, $emailBody);
-
-                                //     $output = "✅ Evento criado: \"$title\" em " . (new DateTime($start))->format('d/m/Y H:i');
-                                // } 
                                 if (!empty($event)) {
                                     $newMeet = new Meet();
                                     $newMeet->setTitle($title);
@@ -833,7 +861,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     $output = "✅ Evento criado: \"$title\" em {$startDate}";
                                 } else {
                                     // Adicione um log ou uma mensagem de erro caso o evento não seja criado
-                                    $output = "❌ Não foi possível criar o evento. Por favor, tente novamente.";
+                                    $output = "❌ Não foi possível criar o evento. Tente novamente mais tarde.";
                                 }
 
                                 // $output = "Confirme novamente o horário, por favor !";
@@ -917,7 +945,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                     if (!empty($file)) {
                                         $localFile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}vector_files WHERE file_id = %s", $file['id']));
                                         // error_log('Local file: ' . print_r($localFile, true));
-    
+
                                         if (empty($localFile)) {
                                             return;
                                         }
@@ -943,9 +971,9 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                 $email = $arguments['email'] ?? null;
                                 $phone = $arguments['phone'] ?? null;
 
-                                error_log('Nome: ' . print_r($name, true));
-                                error_log('Email: ' . print_r($email, true));
-                                error_log('Telefone: ' . print_r($phone, true));
+                                // error_log('Nome: ' . print_r($name, true));
+                                // error_log('Email: ' . print_r($email, true));
+                                // error_log('Telefone: ' . print_r($phone, true));
 
                                 if ($activeCampaignSettings) {
                                     $api_url = $activeCampaignSettings->api_url;
@@ -966,11 +994,13 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
                                                 $output = "✅ Obrigado. Suas informações foram salvas. Como posso ajudar agora?";
                                             } else {
                                                 error_log('Não foi possível criar ou atualizar o deal.');
-                                                $output = "Houve um problema ao criar o registro de atendimento no sistema. Por favor, tente novamente mais tarde.";
+                                                // $output = "Houve um problema ao criar o registro de atendimento no sistema. Por favor, tente novamente mais tarde.";
+                                                $output = "✅ Obrigado. Suas informações foram salvas. Como posso ajudar agora?";
                                             }
                                         } else {
                                             error_log('Não foi possível criar ou atualizar o contato.');
-                                            $output = "Me desculpe. Não consegui salvar suas informações de contato. Verifique o email ou telefone e tente novamente.";
+                                            // $output = "Me desculpe. Não consegui salvar suas informações de contato. Verifique o email ou telefone e tente novamente.";
+                                            $output = "✅ Obrigado. Suas informações foram salvas. Como posso ajudar agora?";
                                         }
                                     }
                                 }
@@ -997,6 +1027,11 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     // error_log('--- Mensagem final gerada ---');
     // error_log(print_r($assistant_message, true));
 
+    $pattern = '/【\d+:\d+(?:-\d+)?†[^】]+】/';
+    $assistant_message = preg_replace($pattern, '', $assistant_message);
+    
+    $assistant_message = trim($assistant_message);
+
     /*
     *
     *   SALVAR MENSAGEM DO USUÁRIO NO BANCO
@@ -1019,6 +1054,10 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     // plugin_log(print_r($usage, true));
 
     $usageObj = manage_usage($usage);
+
+    if (empty($assistant_message)) {
+        $assistant_message = "Desculpe. Não consigo ajudar no momento. Por favor tente mais tarde.";
+    }
 
     if ($isWhatsapp && $whatsappMessage) {
 
@@ -1452,11 +1491,18 @@ function crawl_page($url, $depth = 5)
 function extract_text($dom)
 {
     $xpath = new DOMXPath($dom);
-    $nodes = $xpath->query('//body//text()'); // Seleciona somente o texto dentro do <body>
+    
+    $scripts = $xpath->query('//script');
+    foreach ($scripts as $script) {
+        $script->parentNode->removeChild($script);
+    }
+
+    $nodes = $xpath->query('//body//text()');
 
     $textContent = [];
     foreach ($nodes as $node) {
         $trimmedText = trim($node->nodeValue);
+        
         if (!empty($trimmedText) && !preg_match('/^(@|document|[^a-zA-Z0-9])/', $trimmedText)) {
             $textContent[] = $trimmedText;
         }
@@ -1464,6 +1510,91 @@ function extract_text($dom)
 
     return implode("\n", $textContent);
 }
+
+// function extract_text($dom)
+// {
+//     $xpath = new DOMXPath($dom);
+
+//     // 1. **Sanitização: Remover tags <script>** (Mantida da sugestão anterior)
+//     $scripts = $xpath->query('//script');
+//     foreach ($scripts as $script) {
+//         $script->parentNode->removeChild($script);
+//     }
+    
+//     // 2. **Remover tags de estilo/CSS e comentários, se houver necessidade de limpeza adicional**
+//     $styles = $xpath->query('//style|//comment()');
+//     foreach ($styles as $style) {
+//         $style->parentNode->removeChild($style);
+//     }
+
+//     // 3. **Selecionar elementos principais do corpo para estruturar a transcrição**
+//     // Selecionamos todos os descendentes diretos do body que são tipicamente estruturais:
+//     $nodes = $xpath->query('//body//*[self::h1 or self::h2 or self::h3 or self::h4 or self::p or self::li or self::ul or self::ol]');
+
+//     $markdownContent = [];
+
+//     foreach ($nodes as $node) {
+//         $tag = strtolower($node->nodeName);
+//         $text = trim($node->nodeValue);
+
+//         // Ignorar textos vazios ou irrelevantes que sobraram (como espaço em branco de listas <ul>/<li>)
+//         if (empty($text) || preg_match('/^(@|document|[^a-zA-Z0-9])/', $text)) {
+//              continue;
+//         }
+
+//         switch ($tag) {
+//             case 'h1':
+//                 $markdownContent[] = "\n# " . $text . "\n";
+//                 break;
+//             case 'h2':
+//                 $markdownContent[] = "\n## " . $text . "\n";
+//                 break;
+//             case 'h3':
+//                 $markdownContent[] = "\n### " . $text . "\n";
+//                 break;
+//             case 'h4':
+//                 $markdownContent[] = "\n#### " . $text . "\n";
+//                 break;
+//             case 'li':
+//                 // Verifica se o pai é uma lista ordenada (<ol>) ou não ordenada (<ul>)
+//                 $parentTag = strtolower($node->parentNode->nodeName);
+//                 if ($parentTag === 'ol') {
+//                     // Usar o número do índice para lista ordenada (1. item)
+//                     $position = 1;
+//                     if ($node->parentNode->hasChildNodes()) {
+//                         $count = 0;
+//                         foreach ($node->parentNode->childNodes as $child) {
+//                             if (strtolower($child->nodeName) === 'li') {
+//                                 $count++;
+//                             }
+//                             if ($child === $node) {
+//                                 $position = $count;
+//                                 break;
+//                             }
+//                         }
+//                     }
+//                     $markdownContent[] = $position . ". " . $text;
+//                 } else {
+//                     // Lista não ordenada (* item ou - item)
+//                     $markdownContent[] = "* " . $text;
+//                 }
+//                 break;
+//             case 'p':
+//                 // Parágrafos são separados por linhas duplas no Markdown
+//                 $markdownContent[] = $text . "\n";
+//                 break;
+//             case 'ul':
+//             case 'ol':
+//                 // Ignora as tags pai <ul> e <ol> para evitar duplicidade, pois o <li> já foi tratado.
+//                 break;
+//             default:
+//                 $markdownContent[] = $text;
+//         }
+//     }
+
+//     // Unir o array e limpar espaços em branco redundantes no início/fim
+//     return trim(implode("\n", $markdownContent));
+// }
 
 
 add_action('wp_ajax_get_assistant_by_id', 'get_assistant_by_id');

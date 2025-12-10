@@ -405,10 +405,12 @@ function updateOpenaiAssistantsRules()
         curl_close($ch);
 
         $response_data = json_decode($response, true);
+        // error_log('Resposta atualização');
+        // error_log(print_r($response_data, true));
 
         $new_instance = new Chatbot();
         // $user_id = get_current_user_id();
-        $new_instance->updateChatbot($response_data['id'], $response, $assistant_user_id);
+        $new_instance->updateChatbot($response_data['id'], $response, $assistant_user_id, $response_data['name'], $response_data['instructions'], $response_data['metadata']['assistant_image'], $response_data['metadata']['welcome_message']);
 
         if ($http_code == 200) {
             $updatedAssistants[] = [

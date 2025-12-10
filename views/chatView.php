@@ -38,15 +38,15 @@ class ChatViewComponent
         // error_log('Resource id: ' . print_r($resource_user_id, true));
 
         if(!get_active_subscription_product_id($resource_user_id)){
-            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/loja" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
         }
-        
+
         $benefits = get_user_subscription_benefits($resource_user_id);
 
         $is_Chat = $benefits['dashboard_completo'];
 
         if(!$is_Chat){
-            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/loja" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
         }
 
         if (empty($whatsappInstance)) {
@@ -81,9 +81,18 @@ class ChatViewComponent
                     </div>
                 </div>
                 <div class="chat-input">
-                    <form id="chat-form">
+                    <div id="preview-container" class="preview-container" style="display: none;"></div>
+                    <form id="chat-form" enctype="multipart/form-data">
+                        <button type="button" id="file-upload-button" class="file-upload-button !border-none" title="Anexar arquivo" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+
+                        </button>
+                        <input type="file" id="file-input" style="display: none;" accept=".txt,.docx,.pdf,.xls,.xlsx,.csv,.jpg,.jpeg,.png">
+
                         <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off" disabled>
-                        <button type="submit" disabled>
+                        <button type="submit" id="send-button" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                             </svg>

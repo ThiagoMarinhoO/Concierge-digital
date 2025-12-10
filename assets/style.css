@@ -9,6 +9,144 @@ body.page-id-4653 {
     /* overflow: hidden !important; */
 }
 
+/* Para envolver a mídia e a legenda */
+.message.media-message {
+    padding: 0; /* Remove padding padrão, pois a borda será na div media-content */
+}
+
+/* Container de todo o conteúdo de mídia */
+.media-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    /* Estilo do container de mídia (parece um balão) */
+    border-radius: 8px; 
+    overflow: hidden; /* Garante que a imagem/vídeo não ultrapasse o balão */
+}
+
+/* Imagens/Vídeos */
+.whatsapp-image-preview, .whatsapp-video-preview {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer; /* Indica que a imagem é clicável */
+    object-fit: contain;
+    background-color: #f0f0f0; /* Fundo leve para o preview */
+    max-height: 300px; /* Limita o tamanho do preview */
+}
+
+/* Legenda (Caption) */
+.media-caption {
+    padding: 8px 10px;
+    font-size: 0.9em;
+    color: #444; /* Cor mais escura para a legenda */
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* Estilo para Documentos */
+.media-document {
+    padding: 10px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.document-icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #008069; /* Cor do ícone (verde do whatsapp, por exemplo) */
+}
+
+.document-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.file-name {
+    font-weight: bold;
+    color: #212121;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+
+/* Container que aparece acima do campo de texto */
+.preview-container {
+    display: flex; /* O padrão deve ser 'none' no HTML */
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f8f8;
+    gap: 10px;
+    position: relative; /* Para posicionar o botão de remover */
+}
+
+/* Miniatura da Imagem */
+.file-preview-thumbnail {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Ícone de Documento/Vídeo */
+.file-preview-icon {
+    font-size: 20px;
+}
+
+/* Nome do Arquivo */
+.file-preview-name {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+    color: #333;
+}
+
+/* Botão de Remoção */
+.remove-file-btn {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    background: rgb(252, 129, 129);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+/* Ajuste na cor da legenda para balões enviados/recebidos */
+.message.sent .media-caption {
+    color: #fff; /* Se o balão enviado for escuro */
+}
+.message.received .media-caption {
+    color: #000;
+}
+/* O time deve ser posicionado no canto inferior direito, dentro do balão de mídia */
+.media-message .message-time {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Melhora a visibilidade sobre a imagem */
+}
+.media-message {
+    position: relative; /* Para o posicionamento do time */
+}
+
 body.page-id-4653 .e-con-inner {
     max-width: 100% !important;
 }
@@ -199,6 +337,9 @@ body.page-id-4653 .e-con-inner {
 
 .chat-container #chat-form {
     display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px;
 }
 
 .chat-container #message-input {
@@ -208,10 +349,9 @@ body.page-id-4653 .e-con-inner {
     border: 1px solid #3c3c3c !important;
     background-color: #f1f1f1 !important;
     color: #222 !important;
-    margin-right: 1rem !important;
 }
 
-.chat-container #chat-form button {
+.chat-container #chat-form button[type="submit"] {
     background-color: #005C9D !important;
     border: none !important;
     color: white !important;
@@ -223,7 +363,7 @@ body.page-id-4653 .e-con-inner {
     transition: background-color 0.2s !important;
 }
 
-.chat-container #chat-form button:hover {
+.chat-container #chat-form button[type="submit"]:hover {
     background-color: #005A9E !important;
 }
 

@@ -291,7 +291,7 @@ class Chatbot
         $table = $wpdb->prefix . 'chatbot';
 
         return $wpdb->get_var(
-            $wpdb->prepare("SELECT user_id FROM $table WHERE id = %d", $assistant_id)
+            $wpdb->prepare("SELECT user_id FROM $table WHERE id = %s", $assistant_id)
         );
     }
 
