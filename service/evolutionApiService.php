@@ -157,6 +157,7 @@ class EvolutionApiService
 
         // Fallbacks
         $mimeType = 'application/octet-stream';
+        $mediaType = 'document';
 
         if (isset($mimeTypes[$extension])) {
             [$mimeType, $mediaType] = $mimeTypes[$extension];
@@ -165,7 +166,7 @@ class EvolutionApiService
 
         $data = [
             "number" => $number,
-            "mediatype" => 'document',
+            "mediatype" => $mediaType,
             "mimetype" => $mimeType,
             "caption" => $caption,
             "media" => $fileUrl,
@@ -174,7 +175,7 @@ class EvolutionApiService
             "linkPreview" => true
         ];
 
-        EvolutionApiService::markMessageAsRead($whatsappMessage);
+        // EvolutionApiService::markMessageAsRead($whatsappMessage);
 
         return ClientEvolutionApi::postRequest($endpoint, $data);
     }

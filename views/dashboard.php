@@ -30,13 +30,13 @@ class Dashboard
                 : $user_id;
         }
 
-        if(!empty($resource_user_id)) {
+        if (!empty($resource_user_id)) {
             $assistantId = $assistant->getChatbotIdByUser($resource_user_id);
-            $instance = WhatsappInstance::findByUserId($resource_user_id);          
+            $instance = WhatsappInstance::findByUserId($resource_user_id);
         }
 
         if(!get_active_subscription_product_id($resource_user_id)){
-            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/loja" class="underline text-lime-400 hover:text-lime-300">Obtenha um plano agora</a>.</p>';
         }
         
         $benefits = get_user_subscription_benefits($resource_user_id);
@@ -44,7 +44,7 @@ class Dashboard
         $is_Chat = $benefits['dashboard_completo'];
 
         if(!$is_Chat){
-            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/#planos" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
+            return '<p class="font-bold text-center">Recurso bloqueado. Para desbloquear:<br><a href="' . get_home_url() . '/loja" class="underline text-lime-400 hover:text-lime-300">Faça upgrade agora</a>.</p>';
         }
 
         /**
@@ -105,6 +105,12 @@ class Dashboard
 
         $chatsTotal = count($allChats);
         $averageMessagesPerChat = $chatsTotal > 0 ? round($messagesTotal / $chatsTotal, 2) : 0;
+
+        // Humans Sessions
+        $allHumansSessions = (new HumanSessionRepository())->findAll(
+            $instance && method_exists($instance, 'getInstanceName') ? $instance->getInstanceName() : null
+        );
+
         ob_start();
 ?>
 
@@ -113,7 +119,7 @@ class Dashboard
                 const getChartOptions = () => {
                     return {
                         series: [<?= $webPercent ?>, <?= $whatsPercent ?>],
-                        colors: ["#1C64F2", "#16BDCA", ],
+                        colors: ["#c1ff72", "#3B1798", ],
                         chart: {
                             height: 420,
                             width: "100%",
@@ -206,7 +212,7 @@ class Dashboard
                     chartEl.innerHTML = "";
 
                     const options = {
-                        colors: ["#1A56DB", "#FDBA8C"],
+                        colors: ['#3B1798', '#c1ff72', ],
                         series: chartData.series,
                         chart: {
                             type: "bar",
@@ -280,7 +286,7 @@ class Dashboard
                             show: false
                         },
                         fill: {
-                            opacity: 1
+                            opacity: 1,
                         },
                     };
 
@@ -336,6 +342,102 @@ class Dashboard
                         });
                     });
                 });
+            });
+            
+            document.addEventListener("DOMContentLoaded", function() {
+                const getChartOptions = () => {
+                    return {
+                        // series: [35.1, 64.9],
+                        series: [<?= count($allWhatsappChats) ?>, <?= count($allHumansSessions) ?>],
+                        colors: ["#c1ff72", "#3B1798", ],
+                        chart: {
+                            height: 320,
+                            width: "100%",
+                            type: "donut",
+                        },
+                        stroke: {
+                            colors: ["transparent"],
+                            lineCap: "",
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    labels: {
+                                        show: true,
+                                        name: {
+                                            show: true,
+                                            fontFamily: "Inter, sans-serif",
+                                            offsetY: 20,
+                                        },
+                                        total: {
+                                            showAlways: true,
+                                            show: true,
+                                            label: "Intervenções humanas",
+                                            fontFamily: "Inter, sans-serif",
+                                            // formatter: function(w) {
+                                            //     const sum = w.globals.seriesTotals.reduce((a, b) => {
+                                            //         return a + b
+                                            //     }, 0)
+                                            //     return '$' + sum + 'k'
+                                            // },
+                                            formatter: function() {
+                                                return <?= count($allHumansSessions) ?>
+                                            },
+
+                                        },
+                                        value: {
+                                            show: true,
+                                            fontFamily: "Inter, sans-serif",
+                                            offsetY: -20,
+                                            formatter: function(value) {
+                                                return value + "k"
+                                            },
+                                        },
+                                    },
+                                    size: "80%",
+                                },
+                            },
+                        },
+                        grid: {
+                            padding: {
+                                top: -2,
+                            },
+                        },
+                        labels: ["Chats", "Intervenções"],
+                        dataLabels: {
+                            enabled: false,
+                        },
+                        legend: {
+                            position: "bottom",
+                            fontFamily: "Inter, sans-serif",
+                        },
+                        yaxis: {
+                            labels: {
+                                formatter: function(value) {
+                                    return value
+                                },
+                            },
+                        },
+                        xaxis: {
+                            labels: {
+                                formatter: function(value) {
+                                    return value
+                                },
+                            },
+                            axisTicks: {
+                                show: false,
+                            },
+                            axisBorder: {
+                                show: false,
+                            },
+                        },
+                    }
+                }
+
+                if (document.getElementById("donut-chart") && typeof ApexCharts !== 'undefined') {
+                    const chart = new ApexCharts(document.getElementById("donut-chart"), getChartOptions());
+                    chart.render();
+                }
             });
         </script>
 
@@ -446,12 +548,23 @@ class Dashboard
                 <h4 class="mt-2 font-bold text-gray-800 text-title-sm"><?= count($allMeetings); ?></h4>
             </div>
 
+            <?php if($instance) :?>
+            <div class="w-full bg-white border border-default rounded-base shadow-xs p-4 md:p-6">
+
+                <div class="flex justify-between mb-3">
+                    <div class="flex flex-col justify-center items-center">
+                        <h5 class="text-xl font-semibold text-heading me-1 !mb-1">Média de Resoluções</h5>
+                        <p class="text-sm text-heading me-1">Intervenções humanas necessárias em Chats</p>
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="py-6" id="donut-chart"></div>
+            </div>
+            <?php endif; ?>
+
+
         </div>
-
-
-
-
-
 
 <?php
         return ob_get_clean();

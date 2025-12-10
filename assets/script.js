@@ -2002,8 +2002,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatMessages = document.getElementById('chat-messages');
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
-    const messageSendButton = chatForm?.querySelector('button');
+    // const messageSendButton = chatForm?.querySelector('button');
+    const messageSendButton = document.querySelector('#chat-form button[type="submit"]');
     const messageSendButtonIcon = messageSendButton?.querySelector('svg');
+
+    // arquivos
+    const fileInput = document.getElementById('file-input');
+    const fileUploadButton = document.getElementById('file-upload-button');
+    const previewContainer = document.getElementById('preview-container');
 
     // MUDANÇA PRINCIPAL: Usaremos activeConvoKey para ser o identificador principal (id-threadId)
     let activeConvoKey = null;
@@ -2011,6 +2017,99 @@ document.addEventListener('DOMContentLoaded', () => {
     let notifications = [];
 
     if (conversationList) {
+
+        const showFilePreview = (file) => {
+            previewContainer.style.display = 'flex'; // Mostra o container
+            previewContainer.innerHTML = ''; // Limpa o conteúdo anterior
+
+            const fileName = file.name;
+            const fileType = file.type;
+            let previewHTML = '';
+
+            // 1. Botão de Remoção (X)
+            const removeButton = `<button type="button" class="remove-file-btn" title="Remover arquivo selecionado">X</button>`;
+
+            if (fileType.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Cria a miniatura da imagem (Ação Assíncrona!)
+                    previewContent = `
+                <img src="${e.target.result}" alt="Preview" class="file-preview-thumbnail">
+                <span class="file-preview-name">${fileName}</span>
+            `;
+                    // INJETA O HTML E O BOTÃO DE REMOÇÃO AQUI, DENTRO DO onload
+                    previewContainer.innerHTML = previewContent + removeButton;
+
+                    // ATRIBUIÇÃO DO EVENTO AQUI! (PONTO CRÍTICO)
+                    document.querySelector('.remove-file-btn')?.addEventListener('click', removeFilePreview);
+                };
+                reader.readAsDataURL(file);
+
+            } else {
+                // Documentos, Vídeos e outros (Ação Síncrona)
+                const icon = fileType.startsWith('video/') ? '🎬' : '📎';
+                previewContent = `
+            <span class="file-preview-icon">${icon}</span>
+            <span class="file-preview-name">${fileName}</span>
+        `;
+
+                // INJETA O HTML E O BOTÃO DE REMOÇÃO AQUI
+                previewContainer.innerHTML = previewContent + removeButton;
+
+                // ATRIBUIÇÃO DO EVENTO AQUI! (PONTO CRÍTICO)
+                document.querySelector('.remove-file-btn')?.addEventListener('click', removeFilePreview);
+            }
+
+            // Mudar o placeholder para indicar que há um arquivo anexado
+            messageInput.placeholder = `Adicione uma legenda (opcional).`;
+            messageInput.focus();
+        };
+
+        const removeFilePreview = () => {
+            fileInput.value = ''; // Limpa o input file
+            previewContainer.style.display = 'none';
+            previewContainer.innerHTML = '';
+            messageInput.placeholder = 'Digite sua mensagem...';
+            messageInput.focus();
+        };
+
+        fileUploadButton.addEventListener('click', () => {
+            if (!fileUploadButton.disabled) {
+                fileInput.click();
+            }
+        });
+
+        // fileInput.addEventListener('change', () => {
+        //     if (fileInput.files.length > 0) {
+        //         // Alerta simples para o usuário, pode ser mais sofisticado
+        //         messageInput.placeholder = `Arquivo selecionado: ${fileInput.files[0].name}. Envie com a mensagem vazia ou adicione um texto.`;
+        //         messageInput.value = ''; // Limpa o texto anterior, se houver.
+        //         messageInput.focus();
+        //     } else {
+        //         messageInput.placeholder = 'Digite sua mensagem...';
+        //     }
+        // });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                showFilePreview(fileInput.files[0]);
+            } else {
+                removeFilePreview();
+            }
+        });
+
+        const enableChatInput = () => {
+            // ... código existente ...
+            messageInput.disabled = false;
+            messageSendButton.disabled = false;
+            fileUploadButton.disabled = false; // HABILITA o botão do arquivo
+        }
+
+        const disableChatInput = () => {
+            // ... código existente ...
+            messageInput.disabled = true;
+            messageSendButton.disabled = true;
+            fileUploadButton.disabled = true; // DESABILITA o botão do arquivo
+        }
 
         // --- Funções Auxiliares ---
         // Função para obter a chave única (id-threadId) de uma conversa
@@ -2087,7 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 conversationList.innerHTML = '<p style="padding: 1rem; color: var(--color-secondary-text);">Nenhuma conversa encontrada.</p>';
                 return;
             }
-            const latestConvoPerJid = { };
+            const latestConvoPerJid = {};
 
             filteredConversations.forEach(convo => {
                 const jid = convo.id;
@@ -2182,6 +2281,47 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
+        // const renderMessages = (convoKey) => {
+        //     // Busca a conversa usando a chave COMPLETA
+        //     const conversation = conversations.find(c => getConvoKey(c) === convoKey);
+        //     if (!conversation) return;
+
+        //     // --- Header e Mensagens ---
+        //     chatHeader.innerHTML = `<h2>${conversation.name}</h2>`;
+        //     chatMessages.innerHTML = '';
+
+        //     conversation.messages.forEach(msg => {
+        //         const messageDiv = document.createElement('div');
+        //         const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
+        //         messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
+
+        //         const messageText = document.createElement('span');
+        //         messageText.innerHTML = msg.message;
+
+        //         const messageTime = document.createElement('span');
+        //         messageTime.className = 'message-time';
+
+        //         const date = new Date(msg.date_time.replace(' ', 'T'));
+        //         messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        //         messageDiv.appendChild(messageText);
+        //         messageDiv.appendChild(messageTime);
+
+        //         if (msg.status === 'error') {
+        //             messageDiv.classList.add('message-error');
+        //             messageDiv.innerHTML += `<span class="message-error-icon" title="Erro ao enviar. Clique para tentar novamente.">❗</span>`;
+        //         }
+
+        //         chatMessages.appendChild(messageDiv);
+        //     });
+
+        //     chatMessages.scrollTop = chatMessages.scrollHeight;
+        //     messageInput.disabled = false;
+        //     messageSendButton.disabled = false;
+        //     fileUploadButton.disabled = false;
+        //     messageInput.focus();
+        // };
+
         const renderMessages = (convoKey) => {
             // Busca a conversa usando a chave COMPLETA
             const conversation = conversations.find(c => getConvoKey(c) === convoKey);
@@ -2191,21 +2331,90 @@ document.addEventListener('DOMContentLoaded', () => {
             chatHeader.innerHTML = `<h2>${conversation.name}</h2>`;
             chatMessages.innerHTML = '';
 
+            // Regex para verificar se a string é uma URL (apenas http ou https)
+            const urlRegex = /^(https?:\/\/[^\s]+)$/im;
+
+            // Extensões de Mídia
+            const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+            const documentExtensions = /\.(pdf|doc|docx|xls|xlsx|txt|csv)$/i;
+            const videoExtensions = /\.(mp4|mov|avi|wmv)$/i;
+
+
             conversation.messages.forEach(msg => {
                 const messageDiv = document.createElement('div');
                 const isFromMe = msg.from_me === true || msg.from_me === 1 || msg.from_me === '1';
                 messageDiv.className = `message ${isFromMe ? 'sent' : 'received'}`;
 
-                const messageText = document.createElement('span');
-                messageText.innerHTML = msg.message;
+                let contentHTML = '';
+                // Divide a mensagem em URL (linha 1) e Legenda (linha 3+)
+                let messageParts = msg.message.split('\n\n', 2);
 
+                const possibleUrl = messageParts[0].trim();
+                const caption = messageParts.length > 1 ? messageParts[1].trim() : '';
+
+                let isMedia = false;
+
+                // 1. VERIFICAÇÃO DE MÍDIA (Começa com http e é uma URL válida)
+                if (possibleUrl.startsWith('http') && urlRegex.test(possibleUrl)) {
+                    isMedia = true;
+
+                    // 2. DETECÇÃO DO TIPO DE MÍDIA PELA EXTENSÃO
+                    if (imageExtensions.test(possibleUrl)) {
+                        // É IMAGEM
+                        contentHTML = `
+                    <div class="media-content media-image">
+                        <img src="${possibleUrl}" alt="Imagem enviada" class="whatsapp-image-preview" onclick="window.open('${possibleUrl}', '_blank')">
+                        ${caption ? `<div class="media-caption">${caption}</div>` : ''}
+                    </div>
+                `;
+                    } else if (documentExtensions.test(possibleUrl)) {
+                        // É DOCUMENTO
+                        const fileName = possibleUrl.substring(possibleUrl.lastIndexOf('/') + 1);
+                        contentHTML = `
+                    <div class="media-content media-document" onclick="window.open('${possibleUrl}', '_blank')">
+                        <div class="document-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+                            <span class="file-name">${fileName}</span>
+                        </div>
+                        </div>
+                        ${caption ? `<div class="media-caption">${caption}</div>` : ''}
+                `;
+                    } else if (videoExtensions.test(possibleUrl)) {
+                        // É VÍDEO
+                        contentHTML = `
+                    <div class="media-content media-video">
+                        <video controls class="whatsapp-video-preview" src="${possibleUrl}"></video>
+                        ${caption ? `<div class="media-caption">${caption}</div>` : ''}
+                    </div>
+                `;
+                    } else {
+                        // Outra URL de mídia não reconhecida, trata como texto simples
+                        isMedia = false;
+                    }
+                }
+
+                // 3. RENDERIZAÇÃO FINAL (Mídia ou Texto)
+                if (isMedia) {
+                    // Se for mídia, usa o HTML gerado e marca o balão
+                    messageDiv.innerHTML = contentHTML;
+                    messageDiv.classList.add('media-message');
+
+                } else {
+                    // Se for texto puro, ignora a URL e renderiza o conteúdo da mensagem, 
+                    // trocando \n por <br> para respeitar as quebras de linha
+                    const messageText = document.createElement('span');
+                    messageText.innerHTML = msg.message.replace(/\n/g, '<br>');
+                    messageDiv.appendChild(messageText);
+                }
+
+                // 4. ADIÇÃO DE HORA E STATUS
                 const messageTime = document.createElement('span');
                 messageTime.className = 'message-time';
-
                 const date = new Date(msg.date_time.replace(' ', 'T'));
                 messageTime.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-                messageDiv.appendChild(messageText);
                 messageDiv.appendChild(messageTime);
 
                 if (msg.status === 'error') {
@@ -2216,9 +2425,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatMessages.appendChild(messageDiv);
             });
 
+            // Rola para o final
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Habilita os inputs
             messageInput.disabled = false;
             messageSendButton.disabled = false;
+            fileUploadButton.disabled = false;
             messageInput.focus();
         };
 
@@ -2263,23 +2476,81 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // const sendMessage = async (e) => {
+        //     e.preventDefault();
+        //     const text = messageInput.value.trim();
+        //     if (text === '' || !activeConvoKey) return; // Verifica a chave completa
+
+        //     // Busca a conversa usando a CHAVE COMPLETA
+        //     const conversation = conversations.find(c => getConvoKey(c) === activeConvoKey);
+        //     if (!conversation) return;
+
+        //     const formData = new FormData();
+        //     formData.append('action', 'send_whatsapp_message');
+        //     formData.append('remoteJid', conversation.id);
+        //     formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
+        //     formData.append('message', text);
+
+        //     messageInput.disabled = true;
+        //     messageSendButton.disabled = true;
+        //     messageSendButtonIcon?.classList.add('animate-spin');
+
+        //     try {
+        //         await fetch(ajaxurl, {
+        //             method: 'POST',
+        //             body: formData,
+        //         });
+
+        //         // Após o envio (sucesso ou falha), forçamos o fetch para atualizar a conversa e a lista.
+        //         await fetchConversations();
+        //     } catch (error) {
+        //         console.error('Erro na requisição:', error);
+        //         // No caso de erro total na requisição, apenas reabilita o input e tenta buscar o estado.
+        //         messageInput.disabled = false;
+        //         messageSendButton.disabled = false;
+        //         alert('Erro ao enviar mensagem.');
+        //     } finally {
+        //         messageInput.value = '';
+        //         messageSendButtonIcon?.classList.remove('animate-spin');
+        //         // O estado final de disabled será definido por renderMessages após o fetch.
+        //     }
+        // };
+
+
         const sendMessage = async (e) => {
             e.preventDefault();
-            const text = messageInput.value.trim();
-            if (text === '' || !activeConvoKey) return; // Verifica a chave completa
 
-            // Busca a conversa usando a CHAVE COMPLETA
+            const text = messageInput.value.trim();
+            const file = fileInput.files[0]; // Pega o arquivo
+
+            // Se não há texto NEM arquivo, retorna
+            if (text === '' && !file) return;
+            if (!activeConvoKey) return;
+
             const conversation = conversations.find(c => getConvoKey(c) === activeConvoKey);
             if (!conversation) return;
 
             const formData = new FormData();
-            formData.append('action', 'send_whatsapp_message');
+            formData.append('action', 'send_whatsapp_message'); // Mantenha a action por enquanto
             formData.append('remoteJid', conversation.id);
             formData.append('instanceName', document.querySelector('.chat-container')?.dataset?.instance);
-            formData.append('message', text);
 
+            // Lógica para enviar ARQUIVO OU TEXTO
+            if (file) {
+                formData.append('type', 'file'); // Novo indicador para o PHP
+                formData.append('file', file);
+                if (text !== '') {
+                    formData.append('caption', text); // O texto vira legenda do arquivo
+                }
+            } else {
+                formData.append('type', 'text'); // Novo indicador para o PHP
+                formData.append('message', text);
+            }
+
+            // ... restante da função de envio (desabilitar, fetch, etc.)
             messageInput.disabled = true;
             messageSendButton.disabled = true;
+            fileUploadButton.disabled = true; // Desabilita o botão de arquivo também
             messageSendButtonIcon?.classList.add('animate-spin');
 
             try {
@@ -2288,18 +2559,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: formData,
                 });
 
-                // Após o envio (sucesso ou falha), forçamos o fetch para atualizar a conversa e a lista.
                 await fetchConversations();
             } catch (error) {
                 console.error('Erro na requisição:', error);
-                // No caso de erro total na requisição, apenas reabilita o input e tenta buscar o estado.
                 messageInput.disabled = false;
                 messageSendButton.disabled = false;
+                fileUploadButton.disabled = false;
                 alert('Erro ao enviar mensagem.');
             } finally {
                 messageInput.value = '';
+                // fileInput.value = ''; // LIMPA o input file após o envio!
+                // messageInput.placeholder = 'Digite sua mensagem...'; // Restaura o placeholder
+
+                removeFilePreview();
+
                 messageSendButtonIcon?.classList.remove('animate-spin');
-                // O estado final de disabled será definido por renderMessages após o fetch.
             }
         };
 
