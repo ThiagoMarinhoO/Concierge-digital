@@ -207,56 +207,39 @@ function delete_assistant()
     ]);
 }
 
+require_once plugin_dir_path(__FILE__) . 'PromptBuilder.php';
+
 function generate_instructions($chatbot_options, $chatbot_name)
 {
-    // plugin_log('-------- entrou no generate_instructions --------');
-    // plugin_log(print_r($chatbot_options, true));
-
     global $wpdb;
 
-    $behavior_instructions = [];
-    $knowledge_base = [];
-    $chatbot_image = null;
+    $builder = new PromptBuilder($chatbot_name);
 
+    // 1. Regras Gerais (Perguntas Fixas)
     $question = new Question();
     $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
     foreach ($chatbotFixedQuestions as $fixedQuestion) {
-        $behavior_instructions[] = $fixedQuestion['response'];
+        $builder->addInstruction($fixedQuestion['response']);
     }
 
+    // 2. Imagem do Chatbot
+    $chatbot_image = null;
     if (isset($_FILES['chatbot_image']) && $_FILES['chatbot_image']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['chatbot_image'];
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $max_size = 5 * 1024 * 1024;
 
-        if (!in_array($file['type'], $allowed_types)) {
-            wp_send_json_error(['message' => 'Tipo de arquivo não permitido: ' . $file['type']]);
-            exit;
-        }
-        if ($file['size'] > $max_size) {
-            wp_send_json_error(['message' => 'Arquivo excede o tamanho máximo permitido.']);
-            exit;
-        }
-
-        $upload_dir = wp_upload_dir();
-        $target_path = $upload_dir['path'] . '/' . basename($file['name']);
-        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-            $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
-        } else {
-            wp_send_json_error(['message' => 'Falha ao salvar o arquivo.']);
-            exit;
+        if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+            $upload_dir = wp_upload_dir();
+            $target_path = $upload_dir['path'] . '/' . basename($file['name']);
+            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                $chatbot_image = $upload_dir['url'] . '/' . basename($file['name']);
+            }
         }
     }
 
+    // 3. Processar Opções do Chatbot
     foreach ($chatbot_options as $categoria => $perguntas) {
-        // Normaliza o nome da categoria para comparação
-        $categoria_normalizada = mb_strtolower(trim($categoria));
-        if (in_array($categoria_normalizada, ['configuracao', 'comportamento'])) {
-            $destino = &$behavior_instructions;
-        } else {
-            $destino = &$knowledge_base;
-        }
-
         foreach ($perguntas as $option) {
             $training_phrase = $option['training_phrase'] ?? '';
             $resposta = $option['resposta'] ?? '';
@@ -265,146 +248,78 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 continue;
             }
 
+            // Personalidade
             if ($option['pergunta'] === 'Qual o estilo da comunicação?') {
-                $destino[] = $training_phrase . ' ' . PersonalitiesHelper::getPersonality($resposta);
+                $builder->setPersonality(PersonalitiesHelper::getPersonality($resposta));
                 continue;
             }
 
-            /**
-             * Tratamento especial para injeção dinâmica
-             */
+            // Tratamento especial para injeção dinâmica (Legacy preserved)
             if ($option['pergunta'] === 'Documentos anexos') {
-                $destino[] = $training_phrase . ' ' . $resposta[0];
+                $info = is_array($resposta) ? $resposta[0] : $resposta;
+                $builder->addInstruction($training_phrase . ' ' . $info);
                 continue;
             }
 
+            // Documentos Anexos (Vector Store)
             if (($option['field_type'] ?? '') == 'file') {
                 $respostas = is_array($resposta) ? $resposta : [$resposta];
                 foreach ($respostas as $respostaItem) {
                     $file_path = str_replace(wp_upload_dir()['baseurl'], wp_upload_dir()['basedir'], $respostaItem);
                     if (file_exists($file_path)) {
                         $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-                        if ($file_extension == 'pdf') {
-                            $vector_store_label = "Vector Store para {$chatbot_name}";
+                        $file_content = '';
 
-                            $vector_store = $wpdb->get_row(
-                                $wpdb->prepare(
-                                    'SELECT * FROM wp_vector_stores WHERE name = %s',
-                                    $vector_store_label
-                                )
-                            );
+                        $vector_store_label = "Vector Store para {$chatbot_name}";
+                        $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM wp_vector_stores WHERE name = %s', $vector_store_label));
 
-                            // error_log("Encontrei vector store: " . print_r($vector_store, true));
-
-                            if (empty($vector_store)) {
+                        if (empty($vector_store)) {
+                            if ($file_extension == 'pdf') {
                                 $parser = new Parser();
                                 $pdf = $parser->parseFile($file_path);
                                 $file_content = $pdf->getText();
-                            }
-                        } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
-                            $file_content = transcribe_audio_with_whisper($file_path);
-                        } else {
-                            $vector_store_label = "Vector Store para {$chatbot_name}";
-
-                            $vector_store = $wpdb->get_row(
-                                $wpdb->prepare(
-                                    'SELECT * FROM wp_vector_stores WHERE name = %s',
-                                    $vector_store_label
-                                )
-                            );
-
-                            if (empty($vector_store)) {
+                            } elseif (in_array($file_extension, ['mp3', 'wav', 'm4a', 'ogg'])) {
+                                $file_content = transcribe_audio_with_whisper($file_path);
+                            } else {
                                 $file_content = file_get_contents($file_path);
                             }
                         }
+
                         if (!empty($file_content)) {
                             $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8');
-                            $file_content = mb_convert_encoding($file_content, 'UTF-8', 'UTF-8'); // garante encoding
-                            $file_content = preg_replace('/[\x00-\x1F\x7F]/u', '', $file_content); // remove apenas caracteres de controle (invisíveis)
-                            $sanitized_file_content = substr($file_content, 0);
-                            $destino[] = $training_phrase . ' ' . $sanitized_file_content;
+                            $file_content = preg_replace('/[\x00-\x1F\x7F]/u', '', $file_content);
+                            $builder->addKnowledge("Conteúdo do arquivo {$respostaItem}: " . $file_content);
                         }
                     }
                 }
-            } elseif (($option['pergunta'] ?? '') == "Adicione Links de conhecimento:") {
-                // plugin_log('-------- entrou no elseif do generate_instructions --------');
+            } 
+            // Crawler (Links de Conhecimento)
+            elseif (($option['pergunta'] ?? '') == "Adicione Links de conhecimento:") {
                 $url = $resposta;
-                $depth = 2;
                 if (!empty($url)) {
-                    $text = crawl_page($url, $depth);
-                    $destino[] = $training_phrase . ' ' . $text;
+                    // USA O CRAWLER RECURSIVO + LIMPEZA AVANÇADA
+                    // Agora o crawl_page já retorna o texto limpo e de múltiplas páginas (profundidade 2)
+                    $text = crawl_page($url, 2);
+                    
+                    if (!empty($text)) {
+                        $builder->addKnowledge("Conteúdo extraído do site (e sub-links):\n" . $text);
+                    }
                 }
-            } else {
+            } 
+            // Outras perguntas
+            else {
                 if (stripos($training_phrase, 'seu nome é') !== false) {
                     continue;
                 }
-
-                $destino[] = $training_phrase . ' ' . $resposta;
+                $builder->addInstruction($training_phrase . ' ' . $resposta);
             }
         }
     }
-    // Junta instruções de comportamento e base de conhecimento
-    $training_context = implode("\n", array_merge($behavior_instructions, $knowledge_base));
-
-    /**
-     * DEPRECATED
-     */
-    // $formatted_output = "Seu nome é {$chatbot_name}.\n\n";
-
-    // // $formatted_output .= "Instruções de comportamento:\n";
-    // $formatted_output .= "<regras_de_comportamento>\n";
-    // foreach ($behavior_instructions as $instruction) {
-    //     $instruction = trim($instruction);
-    //     if ($instruction !== '') {
-    //         $formatted_output .= "- {$instruction}\n";
-    //     }
-    // }
-    // $formatted_output .= "</regras_de_comportamento>\n";
-
-    // // $formatted_output .= "\nBase de conhecimento:\n";
-    // $formatted_output .= "<base_de_conhecimento>\n";
-    // foreach ($knowledge_base as $knowledge) {
-    //     $knowledge = trim($knowledge);
-    //     if ($knowledge !== '') {
-    //         $formatted_output .= "- {$knowledge}\n";
-    //     }
-    // }
-    // $formatted_output .= "</base_de_conhecimento>\n";
-
-
-    // plugin_log('-------- OUTPUT FORMATADO FINAL --------');
-    // plugin_log($formatted_output);
-    /**
-     * DEPRECATED
-     */
-
-    // $formatted_output = "Seu nome é {$chatbot_name}.\n\n";
-    $formatted_output = " <identidade>Seu nome é {$chatbot_name}.</identidade>\n\n";
-
-    $formatted_output .= "<comportamento>\n";
-    foreach ($behavior_instructions as $instruction) {
-        $instruction = trim($instruction);
-        if ($instruction !== '') {
-            $formatted_output .= "- {$instruction}\n";
-        }
-    }
-    $formatted_output .= "</comportamento>\n";
-
-    // $formatted_output .= "\nBase de conhecimento:\n";
-    $formatted_output .= "\n<base_de_conhecimento>\n";
-    foreach ($knowledge_base as $knowledge) {
-        $knowledge = trim($knowledge);
-        if ($knowledge !== '') {
-            $formatted_output .= "- {$knowledge}\n";
-        }
-    }
-    $formatted_output .= "</base_de_conhecimento>\n";
 
     return ([
         "assistant_name" => $chatbot_name,
-        "assistant_instructions" => $formatted_output,
+        "assistant_instructions" => $builder->build(),
         "assistant_image" => $chatbot_image,
-        // "files_id" => $files_id
     ]);
 }
 
@@ -1469,46 +1384,94 @@ function transcribe_audio_with_whisper($file_path)
 }
 
 
-function crawl_page($url, $depth = 5)
+function crawl_page($url, $depth = 2)
 {
     static $seen = array();
-    if (isset($seen[$url]) || $depth === 0) {
-        return;
+    
+    // Evita loop infinito e respeita profundidade
+    if ($depth === 0 || isset($seen[$url])) {
+        return "";
     }
 
     $seen[$url] = true;
 
+    // 1. Obter conteúdo da página
+    $html = @file_get_contents($url);
+    if (empty($html)) {
+        return "";
+    }
+
     $dom = new DOMDocument('1.0', 'UTF-8');
-    @$dom->loadHTMLFile($url);
-
-    // Extrair texto puro
+    libxml_use_internal_errors(true);
+    @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+    libxml_clear_errors();
+    
+    // 2. Extrair Texto Limpo (Usando a lógica do PromptBuilder)
+    // Precisamos instanciar o builder ou usar uma função estática?
+    // Como PromptBuilder está disponível, vamos usar uma versão simplificada da limpeza aqui
+    // ou apenas extrair o texto principal.
+    
     $text = extract_text($dom);
+    $final_content = "URL: {$url}\nCONTENT: {$text}\n\n";
 
-    // echo "URL:", $url, PHP_EOL, "CONTENT:", PHP_EOL, $text, PHP_EOL, PHP_EOL;
-    return $text;
+    // 3. Recursão (Se depth > 0)
+    if ($depth > 1) {
+        $xpath = new DOMXPath($dom);
+        $links = $xpath->query('//a/@href');
+        
+        $base_url_parts = parse_url($url);
+        $base_host = $base_url_parts['host'] ?? '';
+        $scheme = $base_url_parts['scheme'] ?? 'http';
+
+        foreach ($links as $link) {
+            $href = $link->nodeValue;
+            
+            // Normalização de URL básica
+            if (strpos($href, 'http') === 0) {
+                // URL absoluta
+                $href_parts = parse_url($href);
+                if (($href_parts['host'] ?? '') !== $base_host) continue; // Só links internos
+            } else {
+                // URL relativa
+                $href = $scheme . '://' . $base_host . '/' . ltrim($href, '/');
+            }
+
+            // Ignorar âncoras e arquivos não-html
+            if (strpos($href, '#') !== false) continue;
+            if (preg_match('/\.(jpg|jpeg|png|gif|pdf|zip)$/i', $href)) continue;
+
+            $final_content .= crawl_page($href, $depth - 1);
+        }
+    }
+
+    return $final_content;
 }
 
 function extract_text($dom)
 {
     $xpath = new DOMXPath($dom);
     
-    $scripts = $xpath->query('//script');
+    // Remover scripts e estilos
+    $scripts = $xpath->query('//script | //style | //noscript | //header | //footer | //nav');
     foreach ($scripts as $script) {
         $script->parentNode->removeChild($script);
     }
 
-    $nodes = $xpath->query('//body//text()');
-
-    $textContent = [];
-    foreach ($nodes as $node) {
-        $trimmedText = trim($node->nodeValue);
-        
-        if (!empty($trimmedText) && !preg_match('/^(@|document|[^a-zA-Z0-9])/', $trimmedText)) {
-            $textContent[] = $trimmedText;
-        }
+    // Tentar pegar apenas o conteúdo principal
+    $main = $xpath->query('//main | //article | //div[@id="content"] | //div[@class="content"]');
+    if ($main->length > 0) {
+        $content_node = $main->item(0);
+    } else {
+        $content_node = $dom->getElementsByTagName('body')->item(0);
     }
 
-    return implode("\n", $textContent);
+    if (!$content_node) return '';
+
+    // Extrair texto
+    $textContent = trim($content_node->textContent);
+    
+    // Limpar espaços múltiplos
+    return preg_replace('/\s+/', ' ', $textContent);
 }
 
 // function extract_text($dom)
