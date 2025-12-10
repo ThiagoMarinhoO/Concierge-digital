@@ -72,6 +72,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/ActiveCampaignService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/messageRepository.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/OrganizationRepository.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/UserRepository.php';
+require_once CONCIERGE_DIGITAL_PATH . 'repository/HumanSessionRepository.php';
 
 //Helpers
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/assistantHelpers.php';
@@ -81,6 +82,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'helpers/update-plugin.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/remove-accent.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/checkSubscription.php';
 require_once CONCIERGE_DIGITAL_PATH . 'helpers/sendEmail.php';
+require_once CONCIERGE_DIGITAL_PATH . 'helpers/personalitiesHelper.php';
 
 // Views
 require_once CONCIERGE_DIGITAL_PATH . 'views/admin/chat.php';
@@ -269,7 +271,7 @@ function render_question_manager_page()
         }
 
         // Adiciona a categoria usando o gerenciador existente
-        $categoryManager->addCategory($categoryTitle, $categoryPosition, $display_frontend, $video_url);
+        $categoryManager->addCategory($categoryTitle, $categoryPosition, $display_frontend, $video_url, null);
 
         echo "<div class='updated'><p>Categoria adicionada com sucesso!</p></div>";
     }

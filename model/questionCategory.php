@@ -29,7 +29,7 @@ class QuestionCategory
         dbDelta($sql);
     }
 
-    public function addCategory(string $title, int $position = 0, int $display_frontend = 1 , string $video_url = null, bool $has_tab = null): void
+    public function addCategory(string $title, int $position = 0, int $display_frontend = 1 , string|null $video_url = null, bool|null $has_tab = null): void
     {
         $this->wpdb->insert(
             $this->table,
@@ -37,7 +37,7 @@ class QuestionCategory
                 'title' => $title,
                 'position' => $position,
                 'display_frontend' => $display_frontend,
-                'has_tab' => $has_tab,
+                'has_tabs' => $has_tab,
                 'video_url' => $video_url
             ],
             ['%s', '%d', '%d', '%d' , '%s']

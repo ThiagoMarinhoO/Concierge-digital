@@ -94,25 +94,78 @@ class WhatsappMessageController
 
         $remoteJid = isset($_POST['remoteJid']) ? sanitize_text_field($_POST['remoteJid']) : null;
         $instanceName = isset($_POST['instanceName']) ? sanitize_text_field($_POST['instanceName']) : null;
-        $message = isset($_POST['message']) ? sanitize_text_field($_POST['message']) : null;
+        $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'text'; // 'text' ou 'file'
+        // error_log('Tipo de envio: ' . $type);
 
         if (!$instanceName) {
             wp_send_json_error(['mensagem' => 'Instância não encontrada'], 404);
         }
 
-        if (empty($message) || empty($remoteJid)) {
+        if (empty($remoteJid)) {
             wp_send_json_error(['mensagem' => 'Dados inválidos'], 400);
         }
 
-        $sentMessage = EvolutionApiService::sendPlainTextV2($instanceName, $remoteJid, $message);
+        $sentMessage = null;
+        $messageContent = '';
 
+        if ($type === 'file' && isset($_FILES['file'])) {
+            // Envio de Arquivo
+            $file = $_FILES['file'];
+            $caption = isset($_POST['caption']) ? sanitize_text_field($_POST['caption']) : '';
+
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+            $upload_overrides = ['test_form' => false];
+            $moved_file = wp_handle_upload($file, $upload_overrides);
+
+            if ($moved_file && empty($moved_file['error'])) {
+                $fileUrl = $moved_file['url'];
+
+                $tempWhatsappMessage = new WhatsappMessage();
+                $tempWhatsappMessage->setInstanceName($instanceName);
+                $tempWhatsappMessage->setRemoteJid($remoteJid);
+
+                $sentMessage = EvolutionApiService::sendMedia($tempWhatsappMessage, $fileUrl, $caption);
+
+                if (!empty($caption)) {
+                    $messageContent = $fileUrl . "\n\n" . $caption;
+                } else {
+                    $messageContent = $fileUrl;
+                }
+
+                $mediaType = pathinfo($moved_file['file'], PATHINFO_EXTENSION); // Para salvar o tipo
+
+            } else {
+                // Se houver erro no upload do WP (tamanho, tipo, permissão)
+                wp_send_json_error(['mensagem' => 'Erro no upload: ' . $moved_file['error']], 500);
+            }
+
+        } elseif ($type === 'text') {
+            // Envio de Texto
+            $message = isset($_POST['message']) ? sanitize_text_field($_POST['message']) : null;
+
+            if (empty($message)) {
+                wp_send_json_error(['mensagem' => 'Mensagem de texto vazia'], 400);
+            }
+
+            $sentMessage = EvolutionApiService::sendPlainTextV2($instanceName, $remoteJid, $message);
+            $messageContent = $message;
+        } else {
+            wp_send_json_error(['mensagem' => 'Tipo de envio inválido ou arquivo faltando'], 400);
+        }
+
+
+        // --- Tratamento e Salvamento da Mensagem ---
         if ($sentMessage) {
             $newWhatsappMessage = new WhatsappMessage();
             $newWhatsappMessage->setFromMe($sentMessage['key']['fromMe']);
 
             $newWhatsappMessage->setMessageId($sentMessage['key']['id']);
             $newWhatsappMessage->setRemoteJid($sentMessage['key']['remoteJid']);
-            $newWhatsappMessage->setMessage($sentMessage['message']['conversation']);
+            // Use a mensagem capturada, pois 'message' pode ser diferente para arquivos
+            $newWhatsappMessage->setMessage($messageContent);
             $newWhatsappMessage->setDateTime((new DateTime())->setTimestamp($sentMessage['messageTimestamp']));
 
             $thread_id = WhatsappMessageService::resolveThreadId($sentMessage);
@@ -124,6 +177,7 @@ class WhatsappMessageController
 
             wp_send_json_success(['mensagem' => 'Mensagem enviada com sucesso']);
         } else {
+            // Log de erro mais detalhado aqui, se possível
             wp_send_json_error(['mensagem' => 'Erro ao enviar mensagem'], 500);
         }
     }
@@ -225,51 +279,51 @@ class WhatsappMessageController
     }
 
     private static function checkActiveSession(array $conversations, string $instanceName): array
-{
-    global $wpdb;
-    
-    $rawKeys = array_keys($conversations);
-    $remoteJids = [];
-    foreach ($rawKeys as $key) {
-        $parts = explode('-', $key, 2); 
-        $remoteJids[] = $parts[0];
-    }
-    $remoteJids = array_unique($remoteJids);
+    {
+        global $wpdb;
 
-    if (empty($remoteJids)) {
-        return $conversations;
-    }
+        $rawKeys = array_keys($conversations);
+        $remoteJids = [];
+        foreach ($rawKeys as $key) {
+            $parts = explode('-', $key, 2);
+            $remoteJids[] = $parts[0];
+        }
+        $remoteJids = array_unique($remoteJids);
 
-    // Prepara os valores para o IN (...) de forma segura
-    $placeholders = implode(',', array_fill(0, count($remoteJids), '%s'));
-    $table = 'human_sessions'; // Assumindo que a variável $table está correta ou que é uma constante
+        if (empty($remoteJids)) {
+            return $conversations;
+        }
 
-    $query = $wpdb->prepare(
-        "
+        // Prepara os valores para o IN (...) de forma segura
+        $placeholders = implode(',', array_fill(0, count($remoteJids), '%s'));
+        $table = 'human_sessions'; // Assumindo que a variável $table está correta ou que é uma constante
+
+        $query = $wpdb->prepare(
+            "
         SELECT remote_jid
         FROM $table
         WHERE instance_name = %s
           AND ended_at IS NULL
           AND remote_jid IN ($placeholders)
         ",
-        array_merge([$instanceName], $remoteJids)
-    );
+            array_merge([$instanceName], $remoteJids)
+        );
 
-    // Executa a query
-    $activeJids = $wpdb->get_col($query);
+        // Executa a query
+        $activeJids = $wpdb->get_col($query);
 
-    error_log('Active JIDs (Sessões Ativas): ');
-    error_log(print_r($activeJids, true));
+        // error_log('Active JIDs (Sessões Ativas): ');
+        // error_log(print_r($activeJids, true));
 
-    foreach ($conversations as $fullKey => &$conv) {
-        $jidParts = explode('-', $fullKey, 2);
-        $remoteJid = $jidParts[0];
+        foreach ($conversations as $fullKey => &$conv) {
+            $jidParts = explode('-', $fullKey, 2);
+            $remoteJid = $jidParts[0];
 
-        $conv['paused'] = (bool) in_array($remoteJid, $activeJids, true);
+            $conv['paused'] = (bool) in_array($remoteJid, $activeJids, true);
+        }
+
+        return $conversations;
     }
-
-    return $conversations;
-}
 }
 
 add_action('wp_ajax_list_conversations', ['WhatsappMessageController', 'listConversations']);
