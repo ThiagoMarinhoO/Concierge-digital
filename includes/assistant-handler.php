@@ -219,7 +219,10 @@ function generate_instructions($chatbot_options, $chatbot_name)
     $question = new Question();
     $chatbotFixedQuestions = $question->getQuestionsByCategory('Regras Gerais');
     foreach ($chatbotFixedQuestions as $fixedQuestion) {
-        $builder->addInstruction($fixedQuestion['response']);
+        // Sanitização: Remove tags antigas (como <identidade>) que possam ter ficado no banco
+        // Assim garantimos que apenas o texto puro entre no PromptBuilder
+        $cleanResponse = strip_tags($fixedQuestion['response']);
+        $builder->addInstruction($cleanResponse);
     }
 
     // 2. Imagem do Chatbot
@@ -257,6 +260,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
             // Tratamento especial para injeção dinâmica (Legacy preserved)
             if ($option['pergunta'] === 'Documentos anexos') {
                 $info = is_array($resposta) ? $resposta[0] : $resposta;
+                $info = strip_tags($info); // Vacina: Sanitiza o input
                 $builder->addInstruction($training_phrase . ' ' . $info);
                 continue;
             }
@@ -293,16 +297,70 @@ function generate_instructions($chatbot_options, $chatbot_name)
                     }
                 }
             } 
-            // Crawler (Links de Conhecimento)
+            // Crawler (Links de Conhecimento) - COM ROTEAMENTO INTELIGENTE
             elseif (($option['pergunta'] ?? '') == "Adicione Links de conhecimento:") {
                 $url = $resposta;
                 if (!empty($url)) {
-                    // USA O CRAWLER RECURSIVO + LIMPEZA AVANÇADA
-                    // Agora o crawl_page já retorna o texto limpo e de múltiplas páginas (profundidade 2)
-                    $text = crawl_page($url, 2);
+                    // 🧠 DETECÇÃO DE INTENÇÃO
+                    $intention = $builder->detectIntent($training_phrase);
                     
-                    if (!empty($text)) {
-                        $builder->addKnowledge("Conteúdo extraído do site (e sub-links):\n" . $text);
+                    if ($intention === 'STUDY') {
+                        // 📚 MODO ESTUDO: Gerar arquivo .txt e enviar para Vector Store
+                        error_log("🔍 INTENTION:STUDY detected for URL: $url");
+                        
+                        $file_path = generate_site_content_file($url, $chatbot_name);
+                        
+                        if ($file_path && file_exists($file_path)) {
+                            // Obter ou criar Vector Store
+                            $vector_store_label = "Vector Store para {$chatbot_name}";
+                            $table_stores = $wpdb->prefix . 'vector_stores';
+                            $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table_stores . ' WHERE name = %s', $vector_store_label));
+                            
+                            $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
+                            
+                            if ($vector_store_id) {
+                                // Upload para OpenAI
+                                $fileResponse = StorageController::uploadFile($file_path);
+                                
+                                if ($fileResponse && !empty($fileResponse['id'])) {
+                                    $file_id = $fileResponse['id'];
+                                    
+                                    // Associar ao Vector Store
+                                    StorageController::createVectorStoreFile($vector_store_id, $file_id);
+                                    
+                                    // Registrar no banco
+                                    $table_files = $wpdb->prefix . 'vector_files';
+                                    $wpdb->insert($table_files, [
+                                        'file_id' => $file_id,
+                                        'vector_store_id' => $vector_store_id,
+                                        'file_url' => $url // URL de referência
+                                    ]);
+                                    
+                                    error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
+                                    
+                                    // NO XML: Apenas referência
+                                    $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
+                                } else {
+                                    error_log("❌ Falha ao fazer upload do arquivo para OpenAI");
+                                }
+                            } else {
+                                error_log("⚠️ Vector Store não encontrado. Fallback para método antigo.");
+                                $text = crawl_page($url, 2);
+                                if (!empty($text)) {
+                                    $builder->addKnowledge("Conteúdo extraído do site:\n" . $text);
+                                }
+                            }
+                            
+                            // Limpar arquivo temporário
+                            @unlink($file_path);
+                        } else {
+                            error_log("❌ Falha ao gerar arquivo de conteúdo do site");
+                        }
+                        
+                    } else {
+                        // 📤 MODO DISPLAY: Adicionar link ao XML (para IA enviar ao cliente)
+                        error_log("🔗 INTENTION:DISPLAY detected for URL: $url");
+                        $builder->addInstruction("{$training_phrase}: {$url}");
                     }
                 }
             } 
@@ -311,7 +369,8 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 if (stripos($training_phrase, 'seu nome é') !== false) {
                     continue;
                 }
-                $builder->addInstruction($training_phrase . ' ' . $resposta);
+                $cleanResposta = strip_tags($resposta); // Vacina: Sanitiza o input genérico
+                $builder->addInstruction($training_phrase . ' ' . $cleanResposta);
             }
         }
     }
@@ -1439,6 +1498,9 @@ function crawl_page($url, $depth = 2)
             // Ignorar âncoras e arquivos não-html
             if (strpos($href, '#') !== false) continue;
             if (preg_match('/\.(jpg|jpeg|png|gif|pdf|zip)$/i', $href)) continue;
+            
+            // 🔒 BLACKLIST: Ignorar URLs de paginação e taxonomia (evita duplicação)
+            if (preg_match('/\/(tag|category|page|author|feed)\//i', $href)) continue;
 
             $final_content .= crawl_page($href, $depth - 1);
         }
@@ -1559,6 +1621,35 @@ function extract_text($dom)
 //     return trim(implode("\n", $markdownContent));
 // }
 
+
+/**
+ * Gera um arquivo .txt temporário com o conteúdo do site (para Vector Store)
+ * @param string $url URL do site para fazer scraping
+ * @param string $assistant_name Nome do assistente (para identificação do arquivo)
+ * @return string|false Caminho do arquivo gerado ou false em caso de erro
+ */
+function generate_site_content_file($url, $assistant_name) {
+    $text = crawl_page($url, 2);
+    
+    if (empty($text)) {
+        error_log("generate_site_content_file: Nenhum conteúdo extraído de $url");
+        return false;
+    }
+    
+    $safe_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $assistant_name);
+    $filename = "site_content_{$safe_name}_" . time() . ".txt";
+    $filepath = sys_get_temp_dir() . "/" . $filename;
+    
+    $result = file_put_contents($filepath, $text);
+    
+    if ($result === false) {
+        error_log("generate_site_content_file: Erro ao escrever arquivo $filepath");
+        return false;
+    }
+    
+    error_log("generate_site_content_file: Arquivo gerado com sucesso: $filepath");
+    return $filepath;
+}
 
 add_action('wp_ajax_get_assistant_by_id', 'get_assistant_by_id');
 function get_assistant_by_id()
