@@ -598,10 +598,8 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     $data = [
         "assistant_id" => $assistant_id,
         "stream" => true,
-        "instructions" => $runInstruction,
-        "tool_choice" => [
-            "type" => "file_search"
-        ]
+        "instructions" => $runInstruction
+        // Removed forced tool_choice - AI will automatically use file_search from Vector Store when needed
     ];
 
     $headers = [
