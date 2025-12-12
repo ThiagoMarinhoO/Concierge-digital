@@ -75,6 +75,32 @@ class PromptBuilder
         return false;
     }
 
+    /**
+     * Detecta a intenção do training_phrase para routing inteligente
+     * @param string $training_phrase Frase de treinamento do painel
+     * @return string 'STUDY' (enviar para Vector Store) ou 'DISPLAY' (mostrar link no XML)
+     */
+    public function detectIntent($training_phrase) {
+        $lower_phrase = mb_strtolower($training_phrase, 'UTF-8');
+        
+        // Palavras-chave que indicam conteúdo para ESTUDO (RAG)
+        $study_keywords = ['estude', 'aprenda', 'base de conhecimento', 'interprete', 'consulte o site', 'leia'];
+        
+        // Palavras-chave que indicam conteúdo para EXIBIÇÃO (Link)
+        $display_keywords = ['envie', 'mostre', 'quando pedir', 'compartilhe', 'disponibilize'];
+        
+        if ($this->containsAny($lower_phrase, $study_keywords)) {
+            return 'STUDY';
+        }
+        
+        if ($this->containsAny($lower_phrase, $display_keywords)) {
+            return 'DISPLAY';
+        }
+        
+        // Default: Se não detectar nenhuma intenção clara, assume STUDY (mais conservador)
+        return 'STUDY';
+    }
+
     public function addKnowledge($content)
     {
         if (!empty(trim($content))) {
