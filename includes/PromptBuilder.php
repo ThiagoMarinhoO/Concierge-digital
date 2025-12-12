@@ -3,13 +3,28 @@
 class PromptBuilder
 {
     private $chatbot_name;
-    private $instructions = [];
-    private $knowledge_base = [];
+    private $company_name = '';
+    private $main_function = 'Atendimento ao Cliente';
     private $personality_text = '';
+    
+    // Categorized Storage
+    private $instructions = []; // General Rules
+    private $negative_constraints = [];
+    private $business_hours = [];
+    private $service_links = [];
+    private $knowledge_base = [];
 
     public function __construct($chatbot_name)
     {
         $this->chatbot_name = $chatbot_name;
+    }
+
+    public function setCompanyName($name) {
+        $this->company_name = $name;
+    }
+
+    public function setMainFunction($function) {
+        $this->main_function = $function;
     }
 
     public function setPersonality($personality_text)
@@ -19,9 +34,45 @@ class PromptBuilder
 
     public function addInstruction($instruction)
     {
-        if (!empty(trim($instruction))) {
-            $this->instructions[] = trim($instruction);
+        // 1. Sanitization
+        $clean_instruction = trim(stripslashes(strip_tags($instruction)));
+        
+        if (empty($clean_instruction)) {
+            return;
         }
+
+        // 2. Semantic Routing (Logic Switch)
+        $lower_input = mb_strtolower($clean_instruction, 'UTF-8');
+
+        // Case A: Negative Constraints
+        if ($this->containsAny($lower_input, ['proibido', 'nunca', 'evite', 'não pode', 'jamais'])) {
+            $this->negative_constraints[] = $clean_instruction;
+            return;
+        }
+
+        // Case B: Business Hours / Operations
+        if ($this->containsAny($lower_input, ['horário', 'aberto', 'funcionamento', 'atendimento', 'expediente', 'fecha', 'abre'])) {
+            $this->business_hours[] = $clean_instruction;
+            return;
+        }
+
+        // Case C: Links / Services (Simple Heuristic: contains http or www)
+        if ($this->containsAny($lower_input, ['http', 'www.', '.com', 'link', 'acesse'])) {
+            $this->service_links[] = $clean_instruction;
+            return;
+        }
+
+        // Case D: General Rules (Default)
+        $this->instructions[] = $clean_instruction;
+    }
+
+    private function containsAny($haystack, array $needles) {
+        foreach ($needles as $needle) {
+            if (mb_strpos($haystack, $needle, 0, 'UTF-8') !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function addKnowledge($content)
@@ -74,56 +125,87 @@ class PromptBuilder
         return $text;
     }
 
-    private $company_name = '';
-    private $main_function = 'Atendimento ao Cliente';
-
-    public function setCompanyName($name) {
-        $this->company_name = $name;
-    }
-
-    public function setMainFunction($function) {
-        $this->main_function = $function;
-    }
-
     public function build()
     {
         // Fallback se o nome da empresa não for definido
         $company = !empty($this->company_name) ? $this->company_name : $this->chatbot_name;
 
-        $xml = "<system_identity>\n";
-        $xml .= "  Você é o assistente virtual da {$company}.\n";
-        $xml .= "  Seu nome é {$this->chatbot_name}.\n";
-        $xml .= "  Sua função principal é: {$this->main_function}.\n";
-        $xml .= "</system_identity>\n\n";
+        $xml = "<system_instructions>\n";
+        
+        // 1. SYSTEM IDENTITY
+        $xml .= "    <system_identity>\n";
+        $xml .= "        ### PERFIL DO ASSISTENTE\n";
+        $xml .= "        - Nome: {$this->chatbot_name}\n";
+        $xml .= "        - Função: {$this->main_function}\n";
+        $xml .= "        - Empresa: {$company}\n";
+        $xml .= "    </system_identity>\n\n";
 
-        $xml .= "<behavior_profile>\n";
-        if (!empty($this->personality_text)) {
-            $xml .= "  ### PERSONALIDADE ATIVA\n";
-            $xml .= "  {$this->personality_text}\n";
-        }
-        $xml .= "</behavior_profile>\n\n";
-
-        $xml .= "<interaction_rules>\n";
-        // As regras agora vêm 100% do painel (Regras Gerais + Opções)
+        // 2. INTERACTION RULES
+        $xml .= "    <interaction_rules>\n";
+        $xml .= "        ### PROTOCOLOS DO SISTEMA (Fixo)\n";
+        $xml .= "        1. O documento vence o conhecimento geral.\n";
+        $xml .= "        2. Zero Alucinação.\n\n";
+        
+        $xml .= "        ### REGRAS DE NEGÓCIO (Do Painel)\n";
         if (!empty($this->instructions)) {
-             foreach ($this->instructions as $rule) {
-                 $xml .= "  - {$rule}\n";
-             }
+            foreach ($this->instructions as $rule) {
+                $xml .= "        - {$rule}" . PHP_EOL;
+            }
+        } else {
+             $xml .= "        - Nenhuma regra específica definida.\n";
         }
-        $xml .= "</interaction_rules>\n\n";
+        $xml .= "    </interaction_rules>\n\n";
 
-        $xml .= "<context_data>\n";
-        $xml .= "  ### INFORMAÇÕES DO SITE (RAG TEXT)\n";
+        // 3. BEHAVIOR PROFILE
+        $xml .= "    <behavior_profile>\n";
+        if (!empty($this->personality_text)) {
+            $xml .= "        ### TOM DE VOZ\n";
+            $xml .= "        {$this->personality_text}\n";
+        }
+        $xml .= "    </behavior_profile>\n\n";
+
+        // 4. NEGATIVE CONSTRAINTS
+        if (!empty($this->negative_constraints)) {
+            $xml .= "    <negative_constraints>\n";
+            $xml .= "        ### O QUE NÃO FAZER\n";
+            foreach ($this->negative_constraints as $constraint) {
+                $xml .= "        - {$constraint}" . PHP_EOL;
+            }
+            $xml .= "    </negative_constraints>\n\n";
+        }
+
+        // 5. CONTEXT DATA
+        $xml .= "    <context_data>\n";
+        
+        // 5.1 Business Hours
+        if (!empty($this->business_hours)) {
+             $xml .= "        ### HORÁRIOS E FUNCIONAMENTO\n";
+             foreach ($this->business_hours as $hours) {
+                 $xml .= "        - {$hours}" . PHP_EOL;
+             }
+             $xml .= "\n";
+        }
+
+        // 5.2 Service Links
+        if (!empty($this->service_links)) {
+             $xml .= "        ### CATÁLOGO DE SERVIÇOS/LINKS\n";
+             foreach ($this->service_links as $link) {
+                 $xml .= "        - {$link}" . PHP_EOL;
+             }
+             $xml .= "\n";
+        }
+        
+        // 5.3 Knowledge Base / Scraped Content
         if (!empty($this->knowledge_base)) {
+            $xml .= "        ### CONTEÚDO DO SITE (Scraping/Base de Conhecimento)\n";
             foreach ($this->knowledge_base as $kb) {
-                $xml .= "  {$kb}\n";
+                $xml .= "        {$kb}" . PHP_EOL . PHP_EOL;
             }
         }
-        $xml .= "</context_data>\n\n";
+        
+        $xml .= "    </context_data>\n\n";
 
-        $xml .= "<response_format>\n";
-        $xml .= "  Responda de forma concisa e direta.\n";
-        $xml .= "</response_format>";
+        $xml .= "</system_instructions>";
 
         return $xml;
     }
