@@ -28,6 +28,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'includes/save-responses.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/assistant-handler.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/log-to-file.php';
 require_once CONCIERGE_DIGITAL_PATH . 'includes/roles.php';
+require_once CONCIERGE_DIGITAL_PATH . 'includes/PromptBuilder.php';
 
 //Database
 require_once CONCIERGE_DIGITAL_PATH . 'database/schema.php';
@@ -72,6 +73,7 @@ require_once CONCIERGE_DIGITAL_PATH . 'service/ActiveCampaignService.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/messageRepository.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/OrganizationRepository.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/UserRepository.php';
+require_once CONCIERGE_DIGITAL_PATH . 'repository/AssistantRepository.php';
 require_once CONCIERGE_DIGITAL_PATH . 'repository/HumanSessionRepository.php';
 
 //Helpers
@@ -121,6 +123,11 @@ function concierge_enqueue_assets()
         'nonce' => wp_create_nonce('concierge_nonce'),
     ]);
 
+    /**
+     * FLOWBITE
+     */
+    wp_enqueue_style('flowbite-style', 'https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css');
+    wp_enqueue_script('flowbite-js', 'https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js', [], '4.0.1', true);
 
     wp_localize_script('concierge-script', 'envVars', [
         'OPENAI_API_KEY' => 'aaa',

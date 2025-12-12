@@ -3,12 +3,14 @@
 $question = new Question();
 $chatbot = new Chatbot();
 $orgRepo = new OrganizationRepository();
+$assistantRepo = new AssistantRepository();
 
 $user_id = get_current_user_id();
 $currentUser = wp_get_current_user();
 $organization_id = 0;
 $resource_user_id = 0;
 $has_active_chatbot = false;
+$assistants =true;
 $assistant = null;
 $categories = [];
 $questionsByCategory = [];
@@ -40,16 +42,13 @@ foreach ($categories as $category) {
 
 if (!empty($resource_user_id)) {
 	$userchatbot_id = $chatbot->getChatbotIdByUser($resource_user_id);
-	$assistant = $chatbot->getChatbotById($userchatbot_id, $resource_user_id);
+	$assistants = $assistantRepo->findAllByUserId($resource_user_id);
+	$assistant = $assistants ? (array) $assistants[0] : null;
+	// $assistant = $chatbot->getChatbotById($userchatbot_id, $resource_user_id);
 	$has_active_chatbot = $chatbot->userHasChatbot($resource_user_id);
 
 	$whatsappInstance = WhatsappInstance::findByUserId($resource_user_id);
 }
-
-// error_log('Current user id: '. print_r($user_id, true));
-// error_log('Resouce user id: '. print_r($resource_user_id, true));
-// error_log('Organization: '. print_r($organization_id, true));
-// error_log('Assistant: '. print_r($assistant, true));
 
 ?>
 
@@ -76,6 +75,45 @@ if (!empty($resource_user_id)) {
 
 
 <div class="assistantContainer" data-assistantID="<?= $assistant['id'] ?>">
+	<div class="mb-8">
+		<button id="dropdownUsersButton" data-dropdown-toggle="dropdownUsers" data-dropdown-placement="bottom" class="inline-flex items-center justify-center text-white bg-blue-600 box-border border border-transparent hover:bg-blue-800 focus:ring-4 focus:ring-blue-600 shadow-xs font-medium leading-5 rounded-md text-sm px-4 py-2.5 focus:outline-none" type="button">
+			Dropdown button
+			<svg class="!w-4 !h-4 !ms-1.5 !-me-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+				<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7" />
+			</svg>
+		</button>
+
+		<!-- Dropdown menu -->
+		<div id="dropdownUsers" class="z-10 hidden bg-white border border-gray-100 rounded-md shadow-lg w-54">
+			<?php if($assistants) :?>
+			<ul class="h-fit !p-2 !m-0 text-sm text-body font-medium overflow-y-auto" aria-labelledby="dropdownUsersButton">
+				<li>
+					<a href="#" class="inline-flex items-center w-full p-2 hover:bg-gray-100 hover:text-heading rounded">
+						<img class="w-5 h-5 me-2 rounded-full" src="http://heygen.test/wp-content/uploads/2025/02/robot-doing-peace-sign-2-scaled.jpg" alt="Jese image">
+						Jese Leos
+					</a>
+				</li>
+				<li>
+					<a href="#" class="inline-flex items-center w-full p-2 hover:bg-gray-100 hover:text-heading rounded">
+						<img class="w-5 h-5 me-2 rounded-full" src="http://heygen.test/wp-content/uploads/2025/02/robot-doing-peace-sign-2-scaled.jpg" alt="Jese image">
+						Robert Gough
+					</a>
+				</li>
+			</ul>
+			<?php else :?>
+				<span class="block p-2 text-sm text-gray-500">Nenhum assistente disponível</span>
+			<?php endif; ?>
+			<div class="bg-white border-t border-gray-100 p-2 rounded-b-rounded-md">
+				<button type="button" class="inline-flex items-center w-full justify-center text-white bg-blue-600 hover:bg-blue-800 box-border border border-transparent focus:ring-4 focus:ring-blue-500 shadow-xs font-medium leading-5 rounded text-xs px-3 py-1.5 focus:outline-none">
+					<svg class="w-3.5 h-3.5 me-1.5 -ms-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12h4m-2 2v-4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+					</svg>
+					Criar novo assistente
+				</button>
+			</div>
+		</div>
+
+	</div>
 	<div id="tabs-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
 		<?php $firstUnlocked = true; ?>
 		<?php $i = 1; ?>
@@ -333,8 +371,6 @@ if (!empty($resource_user_id)) {
 			// $limit = get_user_message_limit($resource_user_id);
 			$limit = 5000;
 			$used = get_user_total_messages_current_cycle($resource_user_id);
-			var_dump($used);
-			// $percent = ($used / $limit) * 100;
 			$percent = ($used / ($limit ?? 1)) * 100;
 
 			if ($has_active_chatbot): ?>

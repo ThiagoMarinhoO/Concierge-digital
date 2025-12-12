@@ -48,4 +48,16 @@ class UserRepository {
 
         return $users ?: null;
     }
+
+    public function findAllByUserId(int $user_id)
+    {
+        $sql = $this->wpdb->prepare(
+            "SELECT * FROM {$this->table_name_full} WHERE user_id = %d",
+            $user_id
+        );
+
+        $users = $this->wpdb->get_results($sql);
+
+        return $users ?: null;
+    }
 }
