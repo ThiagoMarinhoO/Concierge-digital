@@ -8,3 +8,5 @@ vendor/composer/autoload_real.php
 vendor/composer/ClassLoader.php
 vendor/composer/installed.php
 vendor/composer/InstalledVersions.php
+_contexto_tecnico
+log-server/
