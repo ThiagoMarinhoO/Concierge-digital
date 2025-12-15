@@ -311,6 +311,27 @@ function generate_instructions($chatbot_options, $chatbot_name)
                         $file_path = generate_site_content_file($url, $chatbot_name);
                         
                         if ($file_path && file_exists($file_path)) {
+                            // 📁 SALVAR CÓPIA LOCAL PARA AUDITORIA
+                            $upload_dir = wp_upload_dir();
+                            $scraped_folder = $upload_dir['basedir'] . '/scraped_content';
+                            
+                            // Criar pasta se não existir
+                            if (!file_exists($scraped_folder)) {
+                                wp_mkdir_p($scraped_folder);
+                            }
+                            
+                            // Nome do arquivo: chatbot_name + domain + timestamp
+                            $url_domain = parse_url($url, PHP_URL_HOST);
+                            $safe_domain = preg_replace('/[^a-zA-Z0-9_-]/', '_', $url_domain);
+                            $safe_chatbot = preg_replace('/[^a-zA-Z0-9_-]/', '_', $chatbot_name);
+                            $local_filename = "{$safe_chatbot}_{$safe_domain}_" . date('Y-m-d_H-i-s') . ".txt";
+                            $local_path = $scraped_folder . '/' . $local_filename;
+                            
+                            // Copiar arquivo para pasta permanente
+                            if (copy($file_path, $local_path)) {
+                                error_log("📁 Cópia local salva em: {$upload_dir['baseurl']}/scraped_content/{$local_filename}");
+                            }
+                            
                             // Obter ou criar Vector Store
                             $vector_store_label = "Vector Store para {$chatbot_name}";
                             $table_stores = $wpdb->prefix . 'vector_stores';
@@ -351,7 +372,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
                                 }
                             }
                             
-                            // Limpar arquivo temporário
+                            // Limpar arquivo temporário (cópia local já foi salva)
                             @unlink($file_path);
                         } else {
                             error_log("❌ Falha ao gerar arquivo de conteúdo do site");
@@ -1441,9 +1462,63 @@ function transcribe_audio_with_whisper($file_path)
 }
 
 
-function crawl_page($url, $depth = 2)
+/**
+ * Busca conteúdo de uma URL usando cURL com headers apropriados
+ * @param string $url URL para buscar
+ * @param int $timeout Timeout em segundos
+ * @return string|false Conteúdo HTML ou false em caso de erro
+ */
+function fetch_url_content($url, $timeout = 15) {
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; CharlieBot/1.0; +https://projetocharlie.humans.land)',
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_HTTPHEADER => [
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language: pt-BR,pt;q=0.9,en;q=0.8',
+            'Cache-Control: no-cache'
+        ]
+    ]);
+    
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    
+    if ($error) {
+        error_log("fetch_url_content: cURL error - $error - URL: $url");
+        return false;
+    }
+    
+    if ($http_code >= 400) {
+        error_log("fetch_url_content: HTTP $http_code - URL: $url");
+        return false;
+    }
+    
+    return $response;
+}
+
+/**
+ * Faz crawling recursivo de uma página e suas subpáginas
+ * @param string $url URL inicial
+ * @param int $depth Profundidade de recursão
+ * @param bool $reset_cache Se true, limpa o cache de URLs visitadas
+ * @return string Conteúdo extraído
+ */
+function crawl_page($url, $depth = 2, $reset_cache = false)
 {
     static $seen = array();
+    
+    // Reset cache quando iniciar novo crawl (evita problema de persistência)
+    if ($reset_cache) {
+        $seen = array();
+    }
     
     // Evita loop infinito e respeita profundidade
     if ($depth === 0 || isset($seen[$url])) {
@@ -1452,9 +1527,10 @@ function crawl_page($url, $depth = 2)
 
     $seen[$url] = true;
 
-    // 1. Obter conteúdo da página
-    $html = @file_get_contents($url);
-    if (empty($html)) {
+    // 1. Obter conteúdo da página usando cURL
+    $html = fetch_url_content($url);
+    if ($html === false || empty($html)) {
+        error_log("crawl_page: Falha ao acessar URL: $url");
         return "";
     }
 
@@ -1627,7 +1703,8 @@ function extract_text($dom)
  * @return string|false Caminho do arquivo gerado ou false em caso de erro
  */
 function generate_site_content_file($url, $assistant_name) {
-    $text = crawl_page($url, 2);
+    // Reset cache para garantir crawl limpo a cada chamada
+    $text = crawl_page($url, 2, true);
     
     if (empty($text)) {
         error_log("generate_site_content_file: Nenhum conteúdo extraído de $url");
