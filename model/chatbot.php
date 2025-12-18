@@ -44,7 +44,7 @@ class Chatbot
             chatbot_image TEXT,
             user_id BIGINT UNSIGNED NOT NULL,
             organization_id BIGINT UNSIGNED NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

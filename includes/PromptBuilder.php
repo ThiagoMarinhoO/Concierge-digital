@@ -2,35 +2,69 @@
 
 class PromptBuilder
 {
+    // Identity
     private $chatbot_name;
-    private $company_name = '';
     private $main_function = 'Atendimento ao Cliente';
+    private $secondary_function = '';
     private $personality_text = '';
     
+    // Client Configuration
+    private $knowledge_source = 'Plataforma'; // Plataforma, Internet, ou Ambos
+    private $interactivity_level = '';
+    private $response_size = '';
+    
     // Categorized Storage
-    private $instructions = []; // General Rules
+    private $instructions = []; // General Rules (Admin)
     private $negative_constraints = [];
     private $business_hours = [];
     private $service_links = [];
     private $knowledge_base = [];
+    
+    // RAG Documents Tracking
+    private $rag_documents = [];
+    private $scraped_urls = [];
 
     public function __construct($chatbot_name)
     {
         $this->chatbot_name = $chatbot_name;
     }
 
-    public function setCompanyName($name) {
-        $this->company_name = $name;
-    }
+    // === SETTERS ===
 
     public function setMainFunction($function) {
         $this->main_function = $function;
+    }
+
+    public function setSecondaryFunction($function) {
+        $this->secondary_function = $function;
     }
 
     public function setPersonality($personality_text)
     {
         $this->personality_text = $personality_text;
     }
+
+    public function setKnowledgeSource($source) {
+        $this->knowledge_source = $source;
+    }
+
+    public function setInteractivityLevel($level) {
+        $this->interactivity_level = $level;
+    }
+
+    public function setResponseSize($size) {
+        $this->response_size = $size;
+    }
+
+    public function addRagDocument($name, $type = 'file') {
+        $this->rag_documents[] = ['name' => $name, 'type' => $type];
+    }
+
+    public function addScrapedUrl($url) {
+        $this->scraped_urls[] = $url;
+    }
+
+    // === INSTRUCTION ROUTING ===
 
     public function addInstruction($instruction)
     {
@@ -151,38 +185,43 @@ class PromptBuilder
         return $text;
     }
 
+    // === BUILD METHOD ===
+
     public function build()
     {
-        // Fallback se o nome da empresa não for definido
-        $company = !empty($this->company_name) ? $this->company_name : $this->chatbot_name;
-
         $xml = "<system_instructions>\n";
         
-        // 1. SYSTEM IDENTITY
+        // 1. SYSTEM IDENTITY (Quem é o assistente)
         $xml .= "    <system_identity>\n";
         $xml .= "        ### PERFIL DO ASSISTENTE\n";
         $xml .= "        - Nome: {$this->chatbot_name}\n";
-        $xml .= "        - Função: {$this->main_function}\n";
-        $xml .= "        - Empresa: {$company}\n";
+        $xml .= "        - Função Principal: {$this->main_function}\n";
+        if (!empty($this->secondary_function)) {
+            $xml .= "        - Função Secundária: {$this->secondary_function}\n";
+        }
         $xml .= "    </system_identity>\n\n";
 
-        // 2. INTERACTION RULES
-        $xml .= "    <interaction_rules>\n";
-        $xml .= "        ### PROTOCOLOS DO SISTEMA (Fixo)\n";
-        $xml .= "        1. O documento vence o conhecimento geral.\n";
-        $xml .= "        2. Zero Alucinação.\n\n";
+        // 2. SYSTEM PROTOCOLS (Guardrails fixos - Nós controlamos)
+        $xml .= "    <system_protocols>\n";
+        $xml .= "        ### ÂNCORAS DE SEGURANÇA (Imutáveis)\n";
+        $xml .= "        - O documento/RAG vence o conhecimento geral\n";
+        $xml .= "        - Zero Alucinação: se não souber, admita de forma natural usando seu tom de voz\n";
+        $xml .= "        - Mantenha-se no escopo das funções definidas acima\n";
         
-        $xml .= "        ### REGRAS DE NEGÓCIO (Do Painel)\n";
-        if (!empty($this->instructions)) {
-            foreach ($this->instructions as $rule) {
-                $xml .= "        - {$rule}" . PHP_EOL;
-            }
-        } else {
-             $xml .= "        - Nenhuma regra específica definida.\n";
+        // Hierarquia de fonte de conhecimento:
+        // 1. RAG (sempre prioridade máxima)
+        // 2. Conhecimento geral da LLM
+        // 3. Internet (só se configurado)
+        $xml .= "        ### HIERARQUIA DE CONHECIMENTO\n";
+        $xml .= "        - Prioridade 1: Documentos/RAG (sempre vence, NUNCA invente)\n";
+        $xml .= "        - Prioridade 2: Conhecimento geral (complementa o RAG)\n";
+        
+        if ($this->knowledge_source === 'Internet') {
+            $xml .= "        - Prioridade 3: Pesquisa na internet (para informações não encontradas no RAG nem no conhecimento geral)\n";
         }
-        $xml .= "    </interaction_rules>\n\n";
+        $xml .= "    </system_protocols>\n\n";
 
-        // 3. BEHAVIOR PROFILE
+        // 3. BEHAVIOR PROFILE (Personalidade)
         $xml .= "    <behavior_profile>\n";
         if (!empty($this->personality_text)) {
             $xml .= "        ### TOM DE VOZ\n";
@@ -190,7 +229,34 @@ class PromptBuilder
         }
         $xml .= "    </behavior_profile>\n\n";
 
-        // 4. NEGATIVE CONSTRAINTS
+        // 4. CLIENT CONFIGURATION (Preferências do dashboard)
+        $has_client_config = !empty($this->interactivity_level) || !empty($this->response_size) || !empty($this->knowledge_source);
+        if ($has_client_config) {
+            $xml .= "    <client_configuration>\n";
+            $xml .= "        ### PREFERÊNCIAS DO PAINEL\n";
+            if (!empty($this->interactivity_level)) {
+                $xml .= "        - Nível de interatividade: {$this->interactivity_level}\n";
+            }
+            if (!empty($this->response_size)) {
+                $xml .= "        - Tamanho das respostas: {$this->response_size}\n";
+            }
+            if (!empty($this->knowledge_source)) {
+                $xml .= "        - Fonte de conhecimento: {$this->knowledge_source}\n";
+            }
+            $xml .= "    </client_configuration>\n\n";
+        }
+
+        // 5. BUSINESS RULES (Regras Gerais do Admin)
+        if (!empty($this->instructions)) {
+            $xml .= "    <business_rules>\n";
+            $xml .= "        ### REGRAS GERAIS\n";
+            foreach ($this->instructions as $rule) {
+                $xml .= "        - {$rule}" . PHP_EOL;
+            }
+            $xml .= "    </business_rules>\n\n";
+        }
+
+        // 6. NEGATIVE CONSTRAINTS (O que NÃO fazer)
         if (!empty($this->negative_constraints)) {
             $xml .= "    <negative_constraints>\n";
             $xml .= "        ### O QUE NÃO FAZER\n";
@@ -200,36 +266,47 @@ class PromptBuilder
             $xml .= "    </negative_constraints>\n\n";
         }
 
-        // 5. CONTEXT DATA
-        $xml .= "    <context_data>\n";
+        // 7. AVAILABLE KNOWLEDGE (Lista de documentos RAG + Links)
+        $xml .= "    <available_knowledge>\n";
         
-        // 5.1 Business Hours
+        // 7.1 RAG Documents
+        if (!empty($this->rag_documents)) {
+            $xml .= "        📁 Documentos disponíveis para consulta:\n";
+            foreach ($this->rag_documents as $doc) {
+                $xml .= "        - {$doc['name']} ({$doc['type']})\n";
+            }
+            $xml .= "\n";
+        }
+
+        // 7.2 Scraped URLs (apenas para consciência do agente sobre o Vector Store)
+        if (!empty($this->scraped_urls)) {
+            $xml .= "        🌐 Fontes indexadas no Vector Store (NÃO compartilhe estas URLs com o usuário):\n";
+            foreach ($this->scraped_urls as $url) {
+                $xml .= "        - {$url}\n";
+            }
+            $xml .= "        ⚠️ Estes sites já foram processados e estão disponíveis via file_search.\n";
+            $xml .= "\n";
+        }
+
+        // 7.3 Business Hours
         if (!empty($this->business_hours)) {
-             $xml .= "        ### HORÁRIOS E FUNCIONAMENTO\n";
+             $xml .= "        ⏰ Horários de funcionamento:\n";
              foreach ($this->business_hours as $hours) {
                  $xml .= "        - {$hours}" . PHP_EOL;
              }
              $xml .= "\n";
         }
 
-        // 5.2 Service Links
+        // 7.4 Service Links (para compartilhar com usuário)
         if (!empty($this->service_links)) {
-             $xml .= "        ### CATÁLOGO DE SERVIÇOS/LINKS\n";
+             $xml .= "        🔗 Links para compartilhar quando solicitado:\n";
              foreach ($this->service_links as $link) {
                  $xml .= "        - {$link}" . PHP_EOL;
              }
              $xml .= "\n";
         }
         
-        // 5.3 Knowledge Base / Scraped Content
-        if (!empty($this->knowledge_base)) {
-            $xml .= "        ### CONTEÚDO DO SITE (Scraping/Base de Conhecimento)\n";
-            foreach ($this->knowledge_base as $kb) {
-                $xml .= "        {$kb}" . PHP_EOL . PHP_EOL;
-            }
-        }
-        
-        $xml .= "    </context_data>\n\n";
+        $xml .= "    </available_knowledge>\n\n";
 
         $xml .= "</system_instructions>";
 

@@ -10,3 +10,17 @@ vendor/composer/installed.php
 vendor/composer/InstalledVersions.php
 _contexto_tecnico
 log-server/
+
+# Local Development (não subir para produção)
+docker-compose.yml
+.env.example
+.env
+helpers/dev-mode-bypass.php
+local_playground/
+composer.phar
+debug_db.php
+view_regras_gerais.php
+download_ftp_log.sh
+COMMIT_MSG.txt
+.DS_Store
+includes/log/
