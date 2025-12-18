@@ -508,11 +508,14 @@ jQuery(document).ready(function ($) {
         $("#enviarMensagem svg").removeClass('animate-spin');
 
         if (responseData.usage) {
-            let usageValue = response.data.usage.usage.total;
+            // let usageValue = response.data.usage.usage.total;
+            let percentage = response.data.usage.percentage;
+            let limit = response.data.usage.limit;
+            let used = response.data.usage.total;
 
-            $('.usage-percentage-number').text(Math.floor(usageValue) + '%');
+            $('.usage-percentage-number').text(`${used}/${limit} mensagens`);
 
-            $('.usage-percentage-bar').css('width', Math.floor(usageValue) + '%');
+            $('.usage-percentage-bar').css('width', Math.floor(percentage) + '%');
         }
     }
 
