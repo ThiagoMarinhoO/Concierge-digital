@@ -330,11 +330,8 @@ if (!empty($resource_user_id)) {
 			// $usage = UsageService::usagePercentages();
 			// $total_usage = $usage['total'];
 
-			// $limit = get_user_message_limit($resource_user_id);
-			$limit = 5000;
+			$limit = get_user_message_limit($resource_user_id);
 			$used = get_user_total_messages_current_cycle($resource_user_id);
-			var_dump($used);
-			// $percent = ($used / $limit) * 100;
 			$percent = ($used / ($limit ?? 1)) * 100;
 
 			if ($has_active_chatbot): ?>
@@ -345,9 +342,9 @@ if (!empty($resource_user_id)) {
 						<div class="flex justify-between mb-1">
 							<span class="text-base font-medium text-[#13072E]">Limite de Mensagens</span>
 							<span
-								class="text-sm font-medium text-[#13072E] usage-percentage-number"><?php echo intval($limit) . ' mensagens'; ?></span>
+								class="text-sm font-medium text-[#13072E] usage-percentage-number"><?= $used ?>/<?php echo intval($limit) . ' mensagens'; ?></span>
 						</div>
-						<div class="flex w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+						<div class="flex w-full bg-gray-200 rounded-full h-2.5">
 							<div class="h-2.5 rounded-full transition duration-300 usage-percentage-bar"
 								style="width: <?php echo intval($percent) . '%'; ?>; background: linear-gradient(90deg, #ffbee6, #b3aaff);">
 							</div>
