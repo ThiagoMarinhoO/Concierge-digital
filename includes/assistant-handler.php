@@ -331,82 +331,75 @@ function generate_instructions($chatbot_options, $chatbot_name)
                         $builder->addRagDocument($filename, $file_extension);
                     }
                 }
-            } 
+            }
             // Crawler (Links de Conhecimento) - COM ROTEAMENTO INTELIGENTE
-            elseif (($option['pergunta'] ?? '') == "Adicione Links de conhecimento:") {
+            elseif (($option['pergunta'] ?? '') == "Links para Aprendizado") {
                 $url = $resposta;
                 if (!empty($url)) {
                     // 🧠 DETECÇÃO DE INTENÇÃO
                     $intention = $builder->detectIntent($training_phrase);
-                    
+
                     if ($intention === 'STUDY') {
                         // 📚 MODO ESTUDO: Gerar arquivo .txt e enviar para Vector Store
                         error_log("🔍 INTENTION:STUDY detected for URL: $url");
-                        
+
                         $file_path = generate_site_content_file($url, $chatbot_name);
-                        
+
                         if ($file_path && file_exists($file_path)) {
                             // 📁 SALVAR CÓPIA LOCAL PARA AUDITORIA
                             $upload_dir = wp_upload_dir();
                             $scraped_folder = $upload_dir['basedir'] . '/scraped_content';
-                            
+
                             // Criar pasta se não existir
                             if (!file_exists($scraped_folder)) {
                                 wp_mkdir_p($scraped_folder);
                             }
-                            
+
                             // Nome do arquivo: chatbot_name + domain + timestamp
                             $url_domain = parse_url($url, PHP_URL_HOST);
                             $safe_domain = preg_replace('/[^a-zA-Z0-9_-]/', '_', $url_domain);
                             $safe_chatbot = preg_replace('/[^a-zA-Z0-9_-]/', '_', $chatbot_name);
                             $local_filename = "{$safe_chatbot}_{$safe_domain}_" . date('Y-m-d_H-i-s') . ".txt";
                             $local_path = $scraped_folder . '/' . $local_filename;
-                            
+
                             // Copiar arquivo para pasta permanente
                             if (copy($file_path, $local_path)) {
                                 error_log("📁 Cópia local salva em: {$upload_dir['baseurl']}/scraped_content/{$local_filename}");
                             }
-                            
+
                             // Obter ou criar Vector Store
                             $vector_store_label = "Vector Store para {$chatbot_name}";
                             $table_stores = $wpdb->prefix . 'vector_stores';
                             $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table_stores . ' WHERE name = %s', $vector_store_label));
-                            
+
                             $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
-                            
+
                             if ($vector_store_id) {
-                                // Upload para OpenAI COM RETRY
-                                $fileResponse = StorageController::uploadFileWithRetry($file_path, 3);
-                                
+                                // Upload para OpenAI
+                                $fileResponse = StorageController::uploadFile($file_path);
+
                                 if ($fileResponse && !empty($fileResponse['id'])) {
                                     $file_id = $fileResponse['id'];
-                                    
+
                                     // Associar ao Vector Store
-                                    $vsResult = StorageController::createVectorStoreFile($vector_store_id, $file_id);
+                                    StorageController::createVectorStoreFile($vector_store_id, $file_id);
+
+                                    // Registrar no banco
+                                    $table_files = $wpdb->prefix . 'vector_files';
+                                    $wpdb->insert($table_files, [
+                                        'file_id' => $file_id,
+                                        'vector_store_id' => $vector_store_id,
+                                        'file_url' => $url // URL de referência
+                                    ]);
+
+                                    error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
                                     
-                                    if ($vsResult && empty($vsResult['error'])) {
-                                        // Registrar no banco
-                                        $table_files = $wpdb->prefix . 'vector_files';
-                                        $wpdb->insert($table_files, [
-                                            'file_id' => $file_id,
-                                            'vector_store_id' => $vector_store_id,
-                                            'file_url' => $url // URL de referência
-                                        ]);
-                                        
-                                        error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
-                                        
-                                        // Track scraped URL for listing
-                                        $builder->addScrapedUrl($url);
-                                        
-                                        // Track upload success
-                                        $upload_results[] = ['url' => $url, 'status' => 'success', 'file_id' => $file_id];
-                                        
-                                        // NO XML: Apenas referência
-                                        $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
-                                    } else {
-                                        error_log("❌ Falha ao associar arquivo ao Vector Store");
-                                        $upload_results[] = ['url' => $url, 'status' => 'failed', 'error' => 'Falha ao associar ao Vector Store'];
-                                    }
+                                    // Track scraped URL for listing
+                                    $builder->addScrapedUrl($url);
+                                    
+
+                                    // NO XML: Apenas referência
+                                    $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
                                 } else {
                                     error_log("❌ Falha ao fazer upload do arquivo para OpenAI após 3 tentativas");
                                     $upload_results[] = ['url' => $url, 'status' => 'failed', 'error' => 'Upload falhou após 3 tentativas'];
@@ -418,20 +411,19 @@ function generate_instructions($chatbot_options, $chatbot_name)
                                     $builder->addKnowledge("Conteúdo extraído do site:\n" . $text);
                                 }
                             }
-                            
+
                             // Limpar arquivo temporário (cópia local já foi salva)
                             @unlink($file_path);
                         } else {
                             error_log("❌ Falha ao gerar arquivo de conteúdo do site");
                         }
-                        
                     } else {
                         // 📤 MODO DISPLAY: Adicionar link ao XML (para IA enviar ao cliente)
                         error_log("🔗 INTENTION:DISPLAY detected for URL: $url");
                         $builder->addInstruction("{$training_phrase}: {$url}");
                     }
                 }
-            } 
+            }
             // Outras perguntas
             else {
                 if (stripos($training_phrase, 'seu nome é') !== false) {
@@ -1076,7 +1068,7 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
 
     $pattern = '/【\d+:\d+(?:-\d+)?†[^】]+】/';
     $assistant_message = preg_replace($pattern, '', $assistant_message);
-    
+
     $assistant_message = trim($assistant_message);
 
     /*
@@ -1100,7 +1092,16 @@ function handle_assistant_message($isWhatsapp = false, $whatsappMessage = null, 
     // plugin_log('--- USAGE FINAL da mensagem ---');
     // plugin_log(print_r($usage, true));
 
-    $usageObj = manage_usage($usage);
+    // $usageObj = manage_usage($usage);
+    $limit = get_user_message_limit($assistant['user_id']);
+    $used = get_user_total_messages_current_cycle($assistant['user_id']);
+    $percent = ($used / ($limit ?? 1)) * 100;
+
+    $usageObj = [
+        "total" => $used,
+        "limit" => $limit,
+        "percentage" => $percent
+    ];
 
     if (empty($assistant_message)) {
         $assistant_message = "Desculpe. Não consigo ajudar no momento. Por favor tente mais tarde.";
@@ -1522,7 +1523,8 @@ function transcribe_audio_with_whisper($file_path)
  * @param int $timeout Timeout em segundos
  * @return string|false Conteúdo HTML ou false em caso de erro
  */
-function fetch_url_content($url, $timeout = 15) {
+function fetch_url_content($url, $timeout = 15)
+{
     $ch = curl_init();
     curl_setopt_array($ch, [
         CURLOPT_URL => $url,
@@ -1539,22 +1541,22 @@ function fetch_url_content($url, $timeout = 15) {
             'Cache-Control: no-cache'
         ]
     ]);
-    
+
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
-    
+
     if ($error) {
         error_log("fetch_url_content: cURL error - $error - URL: $url");
         return false;
     }
-    
+
     if ($http_code >= 400) {
         error_log("fetch_url_content: HTTP $http_code - URL: $url");
         return false;
     }
-    
+
     return $response;
 }
 
@@ -1568,12 +1570,12 @@ function fetch_url_content($url, $timeout = 15) {
 function crawl_page($url, $depth = 2, $reset_cache = false)
 {
     static $seen = array();
-    
+
     // Reset cache quando iniciar novo crawl (evita problema de persistência)
     if ($reset_cache) {
         $seen = array();
     }
-    
+
     // Evita loop infinito e respeita profundidade
     if ($depth === 0 || isset($seen[$url])) {
         return "";
@@ -1592,12 +1594,12 @@ function crawl_page($url, $depth = 2, $reset_cache = false)
     libxml_use_internal_errors(true);
     @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
     libxml_clear_errors();
-    
+
     // 2. Extrair Texto Limpo (Usando a lógica do PromptBuilder)
     // Precisamos instanciar o builder ou usar uma função estática?
     // Como PromptBuilder está disponível, vamos usar uma versão simplificada da limpeza aqui
     // ou apenas extrair o texto principal.
-    
+
     $text = extract_text($dom);
     $final_content = "URL: {$url}\nCONTENT: {$text}\n\n";
 
@@ -1605,14 +1607,14 @@ function crawl_page($url, $depth = 2, $reset_cache = false)
     if ($depth > 1) {
         $xpath = new DOMXPath($dom);
         $links = $xpath->query('//a/@href');
-        
+
         $base_url_parts = parse_url($url);
         $base_host = $base_url_parts['host'] ?? '';
         $scheme = $base_url_parts['scheme'] ?? 'http';
 
         foreach ($links as $link) {
             $href = $link->nodeValue;
-            
+
             // Normalização de URL básica
             if (strpos($href, 'http') === 0) {
                 // URL absoluta
@@ -1626,7 +1628,7 @@ function crawl_page($url, $depth = 2, $reset_cache = false)
             // Ignorar âncoras e arquivos não-html
             if (strpos($href, '#') !== false) continue;
             if (preg_match('/\.(jpg|jpeg|png|gif|pdf|zip)$/i', $href)) continue;
-            
+
             // 🔒 BLACKLIST: Ignorar URLs de paginação e taxonomia (evita duplicação)
             if (preg_match('/\/(tag|category|page|author|feed)\//i', $href)) continue;
 
@@ -1640,7 +1642,7 @@ function crawl_page($url, $depth = 2, $reset_cache = false)
 function extract_text($dom)
 {
     $xpath = new DOMXPath($dom);
-    
+
     // Remover scripts e estilos
     $scripts = $xpath->query('//script | //style | //noscript | //header | //footer | //nav');
     foreach ($scripts as $script) {
@@ -1659,7 +1661,7 @@ function extract_text($dom)
 
     // Extrair texto
     $textContent = trim($content_node->textContent);
-    
+
     // Limpar espaços múltiplos
     return preg_replace('/\s+/', ' ', $textContent);
 }
@@ -1756,26 +1758,27 @@ function extract_text($dom)
  * @param string $assistant_name Nome do assistente (para identificação do arquivo)
  * @return string|false Caminho do arquivo gerado ou false em caso de erro
  */
-function generate_site_content_file($url, $assistant_name) {
+function generate_site_content_file($url, $assistant_name)
+{
     // Reset cache para garantir crawl limpo a cada chamada
     $text = crawl_page($url, 2, true);
-    
+
     if (empty($text)) {
         error_log("generate_site_content_file: Nenhum conteúdo extraído de $url");
         return false;
     }
-    
+
     $safe_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $assistant_name);
     $filename = "site_content_{$safe_name}_" . time() . ".txt";
     $filepath = sys_get_temp_dir() . "/" . $filename;
-    
+
     $result = file_put_contents($filepath, $text);
-    
+
     if ($result === false) {
         error_log("generate_site_content_file: Erro ao escrever arquivo $filepath");
         return false;
     }
-    
+
     error_log("generate_site_content_file: Arquivo gerado com sucesso: $filepath");
     return $filepath;
 }

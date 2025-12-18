@@ -45,7 +45,7 @@ class GoogleCalendarComponent
         <div class="google-calendar-component-wrapper">
             <?php if ($is_connected) : ?>
                 <form id="calendar-settings" class="max-w-xl mx-auto p-6 bg-white shadow rounded-xl space-y-6">
-                    <h2 class="text-xl font-bold text-gray-800 border-b pb-4 mb-4">Configurações de Disponibilidade ✨</h2>
+                    <h5 class="text-xl font-bold text-gray-800 border-b pb-4 mb-4">Configurações de Disponibilidade ✨</h5>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
