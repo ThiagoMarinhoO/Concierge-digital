@@ -214,6 +214,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
     global $wpdb;
 
     $builder = new PromptBuilder($chatbot_name);
+    $upload_results = []; // Track upload results for status feedback
 
     // 1. Regras Gerais (Perguntas Fixas)
     $question = new Question();
@@ -400,7 +401,8 @@ function generate_instructions($chatbot_options, $chatbot_name)
                                     // NO XML: Apenas referência
                                     $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
                                 } else {
-                                    error_log("❌ Falha ao fazer upload do arquivo para OpenAI");
+                                    error_log("❌ Falha ao fazer upload do arquivo para OpenAI após 3 tentativas");
+                                    $upload_results[] = ['url' => $url, 'status' => 'failed', 'error' => 'Upload falhou após 3 tentativas'];
                                 }
                             } else {
                                 error_log("⚠️ Vector Store não encontrado. Fallback para método antigo.");
@@ -433,10 +435,17 @@ function generate_instructions($chatbot_options, $chatbot_name)
         }
     }
 
+    // Determinar status geral do upload
+    $upload_success = empty($upload_results) || !in_array('failed', array_column($upload_results, 'status'));
+    $upload_errors = array_filter($upload_results, fn($r) => $r['status'] === 'failed');
+
     return ([
         "assistant_name" => $chatbot_name,
         "assistant_instructions" => $builder->build(),
         "assistant_image" => $chatbot_image,
+        "upload_status" => $upload_success ? 'success' : 'partial_failure',
+        "upload_results" => $upload_results,
+        "upload_errors" => array_values($upload_errors)
     ]);
 }
 
