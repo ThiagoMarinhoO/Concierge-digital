@@ -34,9 +34,46 @@ class StorageController {
             $body = json_decode($res->getBody(), true);
             return $body;
         } catch (RequestException $e) {
-            error_log('Erro ao enviar arquivo: ' . $e->getMessage());
-            return null;
+            $errorBody = $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'Sem resposta do servidor';
+            error_log("❌ Erro upload OpenAI: {$e->getMessage()} | Response: {$errorBody}");
+            return ['error' => $e->getMessage(), 'details' => $errorBody];
         }
+    }
+
+    /**
+     * Upload com retry e exponential backoff
+     * @param string $filePath Caminho do arquivo
+     * @param int $maxRetries Número máximo de tentativas (padrão: 3)
+     * @return array|null Retorna resposta da OpenAI ou null se todas tentativas falharem
+     */
+    public static function uploadFileWithRetry($filePath, int $maxRetries = 3) {
+        $attempt = 0;
+        $lastError = null;
+        
+        while ($attempt < $maxRetries) {
+            error_log("📤 Upload tentativa " . ($attempt + 1) . "/{$maxRetries} para: " . basename($filePath));
+            
+            $result = self::uploadFile($filePath);
+            
+            // Sucesso: retornou ID do arquivo
+            if ($result && !empty($result['id'])) {
+                error_log("✅ Upload bem-sucedido na tentativa " . ($attempt + 1) . ": file_id={$result['id']}");
+                return $result;
+            }
+            
+            // Falha: guardar erro e aguardar antes de retentar
+            $lastError = $result['error'] ?? 'Erro desconhecido';
+            $attempt++;
+            
+            if ($attempt < $maxRetries) {
+                $waitSeconds = pow(2, $attempt); // 2, 4, 8 segundos
+                error_log("⚠️ Upload falhou: {$lastError}. Aguardando {$waitSeconds}s antes da próxima tentativa...");
+                sleep($waitSeconds);
+            }
+        }
+        
+        error_log("❌ Upload falhou após {$maxRetries} tentativas. Último erro: {$lastError}");
+        return null;
     }
 
     public static function getFileContent($fileId) {

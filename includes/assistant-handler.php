@@ -214,6 +214,7 @@ function generate_instructions($chatbot_options, $chatbot_name)
     global $wpdb;
 
     $builder = new PromptBuilder($chatbot_name);
+    $upload_results = []; // Track upload results for status feedback
 
     // 1. Regras Gerais (Perguntas Fixas)
     $question = new Question();
@@ -374,32 +375,41 @@ function generate_instructions($chatbot_options, $chatbot_name)
                             $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
                             
                             if ($vector_store_id) {
-                                // Upload para OpenAI
-                                $fileResponse = StorageController::uploadFile($file_path);
+                                // Upload para OpenAI COM RETRY
+                                $fileResponse = StorageController::uploadFileWithRetry($file_path, 3);
                                 
                                 if ($fileResponse && !empty($fileResponse['id'])) {
                                     $file_id = $fileResponse['id'];
                                     
                                     // Associar ao Vector Store
-                                    StorageController::createVectorStoreFile($vector_store_id, $file_id);
+                                    $vsResult = StorageController::createVectorStoreFile($vector_store_id, $file_id);
                                     
-                                    // Registrar no banco
-                                    $table_files = $wpdb->prefix . 'vector_files';
-                                    $wpdb->insert($table_files, [
-                                        'file_id' => $file_id,
-                                        'vector_store_id' => $vector_store_id,
-                                        'file_url' => $url // URL de referência
-                                    ]);
-                                    
-                                    error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
-                                    
-                                    // Track scraped URL for listing
-                                    $builder->addScrapedUrl($url);
-                                    
-                                    // NO XML: Apenas referência
-                                    $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
+                                    if ($vsResult && empty($vsResult['error'])) {
+                                        // Registrar no banco
+                                        $table_files = $wpdb->prefix . 'vector_files';
+                                        $wpdb->insert($table_files, [
+                                            'file_id' => $file_id,
+                                            'vector_store_id' => $vector_store_id,
+                                            'file_url' => $url // URL de referência
+                                        ]);
+                                        
+                                        error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
+                                        
+                                        // Track scraped URL for listing
+                                        $builder->addScrapedUrl($url);
+                                        
+                                        // Track upload success
+                                        $upload_results[] = ['url' => $url, 'status' => 'success', 'file_id' => $file_id];
+                                        
+                                        // NO XML: Apenas referência
+                                        $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
+                                    } else {
+                                        error_log("❌ Falha ao associar arquivo ao Vector Store");
+                                        $upload_results[] = ['url' => $url, 'status' => 'failed', 'error' => 'Falha ao associar ao Vector Store'];
+                                    }
                                 } else {
-                                    error_log("❌ Falha ao fazer upload do arquivo para OpenAI");
+                                    error_log("❌ Falha ao fazer upload do arquivo para OpenAI após 3 tentativas");
+                                    $upload_results[] = ['url' => $url, 'status' => 'failed', 'error' => 'Upload falhou após 3 tentativas'];
                                 }
                             } else {
                                 error_log("⚠️ Vector Store não encontrado. Fallback para método antigo.");
@@ -433,10 +443,17 @@ function generate_instructions($chatbot_options, $chatbot_name)
         }
     }
 
+    // Determinar status geral do upload
+    $upload_success = empty($upload_results) || !in_array('failed', array_column($upload_results, 'status'));
+    $upload_errors = array_filter($upload_results, fn($r) => $r['status'] === 'failed');
+
     return ([
         "assistant_name" => $chatbot_name,
         "assistant_instructions" => $builder->build(),
         "assistant_image" => $chatbot_image,
+        "upload_status" => $upload_success ? 'success' : 'partial_failure',
+        "upload_results" => $upload_results,
+        "upload_errors" => array_values($upload_errors)
     ]);
 }
 
