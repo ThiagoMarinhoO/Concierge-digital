@@ -342,7 +342,36 @@ function generate_instructions($chatbot_options, $chatbot_name)
                     if ($intention === 'STUDY') {
                         // 📚 MODO ESTUDO: Gerar arquivo .txt e enviar para Vector Store
                         error_log("🔍 INTENTION:STUDY detected for URL: $url");
-
+                        
+                        // PRIMEIRO: Obter Vector Store ID para verificar se URL já foi processada
+                        $vector_store_label = "Vector Store para {$chatbot_name}";
+                        $table_stores = $wpdb->prefix . 'vector_stores';
+                        $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table_stores . ' WHERE name = %s', $vector_store_label));
+                        $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
+                        
+                        if ($vector_store_id) {
+                            // VERIFICAR SE URL PRECISA SER RE-SCRAPED
+                            $scrape_decision = should_rescrape_url($url, $vector_store_id);
+                            error_log("📋 Decisão de scraping: {$scrape_decision['action']} - {$scrape_decision['reason']}");
+                            
+                            // SKIP: URL já foi processada, não fazer nada
+                            if ($scrape_decision['action'] === 'skip') {
+                                error_log("⏭️ SKIP: URL já processada, mantendo arquivo existente");
+                                $builder->addScrapedUrl($url);
+                                $builder->addKnowledge("Base de conhecimento do site $url já anexada ao Vector Store.");
+                                continue;
+                            }
+                            
+                            // REPLACE: Deletar arquivo antigo antes de criar novo
+                            if ($scrape_decision['action'] === 'replace') {
+                                error_log("🔄 REPLACE: Deletando arquivo antigo file_id={$scrape_decision['old_file_id']}");
+                                StorageController::deleteVectorStoreFile($vector_store_id, $scrape_decision['old_file_id']);
+                                $table_files = $wpdb->prefix . 'vector_files';
+                                $wpdb->delete($table_files, ['id' => $scrape_decision['old_record_id']]);
+                            }
+                        }
+                        
+                        // SCRAPE: URL nova ou alterada - fazer scraping
                         $file_path = generate_site_content_file($url, $chatbot_name);
 
                         if ($file_path && file_exists($file_path)) {
@@ -366,13 +395,6 @@ function generate_instructions($chatbot_options, $chatbot_name)
                             if (copy($file_path, $local_path)) {
                                 error_log("📁 Cópia local salva em: {$upload_dir['baseurl']}/scraped_content/{$local_filename}");
                             }
-
-                            // Obter ou criar Vector Store
-                            $vector_store_label = "Vector Store para {$chatbot_name}";
-                            $table_stores = $wpdb->prefix . 'vector_stores';
-                            $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table_stores . ' WHERE name = %s', $vector_store_label));
-
-                            $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
 
                             if ($vector_store_id) {
                                 // Upload para OpenAI
@@ -1781,6 +1803,42 @@ function generate_site_content_file($url, $assistant_name)
 
     error_log("generate_site_content_file: Arquivo gerado com sucesso: $filepath");
     return $filepath;
+}
+
+/**
+ * Verifica se uma URL precisa ser re-scraped
+ * @param string $url URL a verificar
+ * @param string $vector_store_id ID do Vector Store
+ * @return array ['action' => 'skip'|'scrape'|'replace', 'reason' => string, 'old_file_id' => string|null]
+ */
+function should_rescrape_url($url, $vector_store_id) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'vector_files';
+    
+    // Buscar último arquivo da URL para este vector_store
+    $existing = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, file_id, file_url FROM {$table} 
+         WHERE vector_store_id = %s ORDER BY created_at DESC LIMIT 1",
+        $vector_store_id
+    ));
+    
+    // Caso 1: Nenhum arquivo existe ainda → fazer scraping
+    if (!$existing) {
+        return ['action' => 'scrape', 'reason' => 'Novo URL - primeiro scraping'];
+    }
+    
+    // Caso 2: URL igual à existente → pular (não fazer nada)
+    if ($existing->file_url === $url) {
+        return ['action' => 'skip', 'reason' => 'URL já processada anteriormente', 'existing_file_id' => $existing->file_id];
+    }
+    
+    // Caso 3: URL diferente → deletar antigo e fazer novo scraping
+    return [
+        'action' => 'replace', 
+        'reason' => 'URL alterada - substituindo arquivo antigo',
+        'old_file_id' => $existing->file_id,
+        'old_record_id' => $existing->id
+    ];
 }
 
 add_action('wp_ajax_get_assistant_by_id', 'get_assistant_by_id');
