@@ -257,6 +257,36 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 continue;
             }
 
+            // Função Principal
+            if (stripos($option['pergunta'], 'função principal') !== false) {
+                $builder->setMainFunction($resposta);
+                continue;
+            }
+
+            // Função Secundária
+            if (stripos($option['pergunta'], 'função secundária') !== false || stripos($option['pergunta'], 'funcao secundaria') !== false) {
+                $builder->setSecondaryFunction($resposta);
+                continue;
+            }
+
+            // Nível de Interatividade
+            if (stripos($option['pergunta'], 'nível de interatividade') !== false || stripos($option['pergunta'], 'nivel de interatividade') !== false) {
+                $builder->setInteractivityLevel($resposta);
+                continue;
+            }
+
+            // Tamanho das Respostas
+            if (stripos($option['pergunta'], 'tamanho das respostas') !== false) {
+                $builder->setResponseSize($resposta);
+                continue;
+            }
+
+            // Fonte de Conhecimento
+            if (stripos($option['pergunta'], 'fonte de informação') !== false || stripos($option['pergunta'], 'fonte de conhecimento') !== false) {
+                $builder->setKnowledgeSource($resposta);
+                continue;
+            }
+
             // Tratamento especial para injeção dinâmica (Legacy preserved)
             if ($option['pergunta'] === 'Documentos anexos') {
                 $info = is_array($resposta) ? $resposta[0] : $resposta;
@@ -294,6 +324,10 @@ function generate_instructions($chatbot_options, $chatbot_name)
                             $file_content = preg_replace('/[\x00-\x1F\x7F]/u', '', $file_content);
                             $builder->addKnowledge("Conteúdo do arquivo {$respostaItem}: " . $file_content);
                         }
+                        
+                        // Track RAG document for listing
+                        $filename = basename($respostaItem);
+                        $builder->addRagDocument($filename, $file_extension);
                     }
                 }
             }
@@ -358,6 +392,10 @@ function generate_instructions($chatbot_options, $chatbot_name)
                                     ]);
 
                                     error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
+                                    
+                                    // Track scraped URL for listing
+                                    $builder->addScrapedUrl($url);
+                                    
 
                                     // NO XML: Apenas referência
                                     $builder->addKnowledge("Base de conhecimento do site $url processada e anexada ao Vector Store.");
