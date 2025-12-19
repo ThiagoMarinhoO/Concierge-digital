@@ -3,11 +3,81 @@ jQuery(document).ready(function ($) {
     const chatContainer = document.querySelector('.chatContainer');
     const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
 
+    // =====================================================
+    // URL NORMALIZATION - Adiciona https:// automaticamente
+    // =====================================================
+    
+    /**
+     * Normaliza uma URL adicionando https:// se não tiver protocolo
+     * @param {string} url - URL a ser normalizada
+     * @returns {string} URL normalizada
+     */
+    function normalizeUrl(url) {
+        if (!url || typeof url !== 'string') return url;
+        
+        url = url.trim();
+        
+        // Se já tem protocolo, retorna como está
+        if (url.match(/^https?:\/\//i)) {
+            return url;
+        }
+        
+        // Se começa com www., adiciona https://
+        if (url.match(/^www\./i)) {
+            return 'https://' + url;
+        }
+        
+        // Verifica se parece um domínio válido
+        const domainPattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?$/;
+        if (domainPattern.test(url)) {
+            return 'https://' + url;
+        }
+        
+        return url;
+    }
+    
+    /**
+     * Aplica normalização de URL em inputs de texto
+     * Detecta campos que parecem conter URLs e adiciona https:// automaticamente
+     */
+    function initUrlNormalization() {
+        // Detecta inputs que provavelmente contêm URLs
+        const urlKeywords = ['link', 'url', 'site', 'website', 'aprendizado'];
+        
+        $(document).on('blur', 'input[type="text"], input[type="url"]', function() {
+            const $input = $(this);
+            const inputName = ($input.attr('name') || '').toLowerCase();
+            const inputPlaceholder = ($input.attr('placeholder') || '').toLowerCase();
+            const parentLabel = $input.closest('.question-block').find('label').text().toLowerCase();
+            
+            // Verifica se é um campo de URL baseado no nome, placeholder ou label
+            const isUrlField = urlKeywords.some(keyword => 
+                inputName.includes(keyword) || 
+                inputPlaceholder.includes(keyword) || 
+                parentLabel.includes(keyword)
+            );
+            
+            if (isUrlField) {
+                const currentValue = $input.val();
+                const normalizedValue = normalizeUrl(currentValue);
+                
+                if (currentValue !== normalizedValue) {
+                    $input.val(normalizedValue);
+                    console.log(`🔗 URL normalizada: "${currentValue}" → "${normalizedValue}"`);
+                }
+            }
+        });
+    }
+    
+    // Inicializa normalização de URLs
+    initUrlNormalization();
+
     if (!assistantId) {
         localStorage.removeItem('assistant');
         localStorage.removeItem('chatbot_script');
         localStorage.removeItem('sessionID');
     }
+
 
     async function getAssistant(assistantId) {
         $.ajax({

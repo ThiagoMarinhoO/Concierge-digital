@@ -357,7 +357,12 @@ function generate_instructions($chatbot_options, $chatbot_name)
                             // SKIP: URL já foi processada, não fazer nada
                             if ($scrape_decision['action'] === 'skip') {
                                 error_log("⏭️ SKIP: URL já processada, mantendo arquivo existente");
-                                $builder->addScrapedUrl($url);
+                                // Buscar nome do arquivo existente do banco
+                                $existing_file = $wpdb->get_var($wpdb->prepare(
+                                    "SELECT file_url FROM {$wpdb->prefix}vector_files WHERE vector_store_id = %s AND file_url = %s",
+                                    $vector_store_id, $url
+                                ));
+                                $builder->addScrapedUrl($url, $scrape_decision['old_file_id'] ?? null);
                                 $builder->addKnowledge("Base de conhecimento do site $url já anexada ao Vector Store.");
                                 continue;
                             }
@@ -416,8 +421,8 @@ function generate_instructions($chatbot_options, $chatbot_name)
 
                                     error_log("✅ Site content uploaded to Vector Store: file_id=$file_id");
                                     
-                                    // Track scraped URL for listing
-                                    $builder->addScrapedUrl($url);
+                                    // Track scraped URL for listing (com nome do arquivo)
+                                    $builder->addScrapedUrl($url, $local_filename);
                                     
 
                                     // NO XML: Apenas referência
