@@ -60,8 +60,8 @@ class PromptBuilder
         $this->rag_documents[] = ['name' => $name, 'type' => $type];
     }
 
-    public function addScrapedUrl($url) {
-        $this->scraped_urls[] = $url;
+    public function addScrapedUrl($url, $filename = null) {
+        $this->scraped_urls[] = ['url' => $url, 'filename' => $filename];
     }
 
     // === INSTRUCTION ROUTING ===
@@ -85,7 +85,8 @@ class PromptBuilder
         }
 
         // Case B: Business Hours / Operations
-        if ($this->containsAny($lower_input, ['horário', 'aberto', 'funcionamento', 'atendimento', 'expediente', 'fecha', 'abre'])) {
+        // Nota: 'atendimento' removido para não capturar 'função principal é: Atendimento'
+        if ($this->containsAny($lower_input, ['horário', 'aberto', 'funcionamento', 'expediente', 'fecha', 'abre'])) {
             $this->business_hours[] = $clean_instruction;
             return;
         }
@@ -107,6 +108,24 @@ class PromptBuilder
             }
         }
         return false;
+    }
+
+    /**
+     * Normaliza URLs no texto para garantir que tenham https://
+     */
+    private function normalizeUrls($text) {
+        // Padrão para encontrar domínios sem protocolo (ex: charlieapp.io, www.exemplo.com)
+        // Ignora URLs que já têm protocolo
+        $pattern = '/(?<![\/:\.@])\b((?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?![\/:@])/i';
+        
+        return preg_replace_callback($pattern, function($matches) {
+            $domain = $matches[1];
+            // Verifica se é um domínio válido (não é parte de um email, etc)
+            if (preg_match('/^(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*\.(com|io|net|org|com\.br|app|ai|dev|co)$/i', $domain)) {
+                return 'https://' . $domain;
+            }
+            return $domain;
+        }, $text);
     }
 
     /**
@@ -238,7 +257,14 @@ class PromptBuilder
                 $xml .= "        - Nível de interatividade: {$this->interactivity_level}\n";
             }
             if (!empty($this->response_size)) {
-                $xml .= "        - Tamanho das respostas: {$this->response_size}\n";
+                // Instruções expandidas para tamanho de resposta
+                $size_instruction = match($this->response_size) {
+                    'Curta' => "Respostas curtas: máximo 2-3 frases, direto ao ponto",
+                    'Média' => "Respostas médias: 4-6 frases, com contexto quando necessário",
+                    'Longa' => "Respostas detalhadas: parágrafos completos, explicações aprofundadas",
+                    default => "Tamanho das respostas: {$this->response_size}"
+                };
+                $xml .= "        - {$size_instruction}\n";
             }
             if (!empty($this->knowledge_source)) {
                 $xml .= "        - Fonte de conhecimento: {$this->knowledge_source}\n";
@@ -281,8 +307,12 @@ class PromptBuilder
         // 7.2 Scraped URLs (apenas para consciência do agente sobre o Vector Store)
         if (!empty($this->scraped_urls)) {
             $xml .= "        🌐 Fontes indexadas no Vector Store (NÃO compartilhe estas URLs com o usuário):\n";
-            foreach ($this->scraped_urls as $url) {
-                $xml .= "        - {$url}\n";
+            foreach ($this->scraped_urls as $scraped) {
+                $display = is_array($scraped) ? $scraped['url'] : $scraped;
+                if (is_array($scraped) && !empty($scraped['filename'])) {
+                    $display .= " → arquivo: {$scraped['filename']}";
+                }
+                $xml .= "        - {$display}\n";
             }
             $xml .= "        ⚠️ Estes sites já foram processados e estão disponíveis via file_search.\n";
             $xml .= "\n";
@@ -301,7 +331,9 @@ class PromptBuilder
         if (!empty($this->service_links)) {
              $xml .= "        🔗 Links para compartilhar quando solicitado:\n";
              foreach ($this->service_links as $link) {
-                 $xml .= "        - {$link}" . PHP_EOL;
+                 // Normaliza URLs para garantir protocolo https://
+                 $normalized_link = $this->normalizeUrls($link);
+                 $xml .= "        - {$normalized_link}" . PHP_EOL;
              }
              $xml .= "\n";
         }
