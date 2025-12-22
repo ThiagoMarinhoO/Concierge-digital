@@ -111,24 +111,6 @@ class PromptBuilder
     }
 
     /**
-     * Normaliza URLs no texto para garantir que tenham https://
-     */
-    private function normalizeUrls($text) {
-        // Padrão para encontrar domínios sem protocolo (ex: charlieapp.io, www.exemplo.com)
-        // Ignora URLs que já têm protocolo
-        $pattern = '/(?<![\/:\.@])\b((?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?![\/:@])/i';
-        
-        return preg_replace_callback($pattern, function($matches) {
-            $domain = $matches[1];
-            // Verifica se é um domínio válido (não é parte de um email, etc)
-            if (preg_match('/^(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*\.(com|io|net|org|com\.br|app|ai|dev|co)$/i', $domain)) {
-                return 'https://' . $domain;
-            }
-            return $domain;
-        }, $text);
-    }
-
-    /**
      * Detecta a intenção do training_phrase para routing inteligente
      * @param string $training_phrase Frase de treinamento do painel
      * @return string 'STUDY' (enviar para Vector Store) ou 'DISPLAY' (mostrar link no XML)
@@ -331,9 +313,8 @@ class PromptBuilder
         if (!empty($this->service_links)) {
              $xml .= "        🔗 Links para compartilhar quando solicitado:\n";
              foreach ($this->service_links as $link) {
-                 // Normaliza URLs para garantir protocolo https://
-                 $normalized_link = $this->normalizeUrls($link);
-                 $xml .= "        - {$normalized_link}" . PHP_EOL;
+                 // URL já validada no frontend - passa direto
+                 $xml .= "        - {$link}" . PHP_EOL;
              }
              $xml .= "\n";
         }

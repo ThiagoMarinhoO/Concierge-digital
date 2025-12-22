@@ -4,43 +4,29 @@ jQuery(document).ready(function ($) {
     const assistantId = chatContainer ? chatContainer.getAttribute('data-assistant-id') : null;
 
     // =====================================================
-    // URL NORMALIZATION - Adiciona https:// automaticamente
+    // URL VALIDATION - Valida formato de URLs
     // =====================================================
     
     /**
-     * Normaliza uma URL adicionando https:// se não tiver protocolo
-     * @param {string} url - URL a ser normalizada
-     * @returns {string} URL normalizada
+     * Valida se uma URL tem o formato correto (começa com http:// ou https://)
+     * @param {string} url - URL a ser validada
+     * @returns {boolean} true se válida, false se inválida
      */
-    function normalizeUrl(url) {
-        if (!url || typeof url !== 'string') return url;
+    function isValidUrl(url) {
+        if (!url || typeof url !== 'string') return true; // Campo vazio é ok
         
         url = url.trim();
+        if (url === '') return true; // Campo vazio é ok
         
-        // Se já tem protocolo, retorna como está
-        if (url.match(/^https?:\/\//i)) {
-            return url;
-        }
-        
-        // Se começa com www., adiciona https://
-        if (url.match(/^www\./i)) {
-            return 'https://' + url;
-        }
-        
-        // Verifica se parece um domínio válido
-        const domainPattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?$/;
-        if (domainPattern.test(url)) {
-            return 'https://' + url;
-        }
-        
-        return url;
+        // URL deve começar com http:// ou https://
+        return /^https?:\/\//i.test(url);
     }
     
     /**
-     * Aplica normalização de URL em inputs de texto
-     * Detecta campos que parecem conter URLs e adiciona https:// automaticamente
+     * Aplica validação de URL em inputs de texto
+     * Detecta campos que parecem conter URLs e valida o formato
      */
-    function initUrlNormalization() {
+    function initUrlValidation() {
         // Detecta inputs que provavelmente contêm URLs
         const urlKeywords = ['link', 'url', 'site', 'website', 'aprendizado'];
         
@@ -58,19 +44,40 @@ jQuery(document).ready(function ($) {
             );
             
             if (isUrlField) {
-                const currentValue = $input.val();
-                const normalizedValue = normalizeUrl(currentValue);
+                const currentValue = $input.val().trim();
                 
-                if (currentValue !== normalizedValue) {
-                    $input.val(normalizedValue);
-                    console.log(`🔗 URL normalizada: "${currentValue}" → "${normalizedValue}"`);
+                if (currentValue && !isValidUrl(currentValue)) {
+                    // Remove classe de erro anterior se existir
+                    $input.removeClass('border-red-500');
+                    
+                    // Adiciona borda vermelha para indicar erro
+                    $input.addClass('border-red-500');
+                    
+                    // Mostra alerta amigável
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Formato de URL inválido',
+                        html: `
+                            <p>A URL deve começar com <strong>https://</strong> ou <strong>http://</strong></p>
+                            <br>
+                            <p><strong>Exemplo correto:</strong></p>
+                            <code>https://${currentValue.replace(/^(www\.)?/, 'www.')}</code>
+                        `,
+                        confirmButtonText: 'Entendi',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    
+                    console.log(`⚠️ URL inválida detectada: "${currentValue}"`);
+                } else {
+                    // Remove classe de erro se URL válida
+                    $input.removeClass('border-red-500');
                 }
             }
         });
     }
     
-    // Inicializa normalização de URLs
-    initUrlNormalization();
+    // Inicializa validação de URLs
+    initUrlValidation();
 
     if (!assistantId) {
         localStorage.removeItem('assistant');
