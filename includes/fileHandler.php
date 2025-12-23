@@ -158,7 +158,8 @@ function delete_vector_store_file()
     error_log(print_r($row, true));
 
     if (!$row) {
-        wp_send_json_success(['message' => 'Arquivo não encontrado no banco de dados']);
+        error_log("❌ Arquivo não encontrado na tabela wp_vector_files para URL: $file_url");
+        wp_send_json_error(['message' => 'Arquivo não encontrado no banco de dados. Pode ter sido enviado antes do Vector Store ser configurado.']);
     }
 
     $file_id = $row->file_id;
