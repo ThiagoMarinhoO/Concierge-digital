@@ -382,6 +382,18 @@ function generate_instructions($chatbot_options, $chatbot_name)
                             }
                         }
                         
+                        // 🔍 VERIFICAR SE URL É ACESSÍVEL ANTES DE TENTAR SCRAPING
+                        $url_check = check_url_accessible($url);
+                        
+                        if (!$url_check['accessible']) {
+                            // URL não acessível - informar no prompt
+                            error_log("❌ URL não acessível: {$url} - Erro: {$url_check['error']}");
+                            $builder->addKnowledge("⚠️ Não foi possível acessar o site {$url}. Erro: {$url_check['error']}. Verifique se a URL está correta.");
+                            continue; // Pular para próxima opção
+                        }
+                        
+                        error_log("✅ URL acessível: {$url} - HTTP {$url_check['http_code']}");
+                        
                         // SCRAPE: URL nova ou alterada - fazer scraping
                         $file_path = generate_site_content_file($url, $chatbot_name);
 
@@ -1549,6 +1561,56 @@ function transcribe_audio_with_whisper($file_path)
     return $result['text'] ?? '';
 }
 
+
+/**
+ * Verifica se uma URL é acessível antes de tentar scraping
+ * Faz um HEAD request rápido para verificar status
+ * @param string $url URL para verificar
+ * @return array ['accessible' => bool, 'http_code' => int, 'error' => string|null]
+ */
+function check_url_accessible($url)
+{
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_NOBODY => true, // HEAD request (mais rápido)
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; CharlieBot/1.0; +https://projetocharlie.humans.land)',
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    // Verificar erros de conexão
+    if ($error) {
+        error_log("check_url_accessible: Erro de conexão - $error - URL: $url");
+        return [
+            'accessible' => false,
+            'http_code' => 0,
+            'error' => $error
+        ];
+    }
+
+    // Verificar código HTTP
+    $accessible = ($http_code >= 200 && $http_code < 400);
+    
+    if (!$accessible) {
+        error_log("check_url_accessible: HTTP $http_code - URL: $url");
+    }
+
+    return [
+        'accessible' => $accessible,
+        'http_code' => $http_code,
+        'error' => $accessible ? null : "Site retornou HTTP $http_code"
+    ];
+}
 
 /**
  * Busca conteúdo de uma URL usando cURL com headers apropriados
