@@ -998,6 +998,13 @@ jQuery(document).ready(function ($) {
                     success: (data) => {
                         if (data.success) {
                             console.log(data)
+                            
+                            // 🧹 Limpar file inputs após upload bem-sucedido
+                            // Evita re-upload do mesmo arquivo no próximo save
+                            fileInputs.each((index, fileInput) => {
+                                $(fileInput).val('');
+                            });
+                            
                             processQuestionBlocks(data.data.urls);
                         } else {
                             console.error("Falha ao enviar arquivos:", data.message);
