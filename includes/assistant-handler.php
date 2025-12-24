@@ -340,6 +340,11 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 stripos($training_phrase, 'conhecimento') !== false &&
                 filter_var($resposta, FILTER_VALIDATE_URL)
             ) {
+                // 🔍 DEBUG: Condição de scraping FOI satisfeita
+                error_log("✅ DEBUG SCRAPING: Condição SATISFEITA!");
+                error_log("   - training_phrase: {$training_phrase}");
+                error_log("   - resposta/URL: {$resposta}");
+                
                 $url = $resposta;
                 if (!empty($url)) {
                     // 🧠 DETECÇÃO DE INTENÇÃO
@@ -471,6 +476,18 @@ function generate_instructions($chatbot_options, $chatbot_name)
             }
             // Outras perguntas
             else {
+                // 🔍 DEBUG: Esta opção NÃO caiu no bloco de scraping
+                $is_url = filter_var($resposta, FILTER_VALIDATE_URL);
+                if ($is_url) {
+                    error_log("❌ DEBUG SCRAPING: URL detectada mas NÃO entrou no bloco de scraping!");
+                    error_log("   - pergunta: " . ($option['pergunta'] ?? 'N/A'));
+                    error_log("   - training_phrase: {$training_phrase}");
+                    error_log("   - resposta: {$resposta}");
+                    error_log("   - has 'estude': " . (stripos($training_phrase, 'estude') !== false ? 'sim' : 'não'));
+                    error_log("   - has 'site': " . (stripos($training_phrase, 'site') !== false ? 'sim' : 'não'));
+                    error_log("   - has 'conhecimento': " . (stripos($training_phrase, 'conhecimento') !== false ? 'sim' : 'não'));
+                }
+                
                 if (stripos($training_phrase, 'seu nome é') !== false) {
                     continue;
                 }
