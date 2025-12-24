@@ -102,7 +102,40 @@ function handle_file_upload()
                 wp_send_json_error(['message' => 'Vector store não encontrado ou criado.']);
             }
 
-            // 2️⃣ Upload para OpenAI
+            // 🔍 VERIFICAR SE ARQUIVO COM MESMO NOME JÁ EXISTE NO VECTOR STORE
+            // Remove sufixos do WordPress (-1, -2, etc) para comparação
+            $original_filename = $file['name'];
+            $filename_base = pathinfo($original_filename, PATHINFO_FILENAME);
+            $filename_ext = pathinfo($original_filename, PATHINFO_EXTENSION);
+            
+            // Remove possíveis sufixos numéricos do WordPress (ex: "arquivo-1" -> "arquivo")
+            $filename_clean = preg_replace('/-\d+$/', '', $filename_base);
+            
+            $existing_file = $wpdb->get_row($wpdb->prepare(
+                "SELECT file_id, file_url FROM {$table_files} 
+                 WHERE vector_store_id = %s 
+                 AND (file_url LIKE %s OR file_url LIKE %s)",
+                $vector_store_id,
+                '%/' . $filename_base . '.' . $filename_ext,
+                '%/' . $filename_clean . '.' . $filename_ext
+            ));
+
+            if ($existing_file) {
+                // Arquivo já existe - pular upload e usar ID existente
+                error_log("⏭️ SKIP: Arquivo já existe no Vector Store: {$existing_file->file_url} - file_id={$existing_file->file_id}");
+                $file_id = $existing_file->file_id;
+                
+                // Retornar URL existente em vez da nova
+                $uploaded_urls[] = [
+                    'url' => $existing_file->file_url,
+                    'id'  => isset($question_ids[$index]) ? $question_ids[$index] : null,
+                    'file_id' => $file_id,
+                    'skipped' => true
+                ];
+                continue; // Pular para próximo arquivo
+            }
+
+            // 2️⃣ Upload para OpenAI (arquivo novo)
             $fileResponse = StorageController::uploadFile($upload['file']);
             if (!$fileResponse || empty($fileResponse['id'])) {
                 wp_send_json_error(['message' => 'Erro ao enviar arquivo para o vector store']);
@@ -119,6 +152,8 @@ function handle_file_upload()
                 'vector_store_id' => $vector_store_id,
                 'file_url' => $upload['url']
             ]);
+            
+            error_log("✅ Novo arquivo adicionado ao Vector Store: {$upload['url']} - file_id={$file_id}");
         }
 
         $uploaded_urls[] = [
