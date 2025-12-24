@@ -333,7 +333,13 @@ function generate_instructions($chatbot_options, $chatbot_name)
                 }
             }
             // Crawler (Links de Conhecimento) - COM ROTEAMENTO INTELIGENTE
-            elseif (($option['pergunta'] ?? '') == "Links para Aprendizado") {
+            // Detecta campos de URL baseado no training_phrase (robusto a mudanças de rótulo)
+            elseif (
+                !empty($training_phrase) && 
+                (stripos($training_phrase, 'estude') !== false || stripos($training_phrase, 'site') !== false) &&
+                stripos($training_phrase, 'conhecimento') !== false &&
+                filter_var($resposta, FILTER_VALIDATE_URL)
+            ) {
                 $url = $resposta;
                 if (!empty($url)) {
                     // 🧠 DETECÇÃO DE INTENÇÃO
