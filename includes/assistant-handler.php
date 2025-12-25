@@ -209,7 +209,7 @@ function delete_assistant()
 
 require_once plugin_dir_path(__FILE__) . 'PromptBuilder.php';
 
-function generate_instructions($chatbot_options, $chatbot_name)
+function generate_instructions($chatbot_options, $chatbot_name, $assistant_id = null)
 {
     global $wpdb;
 
@@ -242,7 +242,34 @@ function generate_instructions($chatbot_options, $chatbot_name)
         }
     }
 
-    // 3. Processar Opções do Chatbot
+    // 3. CLEANUP: Coletar URLs atuais e remover URLs órfãs
+    $current_urls = [];
+    foreach ($chatbot_options as $categoria => $perguntas) {
+        foreach ($perguntas as $option) {
+            $training_phrase = $option['training_phrase'] ?? '';
+            $resposta = $option['resposta'] ?? '';
+            
+            // Coletar URLs de campos de estudo/conhecimento
+            if (
+                !empty($resposta) &&
+                filter_var($resposta, FILTER_VALIDATE_URL) &&
+                (stripos($training_phrase, 'estude') !== false || stripos($training_phrase, 'site') !== false) &&
+                stripos($training_phrase, 'conhecimento') !== false
+            ) {
+                $current_urls[] = $resposta;
+            }
+        }
+    }
+    
+    // Chamar cleanup para remover URLs que não estão mais no formulário
+    if ($assistant_id) {
+        $deleted_urls = cleanup_removed_urls($assistant_id, $current_urls);
+        if (!empty($deleted_urls)) {
+            error_log("🗑️ URLs removidas do Vector Store: " . implode(', ', $deleted_urls));
+        }
+    }
+
+    // 4. Processar Opções do Chatbot
     foreach ($chatbot_options as $categoria => $perguntas) {
         foreach ($perguntas as $option) {
             $training_phrase = $option['training_phrase'] ?? '';
@@ -355,10 +382,32 @@ function generate_instructions($chatbot_options, $chatbot_name)
                         error_log("🔍 INTENTION:STUDY detected for URL: $url");
                         
                         // PRIMEIRO: Obter Vector Store ID para verificar se URL já foi processada
-                        $vector_store_label = "Vector Store para {$chatbot_name}";
                         $table_stores = $wpdb->prefix . 'vector_stores';
-                        $vector_store = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $table_stores . ' WHERE name = %s', $vector_store_label));
+                        
+                        // Buscar por assistant_id (mais confiável) ou fallback para nome
+                        if ($assistant_id) {
+                            $vector_store = $wpdb->get_row($wpdb->prepare(
+                                'SELECT * FROM ' . $table_stores . ' WHERE assistant_id = %s',
+                                $assistant_id
+                            ));
+                            error_log("🔍 Buscando Vector Store por assistant_id: {$assistant_id}");
+                        } else {
+                            // Fallback: buscar pelo nome (compatibilidade)
+                            $vector_store_label = "Vector Store para {$chatbot_name}";
+                            $vector_store = $wpdb->get_row($wpdb->prepare(
+                                'SELECT * FROM ' . $table_stores . ' WHERE name = %s',
+                                $vector_store_label
+                            ));
+                            error_log("🔍 Buscando Vector Store por nome: {$vector_store_label}");
+                        }
+                        
                         $vector_store_id = $vector_store ? $vector_store->vector_store_id : null;
+                        
+                        if ($vector_store_id) {
+                            error_log("✅ Vector Store encontrado: {$vector_store_id}");
+                        } else {
+                            error_log("⚠️ Vector Store não encontrado para assistant_id={$assistant_id} ou nome={$chatbot_name}");
+                        }
                         
                         if ($vector_store_id) {
                             // VERIFICAR SE URL PRECISA SER RE-SCRAPED
@@ -1627,6 +1676,111 @@ function check_url_accessible($url)
         'http_code' => $http_code,
         'error' => $accessible ? null : "Site retornou HTTP $http_code"
     ];
+}
+
+/**
+ * Remove URLs órfãs do Vector Store quando removidas do formulário
+ * @param string|null $assistant_id ID do assistant
+ * @param array $current_urls URLs atualmente no formulário
+ * @return array Lista de URLs removidas
+ */
+function cleanup_removed_urls($assistant_id, $current_urls)
+{
+    global $wpdb;
+    
+    if (!$assistant_id) {
+        error_log("cleanup_removed_urls: Sem assistant_id, pulando cleanup");
+        return [];
+    }
+    
+    // 1. Buscar Vector Store pelo assistant_id
+    $table_stores = $wpdb->prefix . 'vector_stores';
+    $vector_store = $wpdb->get_row($wpdb->prepare(
+        'SELECT * FROM ' . $table_stores . ' WHERE assistant_id = %s',
+        $assistant_id
+    ));
+    
+    if (!$vector_store) {
+        error_log("cleanup_removed_urls: Vector Store não encontrado para assistant_id: $assistant_id");
+        return [];
+    }
+    
+    $vector_store_id = $vector_store->vector_store_id;
+    
+    // 2. Buscar URLs existentes no banco para este Vector Store
+    // IMPORTANTE: Excluir arquivos de upload (PDFs) - apenas limpar URLs de sites scraped
+    $table_files = $wpdb->prefix . 'vector_files';
+    $existing_files = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $table_files 
+         WHERE vector_store_id = %s 
+         AND file_url LIKE 'http%' 
+         AND file_url NOT LIKE '%/wp-content/uploads/%'",
+        $vector_store_id
+    ));
+    
+    if (empty($existing_files)) {
+        error_log("cleanup_removed_urls: Nenhuma URL de site existente no banco (excluindo uploads)");
+        return [];
+    }
+    
+    // 3. Comparar: URLs no banco que NÃO estão no formulário = REMOVIDAS
+    $removed_urls = [];
+    foreach ($existing_files as $file) {
+        if (!in_array($file->file_url, $current_urls)) {
+            $removed_urls[] = $file;
+        }
+    }
+    
+    if (empty($removed_urls)) {
+        error_log("cleanup_removed_urls: Nenhuma URL foi removida");
+        return [];
+    }
+    
+    // 4. Para cada URL removida: deletar do Vector Store e limpar banco
+    $deleted = [];
+    $upload_dir = wp_upload_dir();
+    $scraped_folder = $upload_dir['basedir'] . '/scraped_content';
+    $deleted_folder = $scraped_folder . '/deleted';
+    
+    // Criar pasta deleted se não existir
+    if (!file_exists($deleted_folder)) {
+        wp_mkdir_p($deleted_folder);
+    }
+    
+    foreach ($removed_urls as $file) {
+        error_log("🗑️ cleanup_removed_urls: Removendo URL órfã: {$file->file_url}");
+        
+        // Deletar do Vector Store (OpenAI)
+        if (!empty($file->file_id)) {
+            StorageController::deleteVectorStoreFile($vector_store_id, $file->file_id);
+            error_log("✅ Arquivo deletado do Vector Store: file_id={$file->file_id}");
+        }
+        
+        // Mover arquivo local para pasta deleted (se existir)
+        $url_domain = parse_url($file->file_url, PHP_URL_HOST);
+        $safe_domain = preg_replace('/[^a-zA-Z0-9_-]/', '_', $url_domain);
+        
+        // Buscar arquivos que correspondem a esta URL
+        $pattern = $scraped_folder . '/*' . $safe_domain . '*.txt';
+        $matching_files = glob($pattern);
+        
+        foreach ($matching_files as $local_file) {
+            $filename = basename($local_file);
+            $dest = $deleted_folder . '/' . date('Y-m-d_H-i-s') . '_' . $filename;
+            if (rename($local_file, $dest)) {
+                error_log("📦 Arquivo movido para deleted/: $filename");
+            }
+        }
+        
+        // Deletar registro do banco
+        $wpdb->delete($table_files, ['id' => $file->id]);
+        error_log("✅ Registro removido do banco: id={$file->id}");
+        
+        $deleted[] = $file->file_url;
+    }
+    
+    error_log("cleanup_removed_urls: " . count($deleted) . " URLs removidas com sucesso");
+    return $deleted;
 }
 
 /**
