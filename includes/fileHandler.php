@@ -3,13 +3,21 @@ add_action('wp_ajax_upload_files_to_media_library', 'handle_file_upload');
 
 function handle_file_upload()
 {
+    error_log("📥 UPLOAD_FILES_TO_MEDIA_LIBRARY chamado!");
+    error_log("📥 POST data: " . print_r($_POST, true));
+    error_log("📥 FILES count: " . (isset($_FILES['files']) ? count($_FILES['files']['name']) : 0));
+    
     if (empty($_FILES['files'])) {
+        error_log("❌ Nenhum arquivo enviado!");
         wp_send_json_error(['message' => 'Nenhum arquivo enviado']);
     }
 
     $assistant_id = isset($_POST['assistant_id']) ? sanitize_text_field($_POST['assistant_id']) : null;
     $assistant_id = (!empty($assistant_id) && $assistant_id !== 'undefined' && $assistant_id !== 'null') ? $assistant_id : null;
     $assistant_name = isset($_POST['assistant_name']) ? sanitize_text_field($_POST['assistant_name']) : null;
+    
+    error_log("📥 assistant_id: " . var_export($assistant_id, true));
+    error_log("📥 assistant_name: " . var_export($assistant_name, true));
     if (!$assistant_name) {
         wp_send_json_error(['message' => 'Por favor, informe o nome do assistente antes de enviar arquivos.']);
     }
@@ -147,13 +155,19 @@ function handle_file_upload()
             StorageController::createVectorStoreFile($vector_store_id, $file_id);
 
             // 4️⃣ Registrar no banco
-            $wpdb->insert($table_files, [
+            $insert_result = $wpdb->insert($table_files, [
                 'file_id' => $file_id,
                 'vector_store_id' => $vector_store_id,
                 'file_url' => $upload['url']
             ]);
             
-            error_log("✅ Novo arquivo adicionado ao Vector Store: {$upload['url']} - file_id={$file_id}");
+            // 🔍 Verificar se o INSERT funcionou
+            if ($insert_result === false) {
+                error_log("❌ ERRO ao inserir arquivo no banco: " . $wpdb->last_error);
+                error_log("❌ Query: " . $wpdb->last_query);
+            } else {
+                error_log("✅ Novo arquivo adicionado ao Vector Store: {$upload['url']} - file_id={$file_id} - insert_id={$wpdb->insert_id}");
+            }
         }
 
         $uploaded_urls[] = [
@@ -193,8 +207,11 @@ function delete_vector_store_file()
     error_log(print_r($row, true));
 
     if (!$row) {
-        error_log("❌ Arquivo não encontrado na tabela wp_vector_files para URL: $file_url");
-        wp_send_json_error(['message' => 'Arquivo não encontrado no banco de dados. Pode ter sido enviado antes do Vector Store ser configurado.']);
+        error_log("⚠️ Arquivo não encontrado na tabela wp_vector_files para URL: $file_url");
+        error_log("✅ Retornando sucesso para permitir limpeza do localStorage (arquivo órfão)");
+        // Retornar sucesso para permitir que o frontend remova o arquivo do localStorage
+        // O arquivo pode ter sido enviado antes do Vector Store ser configurado ou houve falha no INSERT
+        wp_send_json_success(['message' => 'Arquivo removido da lista (não estava no Vector Store).', 'orphan' => true]);
     }
 
     $file_id = $row->file_id;
